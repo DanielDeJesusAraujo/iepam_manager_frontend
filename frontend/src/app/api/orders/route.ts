@@ -1,0 +1,107 @@
+import { NextRequest, NextResponse } from 'next/server'
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export async function GET(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization')
+
+    if (!authHeader) {
+      return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
+    }
+
+    // Verificar permissão do usuário
+    const userResponse = await fetch(`${API_URL}/users/me`, {
+      headers: {
+        'Authorization': authHeader
+      }
+    });
+
+    if (!userResponse.ok) {
+      return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
+    }
+
+    const user = await userResponse.json();
+
+    if (!['ADMIN', 'MANAGER'].includes(user.role)) {
+      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
+    }
+
+    const backendRes = await fetch(`${API_URL}/service-orders`, {
+      headers: {
+        'Authorization': authHeader
+      }
+    })
+
+    if (!backendRes.ok) {
+      const errorText = await backendRes.text()
+      throw new Error('Erro ao buscar ordens de serviço')
+    }
+
+    const data = await backendRes.json()
+
+    // Garantir que data é um array
+    if (!Array.isArray(data)) {
+      return NextResponse.json(
+        { message: 'Formato de dados inválido' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json(data)
+  } catch (error) {
+    console.error('Erro completo:', error) // Debug log
+    return NextResponse.json(
+      { message: 'Erro ao buscar ordens de serviço' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
+    }
+
+    // Verificar permissão do usuário
+    const userResponse = await fetch(`${API_URL}/users/me`, {
+      headers: {
+        'Authorization': authHeader
+      }
+    });
+
+    if (!userResponse.ok) {
+      return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
+    }
+
+    const user = await userResponse.json();
+    if (!['ADMIN', 'MANAGER'].includes(user.role)) {
+      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
+    }
+
+    const body = await req.json()
+
+    const backendRes = await fetch(`${API_URL}/service-orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: authHeader
+      },
+      body: JSON.stringify(body)
+    })
+
+    if (!backendRes.ok) {
+      const errorData = await backendRes.json()
+      throw new Error(errorData.message || 'Erro ao criar ordem de serviço')
+    }
+
+    const data = await backendRes.json()
+    return NextResponse.json(data, { status: 201 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { message: error.message || 'Erro ao criar ordem de serviço' },
+      { status: 500 }
+    )
+  }
+} 

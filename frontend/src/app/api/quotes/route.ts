@@ -1,0 +1,165 @@
+import { NextResponse } from 'next/server';
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get('status');
+  const created_by = searchParams.get('created_by');
+
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Não autorizado' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (created_by) params.append('created_by', created_by);
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes?${params.toString()}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar cotações');
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Erro ao buscar cotações:', error);
+    return NextResponse.json(
+      { error: 'Erro ao buscar cotações' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Não autorizado' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+
+    // Validação dos dados
+    if (!body.supplier_id) {
+      return NextResponse.json(
+        { error: 'ID do fornecedor é obrigatório' },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(body.items) || body.items.length === 0) {
+      return NextResponse.json(
+        { error: 'A cotação deve ter pelo menos um item' },
+        { status: 400 }
+      );
+    }
+
+    // Validação dos itens
+    for (const item of body.items) {
+      if (!item.product_name) {
+        return NextResponse.json(
+          { error: 'Nome do produto é obrigatório' },
+          { status: 400 }
+        );
+      }
+      if (!item.quantity || item.quantity <= 0) {
+        return NextResponse.json(
+          { error: 'Quantidade deve ser maior que zero' },
+          { status: 400 }
+        );
+      }
+      if (!item.unit_price || item.unit_price < 0) {
+        return NextResponse.json(
+          { error: 'Preço unitário deve ser maior ou igual a zero' },
+          { status: 400 }
+        );
+      }
+      if (item.link && !isValidUrl(item.link)) {
+        return NextResponse.json(
+          { error: 'Link do produto inválido' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const payload = {
+      supplier: body.supplier_id,
+      items: body.items.map((item: any) => ({
+        product_name: item.product_name,
+        manufacturer: item.manufacturer || 'Não especificado',
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unit_price),
+        total_price: Number(item.quantity) * Number(item.unit_price),
+        final_price: Number(item.quantity) * Number(item.unit_price),
+        link: item.link || null,
+        notes: item.notes || null
+      })),
+      total_value: Number(body.total_value)
+    };
+
+    // Busca o nome do fornecedor
+    const supplierResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers/${body.supplier_id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!supplierResponse.ok) {
+      throw new Error('Erro ao buscar dados do fornecedor');
+    }
+
+    const supplierData = await supplierResponse.json();
+    payload.supplier = supplierData.name;
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erro do backend:', errorData);
+      return NextResponse.json(
+        { error: errorData.message || 'Erro ao criar cotação' },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('Erro ao criar cotação:', error);
+    console.error('Stack trace:', error.stack);
+    return NextResponse.json(
+      { error: error.message || 'Erro ao criar cotação' },
+      { status: 500 }
+    );
+  }
+}
+
+function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+} 
