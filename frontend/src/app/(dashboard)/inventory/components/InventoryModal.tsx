@@ -140,6 +140,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProp
         if (!formData.location_id) newErrors.location_id = 'Localização é obrigatória'
         if (!formData.category_id) newErrors.category_id = 'Categoria é obrigatória'
         if (!formData.subcategory_id) newErrors.subcategory_id = 'Subcategoria é obrigatória'
+        if (!formData.supplier_id) newErrors.supplier_id = 'Fornecedor é obrigatório'
 
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
@@ -208,7 +209,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProp
                             </FormControl>
 
                             <FormControl isInvalid={!!errors.name} isRequired>
-                                <FormLabel>Nome</FormLabel>
+                                <FormLabel>Fabricante</FormLabel>
                                 <Input
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -334,7 +335,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProp
                                 <FormErrorMessage>{errors.subcategory_id}</FormErrorMessage>
                             </FormControl>
 
-                            <FormControl>
+                            <FormControl isInvalid={!!errors.supplier_id} isRequired>
                                 <FormLabel>Fornecedor</FormLabel>
                                 <Select
                                     value={formData.supplier_id}
@@ -347,6 +348,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProp
                                         </option>
                                     ))}
                                 </Select>
+                                <FormErrorMessage>{errors.supplier_id}</FormErrorMessage>
                             </FormControl>
 
                             <FormControl>
