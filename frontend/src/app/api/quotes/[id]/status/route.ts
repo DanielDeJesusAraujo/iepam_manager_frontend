@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(
@@ -41,7 +42,7 @@ export async function PATCH(
       );
     }
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes/${params.id}/${endpoint}`, {
+    const response = await fetch(`${baseUrl}/quotes/${params.id}/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

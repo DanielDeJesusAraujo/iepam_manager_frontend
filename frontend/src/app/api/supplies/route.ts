@@ -1,12 +1,9 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(request: Request) {
     try {
-        console.log('[[[[[[[[[[[[[[[[[[[[[[[[[[[teste]]]]]]]]]]]]]]]]]]]]]]]]]]]')
         const token = request.headers.get('Authorization')?.split(' ')[1];
-        console.log(token)
 
         if (!token) {
             return NextResponse.json(
@@ -15,7 +12,7 @@ export async function GET(request: Request) {
             );
         }
 
-        const response = await fetch(`${API_URL}/supplies`, {
+        const response = await fetch(`${baseUrl}/supplies`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -46,7 +43,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        const response = await fetch(`${API_URL}/supplies`, {
+        const response = await fetch(`${baseUrl}/supplies`, {
             method: 'POST',
             headers: {
                 'Authorization': token,

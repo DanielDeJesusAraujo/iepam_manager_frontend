@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(request: Request) {
   try {
@@ -13,7 +12,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const response = await fetch(`${API_URL}/locations`, {
+    const response = await fetch(`${baseUrl}/locations`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations`, {
+    const response = await fetch(`${baseUrl}/locations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
     if (status) params.append('status', status);
     if (created_by) params.append('created_by', created_by);
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes?${params.toString()}`, {
+    const response = await fetch(`${baseUrl}/quotes?${params.toString()}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -112,7 +113,7 @@ export async function POST(request: Request) {
     };
 
     // Busca o nome do fornecedor
-    const supplierResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers/${body.supplier_id}`, {
+    const supplierResponse = await fetch(`${baseUrl}/suppliers/${body.supplier_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
     const supplierData = await supplierResponse.json();
     payload.supplier = supplierData.name;
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes`, {
+    const response = await fetch(`${baseUrl}/quotes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

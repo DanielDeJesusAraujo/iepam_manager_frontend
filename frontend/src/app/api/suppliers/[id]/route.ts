@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function GET(
@@ -11,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers/${params.id}`, {
+    const response = await fetch(`${baseUrl}/suppliers/${params.id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -45,7 +46,7 @@ export async function PUT(
 
     const body = await request.json();
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers/${params.id}`, {
+    const response = await fetch(`${baseUrl}/suppliers/${params.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -81,7 +82,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers/${params.id}`, {
+    const response = await fetch(`${baseUrl}/suppliers/${params.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import baseUrl from '@/utils/enviroments';
 
 export async function GET(request: Request) {
   try {
@@ -11,7 +10,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_URL}/suppliers`, {
+    const response = await fetch(`${baseUrl}/suppliers`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers`, {
+    const response = await fetch(`${baseUrl}/suppliers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

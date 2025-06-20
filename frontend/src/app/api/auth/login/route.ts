@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server'
 
+import baseUrl from '@/utils/enviroments';
+
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json()
 
-    if (!process.env.NEXT_PUBLIC_API_URL) {
+    if (!baseUrl) {
       return NextResponse.json(
         { message: 'Erro de configuração do servidor' },
         { status: 500 }
       )
     }
     
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/users/sessions`
+    const apiUrl = `${baseUrl}/users/sessions`
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {

@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
         }
 
         // Busca localizações
-        const locationsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations`, {
+        const locationsResponse = await fetch(`${baseUrl}/locations`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
         const locations = await locationsResponse.json();
 
         // Busca fornecedores
-        const suppliersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers`, {
+        const suppliersResponse = await fetch(`${baseUrl}/suppliers`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
         const suppliers = await suppliersResponse.json();
 
         // Busca categorias
-        const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
+        const categoriesResponse = await fetch(`${baseUrl}/categories`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
         const categories = await categoriesResponse.json();
 
         // Busca subcategorias
-        const subcategoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subcategories`, {
+        const subcategoriesResponse = await fetch(`${baseUrl}/subcategories`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

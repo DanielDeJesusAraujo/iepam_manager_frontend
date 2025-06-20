@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
             );
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory`, {
+        const response = await fetch(`${baseUrl}/inventory`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
         const token = request.headers.get('authorization')?.split(' ')[1];
         const body = await request.json();
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory`, {
+        const response = await fetch(`${baseUrl}/inventory`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

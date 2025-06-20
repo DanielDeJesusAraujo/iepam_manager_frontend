@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(
     request: NextRequest,
@@ -16,7 +15,7 @@ export async function GET(
             );
         }
 
-        const response = await fetch(`${API_URL}/supplies/${params.id}`, {
+        const response = await fetch(`${baseUrl}/supplies/${params.id}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
@@ -49,7 +48,7 @@ export async function PUT(
 
         const body = await request.json();
 
-        const response = await fetch(`${API_URL}/supplies/${params.id}`, {
+        const response = await fetch(`${baseUrl}/supplies/${params.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': token,
@@ -84,7 +83,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
-        const response = await fetch(`${API_URL}/supplies/${params.id}`, {
+        const response = await fetch(`${baseUrl}/supplies/${params.id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': token,

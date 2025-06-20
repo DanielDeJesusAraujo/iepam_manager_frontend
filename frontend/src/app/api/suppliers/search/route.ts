@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+import baseUrl from '@/utils/enviroments';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'CNPJ não fornecido' }, { status: 400 });
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers/search?search=${search}`, {
+    const response = await fetch(`${baseUrl}/suppliers/search?search=${search}`, {
       headers: {
         'Authorization': authorization,
       },

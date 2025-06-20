@@ -1,7 +1,6 @@
+import baseUrl from '@/utils/enviroments'
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export async function PUT(
     request: NextRequest,
@@ -16,7 +15,7 @@ export async function PUT(
 
         const body = await request.json()
 
-        const response = await fetch(`${API_URL}/categories/${params.id}`, {
+        const response = await fetch(`${baseUrl}/categories/${params.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +47,7 @@ export async function DELETE(
             return new NextResponse('Não autorizado', { status: 401 })
         }
 
-        const response = await fetch(`${API_URL}/categories/${params.id}`, {
+        const response = await fetch(`${baseUrl}/categories/${params.id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function DELETE(
@@ -14,7 +15,7 @@ export async function DELETE(
   }
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${params.id}`, {
+    const response = await fetch(`${baseUrl}/users/${params.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`

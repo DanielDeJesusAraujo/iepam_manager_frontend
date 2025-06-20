@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -15,7 +16,7 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
-                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+                    const response = await fetch(`${baseUrl}/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

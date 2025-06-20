@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function GET(
@@ -16,7 +17,7 @@ export async function GET(
 
   try {
     
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes/${params.id}`, {
+    const response = await fetch(`${baseUrl}/quotes/${params.id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }

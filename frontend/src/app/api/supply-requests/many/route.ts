@@ -1,6 +1,6 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function POST(request: NextRequest) {
     const token = request.headers.get('Authorization')?.split(' ')[1];
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
-        const response = await fetch(`${API_URL}/supply-requests/many`, {
+        const response = await fetch(`${baseUrl}/supply-requests/many`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

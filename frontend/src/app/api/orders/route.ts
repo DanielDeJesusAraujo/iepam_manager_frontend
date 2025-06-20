@@ -1,5 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server'
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Verificar permissão do usuário
-    const userResponse = await fetch(`${API_URL}/users/me`, {
+    const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: {
         'Authorization': authHeader
       }
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
-    const backendRes = await fetch(`${API_URL}/service-orders`, {
+    const backendRes = await fetch(`${baseUrl}/service-orders`, {
       headers: {
         'Authorization': authHeader
       }
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar permissão do usuário
-    const userResponse = await fetch(`${API_URL}/users/me`, {
+    const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: {
         'Authorization': authHeader
       }
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
 
-    const backendRes = await fetch(`${API_URL}/service-orders`, {
+    const backendRes = await fetch(`${baseUrl}/service-orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

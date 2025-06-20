@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -14,7 +15,7 @@ export async function GET(
       );
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/${params.id}`, {
+    const response = await fetch(`${baseUrl}/locations/${params.id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -52,7 +53,7 @@ export async function PUT(
 
     const body = await request.json();
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/${params.id}`, {
+    const response = await fetch(`${baseUrl}/locations/${params.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ export async function DELETE(
       );
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/${params.id}`, {
+    const response = await fetch(`${baseUrl}/locations/${params.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,

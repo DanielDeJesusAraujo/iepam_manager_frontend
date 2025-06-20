@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Configurações específicas do Next.js
 export const dynamic = 'force-dynamic';
@@ -21,7 +20,7 @@ export async function GET(
       )
     }
 
-    const url = `${API_URL}/service-orders/${params.id}`;
+    const url = `${baseUrl}/service-orders/${params.id}`;
 
     const response = await fetch(url, {
       headers: {
@@ -64,7 +63,7 @@ export async function PATCH(
 
     const body = await request.json()
 
-    const url = `${API_URL}/service-orders/${params.id}`;
+    const url = `${baseUrl}/service-orders/${params.id}`;
 
     const response = await fetch(url, {
       method: 'PATCH',
@@ -107,7 +106,7 @@ export async function DELETE(
       )
     }
 
-    const url = `${API_URL}/service-orders/${params.id}`;
+    const url = `${baseUrl}/service-orders/${params.id}`;
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -150,7 +149,7 @@ export async function PUT(
 
     const body = await request.json()
 
-    const url = `${API_URL}/service-orders/${params.id}`;
+    const url = `${baseUrl}/service-orders/${params.id}`;
 
     const response = await fetch(url, {
       method: 'PUT',

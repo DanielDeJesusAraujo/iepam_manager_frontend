@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -9,7 +8,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
-        const response = await fetch(`${API_URL}/events`, {
+        const response = await fetch(`${baseUrl}/events`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        const response = await fetch(`${API_URL}/events`, {
+        const response = await fetch(`${baseUrl}/events`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

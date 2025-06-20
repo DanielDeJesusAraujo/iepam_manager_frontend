@@ -1,10 +1,11 @@
+import baseUrl from '@/utils/enviroments'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
     const { name, email, password, role } = await request.json()
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    const response = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

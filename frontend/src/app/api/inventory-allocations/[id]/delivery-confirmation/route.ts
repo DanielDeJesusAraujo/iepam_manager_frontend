@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+import baseUrl from '@/utils/enviroments';
 
 export async function PATCH(
     request: Request,
@@ -15,7 +16,7 @@ export async function PATCH(
 
         const body = await request.json();
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory-allocations/${params.id}/delivery-confirmation`, {
+        const response = await fetch(`${baseUrl}/inventory-allocations/${params.id}/delivery-confirmation`, {
             method: 'PATCH',
             headers: {
                 'Authorization': token,

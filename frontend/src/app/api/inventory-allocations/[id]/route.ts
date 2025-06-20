@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+import baseUrl from '@/utils/enviroments';
 
 export async function GET(
     request: Request,
@@ -13,7 +14,7 @@ export async function GET(
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory-allocations/${params.id}`, {
+        const response = await fetch(`${baseUrl}/inventory-allocations/${params.id}`, {
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
@@ -49,7 +50,7 @@ export async function PUT(
 
         const body = await request.json();
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory-allocations/${params.id}`, {
+        const response = await fetch(`${baseUrl}/inventory-allocations/${params.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': token,
@@ -85,7 +86,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory-allocations/${params.id}`, {
+        const response = await fetch(`${baseUrl}/inventory-allocations/${params.id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': token,

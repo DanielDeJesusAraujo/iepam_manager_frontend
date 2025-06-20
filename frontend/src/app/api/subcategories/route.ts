@@ -1,10 +1,11 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 
 export async function GET(request: Request) {
     try {
         const token = request.headers.get('authorization')?.split(' ')[1];
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subcategories`, {
+        const response = await fetch(`${baseUrl}/subcategories`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subcategories`, {
+        const response = await fetch(`${baseUrl}/subcategories`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

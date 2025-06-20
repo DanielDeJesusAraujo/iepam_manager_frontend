@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,7 +15,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Senha atual e nova senha são obrigatórias' }, { status: 400 });
         }
 
-        const response = await fetch(`${API_URL}/users/change-password`, {
+        const response = await fetch(`${baseUrl}/users/change-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

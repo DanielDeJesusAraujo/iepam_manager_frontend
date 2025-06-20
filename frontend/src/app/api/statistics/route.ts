@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
         }
 
         // Busca dados de servidores
-        const serversResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/servers`, {
+        const serversResponse = await fetch(`${baseUrl}/servers`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
         const servers = await serversResponse.json();
 
         // Busca dados de inventário
-        const inventoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory`, {
+        const inventoryResponse = await fetch(`${baseUrl}/inventory`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
         const inventory = await inventoryResponse.json();
 
         // Busca dados de ordens de serviço
-        const serviceOrdersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-orders`, {
+        const serviceOrdersResponse = await fetch(`${baseUrl}/service-orders`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
         const serviceOrders = await serviceOrdersResponse.json();
 
         // Busca dados de alertas
-        const alertsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts`, {
+        const alertsResponse = await fetch(`${baseUrl}/alerts`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

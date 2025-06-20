@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function PUT(
     request: NextRequest,
@@ -15,7 +14,7 @@ export async function PUT(
     try {
         const body = await request.json();
 
-        const response = await fetch(`${API_URL}/supply-requests/${params.id}`, {
+        const response = await fetch(`${baseUrl}/supply-requests/${params.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,

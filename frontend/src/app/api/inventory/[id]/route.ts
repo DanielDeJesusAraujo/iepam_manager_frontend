@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function PUT(
@@ -15,7 +16,7 @@ export async function PUT(
             );
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory/${params.id}`, {
+        const response = await fetch(`${baseUrl}/inventory/${params.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,7 +53,7 @@ export async function DELETE(
             );
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory/${params.id}`, {
+        const response = await fetch(`${baseUrl}/inventory/${params.id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`

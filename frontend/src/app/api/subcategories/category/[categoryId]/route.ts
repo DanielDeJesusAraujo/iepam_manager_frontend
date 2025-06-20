@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function GET(
@@ -6,7 +7,7 @@ export async function GET(
 ) {
     try {
         const token = request.headers.get('authorization')?.split(' ')[1];
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subcategories/category/${params.categoryId}`, {
+        const response = await fetch(`${baseUrl}/subcategories/category/${params.categoryId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

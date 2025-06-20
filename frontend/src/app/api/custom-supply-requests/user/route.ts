@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
             );
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/custom-supply-requests/user`, {
+        const response = await fetch(`${baseUrl}/custom-supply-requests/user`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

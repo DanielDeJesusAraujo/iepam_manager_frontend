@@ -1,3 +1,4 @@
+import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
         }
 
         // Busca dados de inventário
-        const inventoryResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory`, {
+        const inventoryResponse = await fetch(`${baseUrl}/inventory`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
         const inventory = await inventoryResponse.json()
 
         // Busca dados de ordens de serviço
-        const serviceOrdersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-orders`, {
+        const serviceOrdersResponse = await fetch(`${baseUrl}/service-orders`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
         const serviceOrders = await serviceOrdersResponse.json()
 
         // Busca dados de alertas
-        const alertsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts`, {
+        const alertsResponse = await fetch(`${baseUrl}/alerts`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
         const alertsData = await alertsResponse.json()
 
         // Busca dados de fornecedores
-        const suppliersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers`, {
+        const suppliersResponse = await fetch(`${baseUrl}/suppliers`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
         const suppliers = await suppliersResponse.json()
 
         // Busca dados de cotações
-        const quotesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quotes`, {
+        const quotesResponse = await fetch(`${baseUrl}/quotes`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
         const quotes = await quotesResponse.json()
 
         // Busca dados de requisições de suprimentos
-        const supplyRequestsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/supply-requests`, {
+        const supplyRequestsResponse = await fetch(`${baseUrl}/supply-requests`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

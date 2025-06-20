@@ -1,6 +1,5 @@
+import baseUrl from '@/utils/enviroments';
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function GET(request: NextRequest) {
     try {
@@ -10,7 +9,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Verificar permissão do usuário
-        const userResponse = await fetch(`${API_URL}/users/me`, {
+        const userResponse = await fetch(`${baseUrl}/users/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
         }
 
-        const response = await fetch(`${API_URL}/alerts`, {
+        const response = await fetch(`${baseUrl}/alerts`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -50,7 +49,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Verificar permissão do usuário
-        const userResponse = await fetch(`${API_URL}/users/me`, {
+        const userResponse = await fetch(`${baseUrl}/users/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -72,7 +71,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID não fornecido' }, { status: 400 });
         }
 
-        const response = await fetch(`${API_URL}/alerts/${id}`, {
+        const response = await fetch(`${baseUrl}/alerts/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
