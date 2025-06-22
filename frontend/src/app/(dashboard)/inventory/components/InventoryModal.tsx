@@ -21,6 +21,7 @@ import {
     Box,
     SimpleGrid,
     Stack,
+    ButtonGroup,
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { uploadImage, handleImageChange } from '@/utils/imageUtils'
@@ -425,9 +426,14 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                 </FormControl>
                             </Stack>
                         </SimpleGrid>
-                        <Button mt={8} type="submit" colorScheme="blue" width="full">
-                            {isEdit ? 'Salvar Alterações' : 'Criar Item'}
-                        </Button>
+                        <ButtonGroup w="full" mt={8} display="flex" justifyContent="flex-end">
+                            <Button variant="outline" onClick={onClose} mr={2}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" colorScheme="blue">
+                                {isEdit ? 'Salvar Alterações' : 'Criar Item'}
+                            </Button>
+                        </ButtonGroup>
                     </form>
                 </ModalBody>
             </ModalContent>
