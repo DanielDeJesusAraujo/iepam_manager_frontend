@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     Box,
     Button,
@@ -74,6 +74,9 @@ export default function InventoryPage() {
 
     const isMobile = useBreakpointValue({ base: true, md: false });
     const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
+
+    const [editItem, setEditItem] = useState<InventoryItem | null>(null);
+    const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
         fetchItems();
@@ -226,6 +229,52 @@ export default function InventoryPage() {
                 isClosable: true,
             });
         }
+    };
+
+    const handleEdit = (item: InventoryItem) => {
+        setEditItem(item);
+        setIsEditMode(true);
+        onOpen();
+    };
+
+    const handleUpdate = async (data: any) => {
+        try {
+            const token = localStorage.getItem('@ti-assistant:token');
+            const response = await fetch(`/api/inventory/${editItem?.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar item');
+            }
+            toast({
+                title: 'Item atualizado',
+                description: 'O item foi atualizado com sucesso.',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+            fetchItems();
+            handleCloseModal();
+        } catch (error: any) {
+            toast({
+                title: 'Erro ao atualizar item',
+                description: error.message || 'Não foi possível atualizar o item.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
+    const handleCloseModal = () => {
+        setEditItem(null);
+        setIsEditMode(false);
+        onClose();
     };
 
     const filteredItems = filterItems(items, searchTerm, selectedCategory, selectedSubcategory);
@@ -572,9 +621,9 @@ export default function InventoryPage() {
                                 {groupName} ({groupItems.length})
                             </Heading>
                             {isMobile ? (
-                                <MobileView items={groupItems} onDelete={handleDelete} />
+                                <MobileView items={groupItems} onDelete={handleDelete} onEdit={handleEdit} />
                             ) : (
-                                <DesktopView items={groupItems} onDelete={handleDelete} />
+                                <DesktopView items={groupItems} onDelete={handleDelete} onEdit={handleEdit} />
                             )}
                         </Box>
                     ))}
@@ -583,8 +632,10 @@ export default function InventoryPage() {
 
             <InventoryModal
                 isOpen={isOpen}
-                onClose={onClose}
-                onSubmit={handleCreate}
+                onClose={handleCloseModal}
+                onSubmit={isEditMode ? handleUpdate : handleCreate}
+                initialData={editItem || undefined}
+                isEdit={isEditMode}
             />
         </Box>
     );

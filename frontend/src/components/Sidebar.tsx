@@ -55,7 +55,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   const handleLogout = () => {
     localStorage.removeItem('@ti-assistant:token')
     localStorage.removeItem('@ti-assistant:user')
-    router.push('/login')
+    router.push('/')
   }
 
   const handleNavigation = (href: string) => {

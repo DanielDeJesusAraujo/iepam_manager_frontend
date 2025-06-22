@@ -19,6 +19,8 @@ import {
     FormErrorMessage,
     Image,
     Box,
+    SimpleGrid,
+    Stack,
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { uploadImage, handleImageChange } from '@/utils/imageUtils'
@@ -27,9 +29,11 @@ interface InventoryModalProps {
     isOpen: boolean
     onClose: () => void
     onSubmit: (data: any) => void
+    initialData?: any
+    isEdit?: boolean
 }
 
-export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProps) {
+export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit }: InventoryModalProps) {
     const [formData, setFormData] = useState({
         item: '',
         name: '',
@@ -60,9 +64,48 @@ export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProp
 
     useEffect(() => {
         if (isOpen) {
-            fetchFormData()
+            fetchFormData();
+            if (isEdit && initialData) {
+                console.log('DADOS DO ITEM PARA EDIÇÃO:', initialData);
+                setFormData({
+                    item: initialData.item || '',
+                    name: initialData.name || '',
+                    model: initialData.model || '',
+                    serial_number: initialData.serial_number || '',
+                    finality: initialData.finality || '',
+                    acquisition_price: initialData.acquisition_price || '',
+                    acquisition_date: initialData.acquisition_date ? initialData.acquisition_date.slice(0, 10) : '',
+                    location_id: initialData.location?.id || '',
+                    locale_id: initialData.locale?.id || '',
+                    category_id: initialData.category?.id || '',
+                    subcategory_id: initialData.subcategory?.id || '',
+                    supplier_id: initialData.supplier_id || '',
+                    description: initialData.description || '',
+                    status: initialData.status || 'STANDBY',
+                    image_url: initialData.image_url || '',
+                });
+                console.log('DADOS DO formData:', formData)
+            } else {
+                setFormData({
+                    item: '',
+                    name: '',
+                    model: '',
+                    serial_number: '',
+                    finality: '',
+                    acquisition_price: '',
+                    acquisition_date: '',
+                    location_id: '',
+                    locale_id: '',
+                    category_id: '',
+                    subcategory_id: '',
+                    supplier_id: '',
+                    description: '',
+                    status: 'STANDBY',
+                    image_url: '',
+                });
+            }
         }
-    }, [isOpen])
+    }, [isOpen, isEdit, initialData]);
 
     const fetchFormData = async () => {
         try {
@@ -186,216 +229,205 @@ export function InventoryModal({ isOpen, onClose, onSubmit }: InventoryModalProp
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>Novo Item</ModalHeader>
+                <ModalHeader>{isEdit ? 'Editar Item' : 'Novo Item'}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody pb={6}>
                     <form onSubmit={handleSubmit}>
-                        <VStack spacing={4}>
-                            <FormControl isInvalid={!!errors.item} isRequired>
-                                <FormLabel>Tipo de Item</FormLabel>
-                                <Select
-                                    value={formData.item}
-                                    onChange={(e) => setFormData({ ...formData, item: e.target.value })}
-                                    placeholder="Selecione o tipo de item"
-                                >
-                                    <option value="Impressora">Impressora</option>
-                                    <option value="Computador">Computador</option>
-                                    <option value="Monitor">Monitor</option>
-                                    <option value="Periférico">Periférico</option>
-                                    <option value="Rede">Rede</option>
-                                    <option value="Outros">Outros</option>
-                                </Select>
-                                <FormErrorMessage>{errors.item}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.name} isRequired>
-                                <FormLabel>Fabricante</FormLabel>
-                                <Input
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Digite o nome do item"
-                                />
-                                <FormErrorMessage>{errors.name}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.model} isRequired>
-                                <FormLabel>Modelo</FormLabel>
-                                <Input
-                                    value={formData.model}
-                                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                                    placeholder="Digite o modelo"
-                                />
-                                <FormErrorMessage>{errors.model}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.serial_number} isRequired>
-                                <FormLabel>Número de Série</FormLabel>
-                                <Input
-                                    value={formData.serial_number}
-                                    onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
-                                    placeholder="Digite o número de série"
-                                />
-                                <FormErrorMessage>{errors.serial_number}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.finality} isRequired>
-                                <FormLabel>Finalidade</FormLabel>
-                                <Input
-                                    value={formData.finality}
-                                    onChange={(e) => setFormData({ ...formData, finality: e.target.value })}
-                                    placeholder="Digite a finalidade"
-                                />
-                                <FormErrorMessage>{errors.finality}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.acquisition_price} isRequired>
-                                <FormLabel>Preço de Aquisição</FormLabel>
-                                <NumberInput min={0}>
-                                    <NumberInputField
-                                        value={formData.acquisition_price}
-                                        onChange={(e) => setFormData({ ...formData, acquisition_price: e.target.value })}
-                                        placeholder="Digite o preço"
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                            <Stack spacing={4}>
+                                <FormControl isInvalid={!!errors.item} isRequired>
+                                    <FormLabel>Tipo de Item</FormLabel>
+                                    <Select
+                                        value={formData.item}
+                                        onChange={(e) => setFormData({ ...formData, item: e.target.value })}
+                                        placeholder="Selecione o tipo de item"
+                                    >
+                                        <option value="Impressora">Impressora</option>
+                                        <option value="Computador">Computador</option>
+                                        <option value="Monitor">Monitor</option>
+                                        <option value="Periférico">Periférico</option>
+                                        <option value="Rede">Rede</option>
+                                        <option value="Outros">Outros</option>
+                                    </Select>
+                                    <FormErrorMessage>{errors.item}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.name} isRequired>
+                                    <FormLabel>Fabricante</FormLabel>
+                                    <Input
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="Digite o nome do item"
                                     />
-                                </NumberInput>
-                                <FormErrorMessage>{errors.acquisition_price}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.acquisition_date} isRequired>
-                                <FormLabel>Data de Aquisição</FormLabel>
-                                <Input
-                                    type="date"
-                                    value={formData.acquisition_date}
-                                    onChange={(e) => setFormData({ ...formData, acquisition_date: e.target.value })}
-                                />
-                                <FormErrorMessage>{errors.acquisition_date}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.location_id} isRequired>
-                                <FormLabel>Localização</FormLabel>
-                                <Select
-                                    value={formData.location_id}
-                                    onChange={(e) => setFormData({ ...formData, location_id: e.target.value })}
-                                    placeholder="Selecione a localização"
-                                >
-                                    {Array.isArray(locations) && locations.map((location) => (
-                                        <option key={location.id} value={location.id}>
-                                            {location.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <FormErrorMessage>{errors.location_id}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.locale_id} isRequired>
-                                <FormLabel>Ambiente</FormLabel>
-                                <Select
-                                    value={formData.locale_id}
-                                    onChange={(e) => setFormData({ ...formData, locale_id: e.target.value })}
-                                    placeholder="Selecione o ambiente"
-                                >
-                                    {Array.isArray(locales) && locales.map((locale) => (
-                                        <option key={locale.id} value={locale.id}>
-                                            {locale.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <FormErrorMessage>{errors.locale_id}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.category_id} isRequired>
-                                <FormLabel>Categoria</FormLabel>
-                                <Select
-                                    value={formData.category_id}
-                                    onChange={(e) => handleCategoryChange(e.target.value)}
-                                    placeholder="Selecione a categoria"
-                                >
-                                    {Array.isArray(categories) && categories.map((category) => (
-                                        <option key={category.id} value={category.id}>
-                                            {category.label}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <FormErrorMessage>{errors.category_id}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.subcategory_id} isRequired>
-                                <FormLabel>Subcategoria</FormLabel>
-                                <Select
-                                    value={formData.subcategory_id}
-                                    onChange={(e) => setFormData({ ...formData, subcategory_id: e.target.value })}
-                                    placeholder="Selecione a subcategoria"
-                                    isDisabled={!formData.category_id}
-                                >
-                                    {Array.isArray(subcategories) && subcategories.map((subcategory) => (
-                                        <option key={subcategory.id} value={subcategory.id}>
-                                            {subcategory.label}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <FormErrorMessage>{errors.subcategory_id}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.supplier_id} isRequired>
-                                <FormLabel>Fornecedor</FormLabel>
-                                <Select
-                                    value={formData.supplier_id}
-                                    onChange={(e) => setFormData({ ...formData, supplier_id: e.target.value })}
-                                    placeholder="Selecione o fornecedor"
-                                >
-                                    {Array.isArray(suppliers) && suppliers.map((supplier) => (
-                                        <option key={supplier.id} value={supplier.id}>
-                                            {supplier.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <FormErrorMessage>{errors.supplier_id}</FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl>
-                                <FormLabel>Descrição</FormLabel>
-                                <Input
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="Digite uma descrição (opcional)"
-                                />
-                            </FormControl>
-
-                            <FormControl>
-                                <FormLabel>Status</FormLabel>
-                                <Select
-                                    value={formData.status}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                >
-                                    <option value="STANDBY">Em Espera</option>
-                                    <option value="IN_USE">Em Uso</option>
-                                    <option value="MAINTENANCE">Em Manutenção</option>
-                                    <option value="DISCARDED">Descartado</option>
-                                </Select>
-                            </FormControl>
-
-                            <FormControl>
-                                <FormLabel>Imagem</FormLabel>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => handleImageChange(e, setSelectedImage, setPreviewUrl)}
-                                />
-                                {previewUrl && (
-                                    <Box mt={2}>
-                                        <Image
-                                            src={previewUrl}
-                                            alt="Preview"
-                                            maxH="200px"
-                                            objectFit="contain"
+                                    <FormErrorMessage>{errors.name}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.model} isRequired>
+                                    <FormLabel>Modelo</FormLabel>
+                                    <Input
+                                        value={formData.model}
+                                        onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                                        placeholder="Digite o modelo"
+                                    />
+                                    <FormErrorMessage>{errors.model}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.serial_number} isRequired>
+                                    <FormLabel>Número de Série</FormLabel>
+                                    <Input
+                                        value={formData.serial_number}
+                                        onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
+                                        placeholder="Digite o número de série"
+                                    />
+                                    <FormErrorMessage>{errors.serial_number}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.finality} isRequired>
+                                    <FormLabel>Finalidade</FormLabel>
+                                    <Input
+                                        value={formData.finality}
+                                        onChange={(e) => setFormData({ ...formData, finality: e.target.value })}
+                                        placeholder="Digite a finalidade"
+                                    />
+                                    <FormErrorMessage>{errors.finality}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.acquisition_price} isRequired>
+                                    <FormLabel>Preço de Aquisição</FormLabel>
+                                    <NumberInput min={0} value={formData.acquisition_price}>
+                                        <NumberInputField
+                                            value={formData.acquisition_price}
+                                            onChange={(e) => setFormData({ ...formData, acquisition_price: e.target.value })}
+                                            placeholder="Digite o preço"
                                         />
-                                    </Box>
-                                )}
-                            </FormControl>
-
-                            <Button type="submit" colorScheme="blue" width="full">
-                                Criar Item
-                            </Button>
-                        </VStack>
+                                    </NumberInput>
+                                    <FormErrorMessage>{errors.acquisition_price}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.acquisition_date} isRequired>
+                                    <FormLabel>Data de Aquisição</FormLabel>
+                                    <Input
+                                        type="date"
+                                        value={formData.acquisition_date}
+                                        onChange={(e) => setFormData({ ...formData, acquisition_date: e.target.value })}
+                                    />
+                                    <FormErrorMessage>{errors.acquisition_date}</FormErrorMessage>
+                                </FormControl>
+                            </Stack>
+                            <Stack spacing={4}>
+                                <FormControl isInvalid={!!errors.location_id} isRequired>
+                                    <FormLabel>Localização</FormLabel>
+                                    <Select
+                                        value={formData.location_id}
+                                        onChange={(e) => setFormData({ ...formData, location_id: e.target.value })}
+                                        placeholder="Selecione a localização"
+                                    >
+                                        {Array.isArray(locations) && locations.map((location) => (
+                                            <option key={location.id} value={location.id}>
+                                                {location.name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                    <FormErrorMessage>{errors.location_id}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.locale_id} isRequired>
+                                    <FormLabel>Ambiente</FormLabel>
+                                    <Select
+                                        value={formData.locale_id}
+                                        onChange={(e) => setFormData({ ...formData, locale_id: e.target.value })}
+                                        placeholder="Selecione o ambiente"
+                                    >
+                                        {Array.isArray(locales) && locales.map((locale) => (
+                                            <option key={locale.id} value={locale.id}>
+                                                {locale.name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                    <FormErrorMessage>{errors.locale_id}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.category_id} isRequired>
+                                    <FormLabel>Categoria</FormLabel>
+                                    <Select
+                                        value={formData.category_id}
+                                        onChange={(e) => handleCategoryChange(e.target.value)}
+                                        placeholder="Selecione a categoria"
+                                    >
+                                        {Array.isArray(categories) && categories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.label}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                    <FormErrorMessage>{errors.category_id}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.subcategory_id} isRequired>
+                                    <FormLabel>Subcategoria</FormLabel>
+                                    <Select
+                                        value={formData.subcategory_id}
+                                        onChange={(e) => setFormData({ ...formData, subcategory_id: e.target.value })}
+                                        placeholder="Selecione a subcategoria"
+                                        isDisabled={!formData.category_id}
+                                    >
+                                        {Array.isArray(subcategories) && subcategories.map((subcategory) => (
+                                            <option key={subcategory.id} value={subcategory.id}>
+                                                {subcategory.label}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                    <FormErrorMessage>{errors.subcategory_id}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.supplier_id} isRequired>
+                                    <FormLabel>Fornecedor</FormLabel>
+                                    <Select
+                                        value={formData.supplier_id}
+                                        onChange={(e) => setFormData({ ...formData, supplier_id: e.target.value })}
+                                        placeholder="Selecione o fornecedor"
+                                    >
+                                        {Array.isArray(suppliers) && suppliers.map((supplier) => (
+                                            <option key={supplier.id} value={supplier.id}>
+                                                {supplier.name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                    <FormErrorMessage>{errors.supplier_id}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Descrição</FormLabel>
+                                    <Input
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        placeholder="Digite uma descrição (opcional)"
+                                    />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Status</FormLabel>
+                                    <Select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    >
+                                        <option value="STANDBY">Em Espera</option>
+                                        <option value="IN_USE">Em Uso</option>
+                                        <option value="MAINTENANCE">Em Manutenção</option>
+                                        <option value="DISCARDED">Descartado</option>
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Imagem</FormLabel>
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleImageChange(e, setSelectedImage, setPreviewUrl)}
+                                    />
+                                    {previewUrl && (
+                                        <Box mt={2}>
+                                            <Image
+                                                src={previewUrl}
+                                                alt="Preview"
+                                                maxH="200px"
+                                                objectFit="contain"
+                                            />
+                                        </Box>
+                                    )}
+                                </FormControl>
+                            </Stack>
+                        </SimpleGrid>
+                        <Button mt={8} type="submit" colorScheme="blue" width="full">
+                            {isEdit ? 'Salvar Alterações' : 'Criar Item'}
+                        </Button>
                     </form>
                 </ModalBody>
             </ModalContent>

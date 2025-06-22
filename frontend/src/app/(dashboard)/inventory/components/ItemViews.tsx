@@ -18,13 +18,15 @@ import {
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { InventoryItem } from '../types';
 import { getStatusColor, getStatusLabel } from '../utils/statusUtils';
+import formatCurrency from '../utils/formatCurrency';
 
 interface ItemViewsProps {
     items: InventoryItem[];
     onDelete: (id: string) => void;
+    onEdit: (item: InventoryItem) => void;
 }
 
-export const MobileView = ({ items, onDelete }: ItemViewsProps) => {
+export const MobileView = ({ items, onDelete, onEdit }: ItemViewsProps) => {
     const { colorMode } = useColorMode();
 
     return (
@@ -48,11 +50,13 @@ export const MobileView = ({ items, onDelete }: ItemViewsProps) => {
                 >
                     <Flex justify="space-between" align="center" mb={2}>
                         <HStack spacing={2}>
-                            <Badge colorScheme="blue" fontSize="xs">{item.item}</Badge>
-                            <Badge colorScheme="purple" fontSize="xs">{item.category.label}</Badge>
-                            <Badge colorScheme={getStatusColor(item.status)} fontSize="xs">
-                                {getStatusLabel(item.status)}
-                            </Badge>
+                            <HStack spacing={2} flexWrap="wrap" gap={1}>
+                                <Badge colorScheme="blue" fontSize="xs">{item.item}</Badge>
+                                <Badge colorScheme="purple" fontSize="xs">{item.category.label}</Badge>
+                                <Badge colorScheme={getStatusColor(item.status)} fontSize="xs">
+                                    {getStatusLabel(item.status)}
+                                </Badge>
+                            </HStack>
                         </HStack>
                         <HStack spacing={1}>
                             <Tooltip label="Editar">
@@ -61,6 +65,7 @@ export const MobileView = ({ items, onDelete }: ItemViewsProps) => {
                                     icon={<FiEdit2 size="14px" />}
                                     size="xs"
                                     variant="ghost"
+                                    onClick={() => onEdit(item)}
                                     _hover={{
                                         bg: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                                         transform: 'translateY(-1px)'
@@ -115,6 +120,11 @@ export const MobileView = ({ items, onDelete }: ItemViewsProps) => {
                         </HStack>
 
                         <Box>
+                            <Text fontWeight="bold" fontSize="xs" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Preço de Aquisição</Text>
+                            <Text fontSize="sm" noOfLines={1} color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{formatCurrency(item.acquisition_price)}</Text>
+                        </Box>
+
+                        <Box>
                             <Text fontWeight="bold" fontSize="xs" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Subcategoria</Text>
                             <Text fontSize="sm" noOfLines={1} color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{item.subcategory.label}</Text>
                         </Box>
@@ -125,7 +135,7 @@ export const MobileView = ({ items, onDelete }: ItemViewsProps) => {
     );
 };
 
-export const DesktopView = ({ items, onDelete }: ItemViewsProps) => {
+export const DesktopView = ({ items, onDelete, onEdit }: ItemViewsProps) => {
     const { colorMode } = useColorMode();
 
     return (
@@ -149,6 +159,7 @@ export const DesktopView = ({ items, onDelete }: ItemViewsProps) => {
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Localização</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ambiente</Th>
+                        <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Preço de Aquisição</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Categoria</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Subcategoria</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
@@ -179,6 +190,7 @@ export const DesktopView = ({ items, onDelete }: ItemViewsProps) => {
                             </Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.location.name}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.locale?.name || '-'}</Td>
+                            <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{formatCurrency(item.acquisition_price)}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.category.label}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.subcategory.label}</Td>
                             <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
@@ -189,6 +201,7 @@ export const DesktopView = ({ items, onDelete }: ItemViewsProps) => {
                                             icon={<FiEdit2 />}
                                             size="sm"
                                             variant="ghost"
+                                            onClick={() => onEdit(item)}
                                             _hover={{
                                                 bg: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                                                 transform: 'translateY(-1px)'
