@@ -23,12 +23,6 @@ import {
     Wrap,
     WrapItem,
     Select,
-    Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
@@ -51,13 +45,6 @@ import {
     DrawerHeader,
     DrawerBody,
     DrawerCloseButton,
-    Divider,
-    Tabs,
-    TabList,
-    TabPanels,
-    Tab,
-    TabPanel,
-    useBreakpointValue,
 } from '@chakra-ui/react';
 import { SearchIcon, ShoppingCart, TimerIcon, Plus, CheckCircle, Trash2, Package, ClipboardList, Box as BoxIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -69,15 +56,12 @@ import {
     fetchSupplies,
     fetchRequests,
     handleRequesterConfirmation,
-    submitRequest,
-    handleCustomRequest,
-    filterSupplies,
     filterRequests,
 } from '../utils/requestUtils';
-import { fetchAvailableInventory, fetchAllocations } from '@/utils/apiUtils';
+import { fetchAvailableInventory, fetchAllocations, fetchInventoryItemById } from '@/utils/apiUtils';
 import { createAllocation } from '@/utils/apiUtils';
-import { FiPlus, FiSearch, FiFilter } from 'react-icons/fi';
 import { AllocationModal } from './AllocationModal';
+import { MobileMyAllocationsPage } from './MobileMyAllocationsPage';
 
 interface MobileSupplyRequestsProps {
     supplies: Supply[];
@@ -223,8 +207,25 @@ export function MobileSupplyRequests({
         setIsLoading(loading);
     }, [loading]);
 
-    const handleCardClick = (supplyId: string) => {
-        router.push(`/supply-requests/${supplyId}`);
+    const handleCardClick = async (itemId: string) => {
+        if (activeTab === 1) {
+            try {
+                const token = localStorage.getItem('@ti-assistant:token');
+                if (!token) throw new Error('Token não encontrado');
+                const item = await fetchInventoryItemById(itemId, token);
+                router.push(`/supply-requests/inventory/${itemId}`);
+            } catch (error) {
+                toast({
+                    title: 'Erro',
+                    description: error instanceof Error ? error.message : 'Erro ao buscar detalhes do inventário',
+                    status: 'error',
+                    duration: 3000,
+                    isClosable: true,
+                });
+            }
+        } else {
+            router.push(`/supply-requests/${itemId}`);
+        }
     };
 
     const handleRequesterConfirmationClick = async (requestId: string, confirmation: boolean) => {
@@ -425,7 +426,8 @@ export function MobileSupplyRequests({
                                             </Text>
                                             <Button
                                                 colorScheme="blue"
-                                                size="xs"
+                                                // size="xs"
+                                                paddintTop="50px"
                                                 leftIcon={<ShoppingCart size={14} />}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -636,7 +638,7 @@ export function MobileSupplyRequests({
                     </VStack>
                 );
             case 3: // Minhas Alocações
-                return <MyAllocationsPage />;
+                return <MobileMyAllocationsPage />;
             case 4: // Carrinho
                 return (
                     <VStack spacing={4}>

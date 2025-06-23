@@ -1,9 +1,9 @@
 'use client';
+import React from 'react';
 
 import { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
   Grid,
   Heading,
   Text,
@@ -64,13 +64,13 @@ import {
   fetchRequests,
   handleRequesterConfirmation,
   submitRequest,
-  handleCustomRequest,
   filterSupplies,
   filterRequests,
+  allocateInventoryItem,
 } from './utils/requestUtils';
 import { fetchAvailableInventory, fetchAllocations } from '@/utils/apiUtils';
-import { createAllocation } from '@/utils/apiUtils';
 import { MyAllocationsPage } from '@/app/(dashboard)/supply-requests/components/MyAllocationsPage';
+import { InventoryAllocationModal } from '@/components/InventoryAllocationModal';
 
 interface AllocationRequest {
   id: string;
@@ -133,6 +133,7 @@ export default function SupplyRequestsPage() {
   const [allocationRequests, setAllocationRequests] = useState<AllocationRequest[]>([]);
   const [filteredAllocationRequests, setFilteredAllocationRequests] = useState<AllocationRequest[]>([]);
   const [allocationStatusFilter, setAllocationStatusFilter] = useState('');
+  const [isAllocating, setIsAllocating] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -335,50 +336,31 @@ export default function SupplyRequestsPage() {
     setIsAllocationModalOpen(true);
   };
 
-  const handleAllocationSubmit = async (data: any) => {
+  const handleAllocationSubmit = async (data: { return_date: string; destination: string; notes: string }) => {
+    setIsAllocating(true);
     try {
       const token = localStorage.getItem('@ti-assistant:token');
-      if (!token) {
-        throw new Error('Token não encontrado');
-      }
-
-      const response = await fetch('/api/allocations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          inventory_id: selectedItem.id,
-          return_date: data.return_date,
-          destination: data.destination,
-          notes: data.notes
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao criar alocação');
-      }
-
-      toast({
-        title: 'Sucesso',
-        description: 'Alocação criada com sucesso!',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-
+      if (!token) throw new Error('Token não encontrado');
+      await allocateInventoryItem(
+        selectedItem.id,
+        data.return_date,
+        data.destination,
+        data.notes,
+        token
+      );
       setIsAllocationModalOpen(false);
+      setSelectedItem(null);
       loadInitialData();
-    } catch (error) {
+    } catch (err: any) {
       toast({
         title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao criar alocação',
+        description: err.message || 'Erro ao criar alocação',
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
+    } finally {
+      setIsAllocating(false);
     }
   };
 
@@ -425,10 +407,9 @@ export default function SupplyRequestsPage() {
       <VStack
         spacing={4}
         align="stretch"
-        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
         backdropFilter="blur(12px)"
-        // p={isMobile ? 4 : 6}
-        // py={4}
+        p={isMobile ? 0 : 6}
         borderRadius="lg"
         boxShadow="sm"
         borderWidth="1px"
@@ -471,7 +452,7 @@ export default function SupplyRequestsPage() {
         </Flex>
 
         <Box
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
           backdropFilter="blur(12px)"
           borderRadius="lg"
           borderWidth="1px"
@@ -585,7 +566,7 @@ export default function SupplyRequestsPage() {
                   placeholder="Buscar suprimentos..."
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
-                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                     backdropFilter="blur(12px)"
                     borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     _hover={{
@@ -609,7 +590,7 @@ export default function SupplyRequestsPage() {
                 {filteredSupplies.map((supply) => (
                   <Card
                     key={supply.id}
-                      bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                      bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                       backdropFilter="blur(12px)"
                     borderWidth="1px"
                       borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -677,7 +658,7 @@ export default function SupplyRequestsPage() {
                   placeholder="Buscar itens do inventário..."
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
-                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                     backdropFilter="blur(12px)"
                     borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     _hover={{
@@ -694,12 +675,12 @@ export default function SupplyRequestsPage() {
                 {filteredInventoryItems.map((item) => (
                   <Card
                     key={item.id}
-                      bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                      bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                       backdropFilter="blur(12px)"
                     borderWidth="1px"
                       borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     cursor="pointer"
-                    onClick={() => router.push(`/supply-requests/${item.id}`)}
+                    onClick={() => router.push(`/supply-requests/inventory/${item.id}`)}
                     _hover={{
                         bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
                       transform: 'translateY(-2px)',
@@ -709,10 +690,11 @@ export default function SupplyRequestsPage() {
                     <CardBody>
                       <VStack align="stretch" spacing={4}>
                         <Image
-                          src="/placeholder.png"
+                          src={item.image_url || "/placeholder.png"}
                           alt={item.name}
                           borderRadius="md"
                           height="200px"
+                          width="100%"
                           objectFit="cover"
                         />
                           <Heading size="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>{item.name}</Heading>
@@ -751,7 +733,7 @@ export default function SupplyRequestsPage() {
 
             <TabPanel>
                 <Card 
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                   backdropFilter="blur(12px)"
                   borderWidth="1px"
                   borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -766,7 +748,7 @@ export default function SupplyRequestsPage() {
                         placeholder="Buscar por suprimento..."
                         value={searchQuery}
                         onChange={(e) => handleSearch(e.target.value)}
-                          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                           backdropFilter="blur(12px)"
                           borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                           _hover={{
@@ -783,7 +765,7 @@ export default function SupplyRequestsPage() {
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
                       maxW="200px"
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                         _hover={{
@@ -909,7 +891,7 @@ export default function SupplyRequestsPage() {
 
             <TabPanel>
                 <Card 
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                   backdropFilter="blur(12px)"
                   borderWidth="1px"
                   borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -939,7 +921,7 @@ export default function SupplyRequestsPage() {
                         {cart.map((item) => (
                             <Card 
                               key={item.id} 
-                              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                               backdropFilter="blur(12px)"
                               borderWidth="1px"
                               borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -975,7 +957,7 @@ export default function SupplyRequestsPage() {
                                     maxW="120px"
                                   >
                                       <NumberInputField 
-                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                                         backdropFilter="blur(12px)"
                                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                                         _hover={{
@@ -1025,7 +1007,7 @@ export default function SupplyRequestsPage() {
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
         <ModalContent
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'white'}
+          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'gray.50'}
           backdropFilter="blur(12px)"
           borderWidth="1px"
           borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -1041,7 +1023,7 @@ export default function SupplyRequestsPage() {
                     value={deliveryDeadline}
                     onChange={(e) => setDeliveryDeadline(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                   backdropFilter="blur(12px)"
                   borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                   _hover={{
@@ -1059,7 +1041,7 @@ export default function SupplyRequestsPage() {
                     placeholder="Ex: Departamento de TI - Sala 101"
                     value={destination}
                     onChange={(e) => setDestination(e.target.value)}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                   backdropFilter="blur(12px)"
                   borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                   _hover={{
@@ -1105,100 +1087,13 @@ export default function SupplyRequestsPage() {
           onSubmit={handleCustomRequest}
         />
 
-        <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}>
-          <ModalOverlay />
-        <ModalContent
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'white'}
-          backdropFilter="blur(12px)"
-          borderWidth="1px"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        >
-          <ModalHeader color={colorMode === 'dark' ? 'white' : 'gray.800'}>Alocar Item</ModalHeader>
-          <ModalCloseButton color={colorMode === 'dark' ? 'white' : 'gray.800'} />
-            <ModalBody>
-              <VStack spacing={4}>
-                <FormControl isRequired>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data de Devolução</FormLabel>
-                  <Input
-                    type="date"
-                    value={allocationDeadline}
-                    onChange={(e) => setAllocationDeadline(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-                <FormControl isRequired>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local de Uso</FormLabel>
-                  <Input
-                    placeholder="Ex: Departamento de TI - Sala 101"
-                    value={allocationDestination}
-                    onChange={(e) => setAllocationDestination(e.target.value)}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-                <FormControl>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Observações</FormLabel>
-                  <Textarea
-                    placeholder="Adicione observações relevantes..."
-                    value={allocationNotes}
-                    onChange={(e) => setAllocationNotes(e.target.value)}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-              </VStack>
-            </ModalBody>
-            <ModalFooter>
-            <Button 
-              variant="ghost" 
-              mr={3} 
-              onClick={() => setIsAllocationModalOpen(false)}
-              color={colorMode === 'dark' ? 'white' : 'gray.800'}
-            >
-                Cancelar
-              </Button>
-              <Button
-                colorScheme="purple"
-                onClick={handleAllocationSubmit}
-                isDisabled={!allocationDeadline || !allocationDestination}
-              bg={colorMode === 'dark' ? 'rgba(159, 122, 234, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(159, 122, 234, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-              >
-                Confirmar Alocação
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+        <InventoryAllocationModal
+          isOpen={isAllocationModalOpen}
+          onClose={() => setIsAllocationModalOpen(false)}
+          item={selectedItem}
+          onSubmit={handleAllocationSubmit}
+          isLoading={isAllocating}
+        />
     </Box>
   );
 } 
