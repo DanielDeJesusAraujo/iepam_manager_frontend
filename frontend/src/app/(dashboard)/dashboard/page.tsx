@@ -441,7 +441,7 @@ export default function DashboardPage() {
               shadow: 'lg',
               cursor: 'pointer'
             }}
-            onClick={() => router.push('/service-orders')}
+            onClick={() => router.push('/orders')}
           >
             <Heading size={isMobile ? "sm" : "md"} mb={4}>Ordens de Serviço Recentes</Heading>
             <VStack align="stretch" spacing={3}>

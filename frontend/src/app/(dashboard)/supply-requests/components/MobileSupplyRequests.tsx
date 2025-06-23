@@ -426,8 +426,7 @@ export function MobileSupplyRequests({
                                             </Text>
                                             <Button
                                                 colorScheme="blue"
-                                                // size="xs"
-                                                paddintTop="50px"
+                                                paddingTop="50px"
                                                 leftIcon={<ShoppingCart size={14} />}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
