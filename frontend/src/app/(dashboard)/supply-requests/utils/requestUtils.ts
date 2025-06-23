@@ -141,4 +141,31 @@ export const filterRequests = (requests: SupplyRequest[], search: string, status
         const matchesStatus = !statusFilter || request.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+};
+
+export const allocateInventoryItem = async (
+  itemId: string,
+  return_date: string,
+  destination: string,
+  notes: string,
+  token: string
+) => {
+  const response = await fetch('/api/inventory-allocations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      inventory_id: itemId,
+      return_date,
+      destination,
+      notes,
+    }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Erro ao criar alocação');
+  }
+  return response.json();
 }; 

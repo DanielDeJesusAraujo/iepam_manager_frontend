@@ -1,6 +1,41 @@
 import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
+export async function GET(
+    request: Request,
+    { params }: { params: { id: string } }
+  ) {
+    try {
+      const token = request.headers.get('authorization')?.split(' ')[1];
+  
+      if (!token) {
+        return NextResponse.json(
+          { message: 'Token não fornecido' },
+          { status: 401 }
+        );
+      }
+  
+      const response = await fetch(`${baseUrl}/inventory/${params.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Erro ao buscar detalhes do item do inventário');
+      }
+  
+      const data = await response.json();
+      return NextResponse.json(data);
+    } catch (error) {
+      return NextResponse.json(
+        { message: 'Erro ao buscar detalhes do item do inventário' },
+        { status: 500 }
+      );
+    }
+  }
+
 export async function PUT(
     request: Request,
     { params }: { params: { id: string } }

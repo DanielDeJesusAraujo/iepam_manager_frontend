@@ -93,6 +93,15 @@ export default function StatisticsPage() {
             }
 
             const statisticsData = await response.json();
+            // Ordenar os dados para melhor visualização
+            statisticsData.serversByStatus = [...statisticsData.serversByStatus].sort((a, b) => b.count - a.count);
+            statisticsData.inventoryByType = [...statisticsData.inventoryByType].sort((a, b) => b.count - a.count);
+            statisticsData.alertsByLevel = [...statisticsData.alertsByLevel].sort((a, b) => b.count - a.count);
+            // Ordenar meses cronologicamente (assumindo meses abreviados em pt-BR)
+            const monthOrder = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+            statisticsData.serviceOrdersByMonth = [...statisticsData.serviceOrdersByMonth].sort((a, b) => {
+                return monthOrder.indexOf(a.month.toLowerCase()) - monthOrder.indexOf(b.month.toLowerCase());
+            });
             setData(statisticsData);
         } catch (error) {
             toast({
@@ -155,53 +164,6 @@ export default function StatisticsPage() {
                 </HStack>
 
                 <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={4}>
-                    {/* Gráfico de Status dos Servidores */}
-                    <Box
-                        p={isMobile ? 4 : 6}
-                        shadow="base"
-                        rounded="lg"
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        border="1px solid"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                        transition="all 0.3s ease"
-                        _hover={{
-                            bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                            transform: 'translateY(-2px)',
-                            shadow: 'lg'
-                        }}
-                    >
-                        <Text fontSize={isMobile ? "sm" : "md"} fontWeight="bold" mb={4} color={colorMode === 'dark' ? 'white' : 'gray.800'}>
-                            Status dos Servidores
-                        </Text>
-                        <Box height="300px">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={data.serversByStatus}
-                                        dataKey="count"
-                                        nameKey="status"
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={80}
-                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                    >
-                                        {data.serversByStatus.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: colorMode === 'dark' ? 'gray.800' : 'white',
-                                            border: `1px solid ${colorMode === 'dark' ? 'gray.700' : 'gray.200'}`,
-                                            color: colorMode === 'dark' ? 'white' : 'gray.800'
-                                        }}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </Box>
-                    </Box>
-
                     {/* Gráfico de Ordens de Serviço por Mês */}
                     <Box
                         p={isMobile ? 4 : 6}

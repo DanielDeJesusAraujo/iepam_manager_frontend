@@ -129,4 +129,19 @@ export const deleteAllocation = async (id: string, token: string) => {
     if (!response.ok) {
         throw new Error('Erro ao excluir alocação');
     }
+};
+
+export const fetchInventoryItemById = async (id: string, token: string) => {
+    const response = await fetch(`/api/inventory/${id}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Erro ao buscar detalhes do item do inventário');
+    }
+
+    return response.json();
 }; 
