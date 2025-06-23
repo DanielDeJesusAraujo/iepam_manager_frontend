@@ -144,7 +144,8 @@ export default function SupplyRequestsPage() {
 
     loadInitialData();
     const savedCart = JSON.parse(localStorage.getItem('@ti-assistant:cart') || '[]');
-    setCart(savedCart);
+    console.log('cart itens', savedCart)
+    if (savedCart.length > 0) setCart(savedCart);
 
     // Transformar categorias em objetos
     const uniqueCategories = Array.from(new Set(supplies.map(s => s.category.label)));
@@ -195,10 +196,8 @@ export default function SupplyRequestsPage() {
   }, [searchQuery, statusFilter, requests]);
 
   useEffect(() => {
-    if (activeTab === 2) { // Carrinho
-      const savedCart = JSON.parse(localStorage.getItem('@ti-assistant:cart') || '[]');
-      setCart(savedCart);
-    }
+    setLoading(true);
+    Promise.resolve(loadInitialData()).finally(() => setLoading(false));
   }, [activeTab]);
 
   useEffect(() => {
@@ -221,6 +220,10 @@ export default function SupplyRequestsPage() {
       )
     );
   }, [searchQuery, allocationStatusFilter, allocationRequests]);
+
+  useEffect(() => {
+    localStorage.setItem('@ti-assistant:cart', JSON.stringify(cart));
+  }, [cart]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -259,12 +262,42 @@ export default function SupplyRequestsPage() {
 
   const handleSubmitRequest = async () => {
     try {
+      // Para mobile: buscar do localStorage se vier do modal mobile
+      let deadline = deliveryDeadline;
+      let dest = destination;
+      if (typeof window !== 'undefined') {
+        const storedDeadline = localStorage.getItem('@ti-assistant:deliveryDeadline');
+        const storedDestination = localStorage.getItem('@ti-assistant:destination');
+        if (storedDeadline) deadline = storedDeadline;
+        if (storedDestination) dest = storedDestination;
+      }
+      // Validação da data
+      if (!deadline || isNaN(new Date(deadline).getTime())) {
+        toast({
+          title: 'Data de entrega inválida',
+          description: 'Por favor, preencha uma data de entrega válida.',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      if (!dest) {
+        toast({
+          title: 'Destino obrigatório',
+          description: 'Por favor, preencha o campo de destino.',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) {
         throw new Error('Token não encontrado');
       }
 
-      await submitRequest(cart, deliveryDeadline, destination, token);
+      await submitRequest(cart, deadline, dest, token);
 
       toast({
         title: 'Sucesso',
@@ -275,6 +308,8 @@ export default function SupplyRequestsPage() {
       });
 
       localStorage.removeItem('@ti-assistant:cart');
+      localStorage.removeItem('@ti-assistant:deliveryDeadline');
+      localStorage.removeItem('@ti-assistant:destination');
       setCart([]);
       onClose();
       router.push('/supply-requests');
