@@ -124,6 +124,9 @@ export function MobileSupplyRequests({
     const [selectedCategory, setSelectedCategory] = useState('');
     const [filteredSupplies, setFilteredSupplies] = useState<Supply[]>([]);
     const [isLoading, setIsLoading] = useState(loading);
+    const { isOpen: isDeliveryModalOpen, onOpen: onDeliveryModalOpen, onClose: onDeliveryModalClose } = useDisclosure();
+    const [deliveryDeadline, setDeliveryDeadline] = useState('');
+    const [destination, setDestination] = useState('');
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -134,8 +137,18 @@ export function MobileSupplyRequests({
 
         loadInitialData();
         const savedCart = JSON.parse(localStorage.getItem('@ti-assistant:cart') || '[]');
-        setCart(savedCart);
+        console.log('cart itens', savedCart)
+        if (savedCart > 0) setCart(savedCart);
     }, [router]);
+
+    useEffect(() => {
+        setIsLoading(true);
+        Promise.resolve(loadInitialData()).finally(() => setIsLoading(false));
+    }, [activeTab]);
+
+    useEffect(() => {
+        localStorage.setItem('@ti-assistant:cart', JSON.stringify(cart));
+    }, [cart]);
 
     useEffect(() => {
         const filtered = supplies.filter(supply => {
@@ -362,6 +375,33 @@ export function MobileSupplyRequests({
         onCategoryChange(category);
     };
 
+    const handleConfirmDeliveryDetails = () => {
+        if (!deliveryDeadline || isNaN(new Date(deliveryDeadline).getTime())) {
+            toast({
+                title: 'Data de entrega inválida',
+                description: 'Por favor, preencha uma data de entrega válida.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+        if (!destination) {
+            toast({
+                title: 'Destino obrigatório',
+                description: 'Por favor, preencha o campo de destino.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+        localStorage.setItem('@ti-assistant:deliveryDeadline', deliveryDeadline);
+        localStorage.setItem('@ti-assistant:destination', destination);
+        onDeliveryModalClose();
+        onSubmitRequest();
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 0: // Catálogo
@@ -426,7 +466,7 @@ export function MobileSupplyRequests({
                                             </Text>
                                             <Button
                                                 colorScheme="blue"
-                                                paddingTop="50px"
+                                                padding="5px 0 5px"
                                                 leftIcon={<ShoppingCart size={14} />}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -715,7 +755,7 @@ export function MobileSupplyRequests({
                                     colorScheme="green"
                                     size="lg"
                                     leftIcon={<ShoppingCart size={20} />}
-                                    onClick={onSubmitRequest}
+                                    onClick={onDeliveryModalOpen}
                                 >
                                     Finalizar Pedido
                                 </Button>
@@ -916,6 +956,43 @@ export function MobileSupplyRequests({
                     item={selectedItem}
                 />
             )}
+
+            <Modal isOpen={isDeliveryModalOpen} onClose={onDeliveryModalClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Detalhes da Entrega</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack spacing={4}>
+                            <FormControl isRequired>
+                                <FormLabel>Data Limite para Entrega</FormLabel>
+                                <Input
+                                    type="date"
+                                    value={deliveryDeadline}
+                                    onChange={(e) => setDeliveryDeadline(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                />
+                            </FormControl>
+                            <FormControl isRequired>
+                                <FormLabel>Destino</FormLabel>
+                                <Input
+                                    placeholder="Ex: Departamento de TI - Sala 101"
+                                    value={destination}
+                                    onChange={(e) => setDestination(e.target.value)}
+                                />
+                            </FormControl>
+                        </VStack>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button variant="ghost" mr={3} onClick={onDeliveryModalClose}>
+                            Cancelar
+                        </Button>
+                        <Button colorScheme="green" onClick={handleConfirmDeliveryDetails}>
+                            Confirmar Pedido
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </Container>
     );
 } 
