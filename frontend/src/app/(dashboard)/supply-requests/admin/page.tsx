@@ -99,6 +99,50 @@ interface AllocationRequest {
     manager_delivery_confirmation: boolean;
 }
 
+export interface InventoryItem {
+    id: string;
+    item: string;
+    name: string;
+    model: string;
+    serial_number: string;
+    finality: string;
+    acquisition_price: number;
+    acquisition_date: string;
+    status: 'STANDBY' | 'IN_USE' | 'MAINTENANCE' | 'DISCARDED';
+    location_id: string;
+    locale_id?: string;
+    category_id: string;
+    subcategory_id: string;
+    supplier_id?: string;
+    description?: string;
+    image_url?: string;
+    location: {
+        id: string;
+        name: string;
+        // outros campos...
+    };
+    locale?: {
+        id: string;
+        name: string;
+        // outros campos...
+    };
+    supplier?: {
+        id: string;
+        name: string;
+        // outros campos...
+    };
+    category: {
+        id: string;
+        label: string;
+        // outros campos...
+    };
+    subcategory: {
+        id: string;
+        label: string;
+        // outros campos...
+    };
+}
+
 export default function AdminSupplyRequestsPage() {
     const [requests, setRequests] = useState<SupplyRequest[]>([]);
     const [allocationRequests, setAllocationRequests] = useState<AllocationRequest[]>([]);
@@ -126,6 +170,14 @@ export default function AdminSupplyRequestsPage() {
         fetchRequests();
         fetchAllocationRequests();
     }, [router]);
+
+    useEffect(() => {
+        if (activeTab === 0) {
+            fetchRequests();
+        } else {
+            fetchAllocationRequests();
+        }
+    }, [activeTab]);
 
     useEffect(() => {
         if (activeTab === 0) {
@@ -448,6 +500,8 @@ export default function AdminSupplyRequestsPage() {
             <MobileAdminSupplyRequests
                 requests={requests}
                 filteredRequests={filteredRequests}
+                allocationRequests={allocationRequests}
+                filteredAllocationRequests={filteredAllocationRequests}
                 search={search}
                 onSearchChange={setSearch}
                 statusFilter={statusFilter}
@@ -455,6 +509,9 @@ export default function AdminSupplyRequestsPage() {
                 onApprove={handleStatusUpdate}
                 onReject={handleStatusUpdate}
                 onConfirmDelivery={handleManagerDeliveryConfirmation}
+                onAllocationApprove={handleAllocationStatusUpdate}
+                onAllocationReject={handleAllocationStatusUpdate}
+                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
                 loading={loading}
             />
         );
@@ -767,8 +824,6 @@ export default function AdminSupplyRequestsPage() {
                                             <Thead>
                                                 <Tr>
                                                     <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Item</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Modelo</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Número de Série</Th>
                                                     <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Requerente</Th>
                                                     <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Destino</Th>
                                                     <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>

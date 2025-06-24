@@ -155,14 +155,25 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
   }
 
   const handleCompleteOrder = async () => {
+    if (!exitDate) {
+      toast({
+        title: 'Erro',
+        description: 'Por favor, selecione uma data de saída',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+      return
+    }
+
     try {
       const token = localStorage.getItem('@ti-assistant:token')
       if (!token) {
         throw new Error('Token não encontrado')
       }
 
-      const res = await fetch(`/api/orders/${params.id}`, {
-        method: 'PATCH',
+      const res = await fetch(`/api/orders/${params.id}/close`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
@@ -186,7 +197,8 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
       })
 
       onClose()
-      router.refresh()
+      // Recarrega a página para mostrar os dados atualizados
+      window.location.reload()
     } catch (err: any) {
       toast({
         title: 'Erro',

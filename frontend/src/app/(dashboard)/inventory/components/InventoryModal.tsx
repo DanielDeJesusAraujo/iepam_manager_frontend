@@ -7,24 +7,24 @@ import {
     ModalHeader,
     ModalBody,
     ModalCloseButton,
+    Button,
     FormControl,
     FormLabel,
     Input,
     Select,
-    Button,
-    VStack,
-    useToast,
-    NumberInput,
-    NumberInputField,
     FormErrorMessage,
-    Image,
-    Box,
+    VStack,
+    HStack,
     SimpleGrid,
     Stack,
+    useToast,
+    Box,
+    Image,
     ButtonGroup,
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { uploadImage, handleImageChange } from '@/utils/imageUtils'
+import formatCurrency from '../utils/formatCurrency'
 
 interface InventoryModalProps {
     isOpen: boolean
@@ -74,7 +74,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     model: initialData.model || '',
                     serial_number: initialData.serial_number || '',
                     finality: initialData.finality || '',
-                    acquisition_price: initialData.acquisition_price || '',
+                    acquisition_price: initialData.acquisition_price ? String(initialData.acquisition_price) : '',
                     acquisition_date: initialData.acquisition_date ? initialData.acquisition_date.slice(0, 10) : '',
                     location_id: initialData.location?.id || '',
                     locale_id: initialData.locale?.id || '',
@@ -86,6 +86,11 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     image_url: initialData.image_url || '',
                 });
                 console.log('DADOS DO formData:', formData)
+                
+                // Carregar subcategorias se houver categoria selecionada
+                if (initialData.category?.id) {
+                    loadSubcategoriesForCategory(initialData.category.id);
+                }
             } else {
                 setFormData({
                     item: '',
@@ -171,6 +176,26 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
         }
     }
 
+    const loadSubcategoriesForCategory = async (categoryId: string) => {
+        if (categoryId) {
+            try {
+                const token = localStorage.getItem('@ti-assistant:token')
+                const response = await fetch(`/api/subcategories/category/${categoryId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                const data = await response.json()
+                setSubcategories(Array.isArray(data) ? data : [])
+            } catch (error) {
+                setSubcategories([])
+            }
+        } else {
+            setSubcategories([])
+        }
+    }
+
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
 
@@ -179,12 +204,18 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
         if (!formData.model) newErrors.model = 'Modelo é obrigatório'
         if (!formData.serial_number) newErrors.serial_number = 'Número de série é obrigatório'
         if (!formData.finality) newErrors.finality = 'Finalidade é obrigatória'
-        if (!formData.acquisition_price) newErrors.acquisition_price = 'Preço de aquisição é obrigatório'
+        if (!formData.acquisition_price) {
+            newErrors.acquisition_price = 'Preço de aquisição é obrigatório'
+        } else {
+            const price = parseFloat(formData.acquisition_price);
+            if (isNaN(price) || price <= 0) {
+                newErrors.acquisition_price = 'Preço de aquisição deve ser um valor válido maior que zero'
+            }
+        }
         if (!formData.acquisition_date) newErrors.acquisition_date = 'Data de aquisição é obrigatória'
         if (!formData.location_id) newErrors.location_id = 'Localização é obrigatória'
         if (!formData.category_id) newErrors.category_id = 'Categoria é obrigatória'
         if (!formData.subcategory_id) newErrors.subcategory_id = 'Subcategoria é obrigatória'
-        if (!formData.supplier_id) newErrors.supplier_id = 'Fornecedor é obrigatório'
 
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
@@ -208,13 +239,13 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
             onSubmit({
                 ...formData,
                 image_url: imageUrl,
-            acquisition_price: Number(formData.acquisition_price),
-            acquisition_date: new Date(formData.acquisition_date).toISOString(),
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
+                acquisition_price: parseFloat(formData.acquisition_price),
+                acquisition_date: new Date(formData.acquisition_date).toISOString(),
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
         } catch (error) {
             toast({
                 title: 'Erro ao fazer upload da imagem',
@@ -290,13 +321,47 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.acquisition_price} isRequired>
                                     <FormLabel>Preço de Aquisição</FormLabel>
-                                    <NumberInput min={0} value={formData.acquisition_price}>
-                                        <NumberInputField
-                                            value={formData.acquisition_price}
-                                            onChange={(e) => setFormData({ ...formData, acquisition_price: e.target.value })}
-                                            placeholder="Digite o preço"
-                                        />
-                                    </NumberInput>
+                                    <Input
+                                        value={formData.acquisition_price}
+                                        onChange={(e) => {
+                                            const inputValue = e.target.value;
+                                            
+                                            // Permite apenas números, vírgulas e pontos
+                                            const cleanValue = inputValue.replace(/[^\d,.-]/g, '');
+                                            
+                                            // Se o campo estiver vazio, permite limpar
+                                            if (cleanValue === '') {
+                                                setFormData({ ...formData, acquisition_price: '' });
+                                                return;
+                                            }
+                                            
+                                            // Converte vírgula para ponto
+                                            const normalizedValue = cleanValue.replace(',', '.');
+                                            
+                                            // Remove pontos extras, mantendo apenas o último
+                                            const parts = normalizedValue.split('.');
+                                            const finalValue = parts.length > 2 
+                                                ? parts[0] + '.' + parts.slice(1).join('')
+                                                : normalizedValue;
+                                            
+                                            setFormData({ ...formData, acquisition_price: finalValue });
+                                        }}
+                                        placeholder="0,00"
+                                        onBlur={(e) => {
+                                            // Formata o valor quando o campo perde o foco
+                                            if (formData.acquisition_price && formData.acquisition_price !== '') {
+                                                const numValue = parseFloat(formData.acquisition_price);
+                                                if (!isNaN(numValue)) {
+                                                    setFormData({ ...formData, acquisition_price: numValue.toString() });
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    {formData.acquisition_price && (
+                                        <Box mt={1} fontSize="sm" color="gray.500">
+                                            Valor: {formatCurrency(formData.acquisition_price)}
+                                        </Box>
+                                    )}
                                     <FormErrorMessage>{errors.acquisition_price}</FormErrorMessage>
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.acquisition_date} isRequired>
@@ -325,7 +390,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                     </Select>
                                     <FormErrorMessage>{errors.location_id}</FormErrorMessage>
                                 </FormControl>
-                                <FormControl isInvalid={!!errors.locale_id} isRequired>
+                                <FormControl>
                                     <FormLabel>Ambiente</FormLabel>
                                     <Select
                                         value={formData.locale_id}
@@ -338,7 +403,6 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                             </option>
                                         ))}
                                     </Select>
-                                    <FormErrorMessage>{errors.locale_id}</FormErrorMessage>
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.category_id} isRequired>
                                     <FormLabel>Categoria</FormLabel>
@@ -371,7 +435,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                     </Select>
                                     <FormErrorMessage>{errors.subcategory_id}</FormErrorMessage>
                                 </FormControl>
-                                <FormControl isInvalid={!!errors.supplier_id} isRequired>
+                                <FormControl>
                                     <FormLabel>Fornecedor</FormLabel>
                                     <Select
                                         value={formData.supplier_id}
@@ -384,7 +448,6 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                             </option>
                                         ))}
                                     </Select>
-                                    <FormErrorMessage>{errors.supplier_id}</FormErrorMessage>
                                 </FormControl>
                                 <FormControl>
                                     <FormLabel>Descrição</FormLabel>

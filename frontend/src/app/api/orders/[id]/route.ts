@@ -52,11 +52,11 @@ export async function PATCH(
 ) {
 
   try {
-    const authHeader = request.headers.get('authorization')
+    const token = request.headers.get('Authorization')?.split(' ')[1]
 
-    if (!authHeader) {
+    if (!token) {
       return NextResponse.json(
-        { message: 'Token não encontrado' },
+        { message: 'Token não fornecido' },
         { status: 401 }
       )
     }
@@ -69,7 +69,7 @@ export async function PATCH(
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(body)
     })
@@ -97,11 +97,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const authHeader = request.headers.get('authorization')
+    const token = request.headers.get('Authorization')?.split(' ')[1]
 
-    if (!authHeader) {
+    if (!token) {
       return NextResponse.json(
-        { message: 'Token não encontrado' },
+        { message: 'Token não fornecido' },
         { status: 401 }
       )
     }
@@ -111,7 +111,7 @@ export async function DELETE(
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {
-        'Authorization': authHeader
+        'Authorization': `Bearer ${token}`
       }
     })
 
@@ -138,11 +138,11 @@ export async function PUT(
 ) {
 
   try {
-    const authHeader = request.headers.get('authorization')
+    const token = request.headers.get('Authorization')?.split(' ')[1]
 
-    if (!authHeader) {
+    if (!token) {
       return NextResponse.json(
-        { message: 'Token não encontrado' },
+        { message: 'Token não fornecido' },
         { status: 401 }
       )
     }
@@ -155,7 +155,7 @@ export async function PUT(
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(body)
     })

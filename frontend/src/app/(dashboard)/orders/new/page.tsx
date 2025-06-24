@@ -69,16 +69,39 @@ export default function NewOrderPage() {
         throw new Error('Token não encontrado')
       }
 
+      // Prepara os dados para envio, removendo campos vazios opcionais
+      const dataToSend = {
+        ...formData,
+        entry_date: new Date().toISOString()
+      }
+      
+      // Remove campos vazios opcionais para que o backend use valores padrão
+      if (!dataToSend.order_number?.trim()) {
+        delete dataToSend.order_number
+      }
+      if (!dataToSend.client_name?.trim()) {
+        delete dataToSend.client_name
+      }
+      if (!dataToSend.equipment_description?.trim()) {
+        delete dataToSend.equipment_description
+      }
+      if (!dataToSend.model?.trim()) {
+        delete dataToSend.model
+      }
+      if (!dataToSend.accessories?.trim()) {
+        delete dataToSend.accessories
+      }
+      if (!dataToSend.notes?.trim()) {
+        delete dataToSend.notes
+      }
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...formData,
-          entry_date: new Date().toISOString()
-        })
+        body: JSON.stringify(dataToSend)
       })
 
       if (!res.ok) {
@@ -93,7 +116,7 @@ export default function NewOrderPage() {
         duration: 5000,
         isClosable: true,
       })
-      router.push('/dashboard/orders')
+      router.push('/orders')
     } catch (err: any) {
       toast({
         title: 'Erro',
@@ -112,17 +135,20 @@ export default function NewOrderPage() {
       <Heading size="lg" mb={6}>Nova Ordem de Serviço</Heading>
       <form onSubmit={handleSubmit}>
         <VStack spacing={4} align="stretch">
-          <FormControl isRequired>
-            <FormLabel>Número da OS</FormLabel>
+          <FormControl>
+            <FormLabel>Número da OS (opcional)</FormLabel>
             <Input
               name="order_number"
               value={formData.order_number}
               onChange={handleChange}
-              placeholder="Digite o número da OS"
+              placeholder="Deixe em branco para gerar automaticamente"
             />
+            <Text fontSize="sm" color="gray.500" mt={1}>
+              Se não preenchido, será gerado automaticamente no formato OS20241201123456
+            </Text>
           </FormControl>
 
-          <FormControl isRequired>
+          <FormControl>
             <FormLabel>Nome do Cliente</FormLabel>
             <Input
               name="client_name"
@@ -132,7 +158,7 @@ export default function NewOrderPage() {
             />
           </FormControl>
 
-          <FormControl isRequired>
+          <FormControl>
             <FormLabel>Descrição do Equipamento</FormLabel>
             <Input
               name="equipment_description"
@@ -142,7 +168,7 @@ export default function NewOrderPage() {
             />
           </FormControl>
 
-          <FormControl isRequired>
+          <FormControl>
             <FormLabel>Modelo do Equipamento</FormLabel>
             <Input
               name="model"
@@ -207,7 +233,7 @@ export default function NewOrderPage() {
             />
           </FormControl>
 
-          <FormControl isRequired>
+          <FormControl>
             <FormLabel>Valor Total</FormLabel>
             <NumberInput
               value={formData.total_price}
