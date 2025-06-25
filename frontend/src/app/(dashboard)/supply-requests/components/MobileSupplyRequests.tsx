@@ -78,6 +78,8 @@ interface MobileSupplyRequestsProps {
     cart: { supply: Supply; quantity: number }[];
     setCart: (cart: { supply: Supply; quantity: number }[]) => void;
     loading?: boolean;
+    allocationRequests: any[];
+    filteredAllocationRequests: any[];
 }
 
 export function MobileSupplyRequests({
@@ -95,6 +97,8 @@ export function MobileSupplyRequests({
     cart,
     setCart,
     loading = false,
+    allocationRequests,
+    filteredAllocationRequests,
 }: MobileSupplyRequestsProps) {
     const router = useRouter();
     const toast = useToast();
@@ -114,8 +118,6 @@ export function MobileSupplyRequests({
     const [allocationDeadline, setAllocationDeadline] = useState('');
     const [allocationDestination, setAllocationDestination] = useState('');
     const [allocationNotes, setAllocationNotes] = useState('');
-    const [allocationRequests, setAllocationRequests] = useState<any[]>([]);
-    const [filteredAllocationRequests, setFilteredAllocationRequests] = useState<any[]>([]);
     const [allocationStatusFilter, setAllocationStatusFilter] = useState('');
     const { isOpen: isCustomRequestOpen, onOpen: onCustomRequestOpen, onClose: onCustomRequestClose } = useDisclosure();
     const { isOpen: isAllocationOpen, onOpen: onAllocationOpen, onClose: onAllocationClose } = useDisclosure();
@@ -178,8 +180,6 @@ export function MobileSupplyRequests({
             setFilteredRequests(requestsData);
             setInventoryItems(inventoryData);
             setFilteredInventoryItems(inventoryData);
-            setAllocationRequests(allocationsData);
-            setFilteredAllocationRequests(allocationsData);
         } catch (error) {
             toast({
                 title: 'Erro',
@@ -205,16 +205,6 @@ export function MobileSupplyRequests({
             )
         );
     }, [searchQuery, inventoryItems]);
-
-    useEffect(() => {
-        setFilteredAllocationRequests(
-            allocationRequests.filter(request =>
-                (request.inventory.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    request.destination.toLowerCase().includes(searchQuery.toLowerCase())) &&
-                (allocationStatusFilter ? request.status === allocationStatusFilter : true)
-            )
-        );
-    }, [searchQuery, allocationStatusFilter, allocationRequests]);
 
     useEffect(() => {
         setIsLoading(loading);
