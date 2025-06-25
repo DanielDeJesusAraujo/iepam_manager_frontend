@@ -69,31 +69,20 @@ export default function NewOrderPage() {
         throw new Error('Token não encontrado')
       }
 
-      // Prepara os dados para envio, removendo campos vazios opcionais
-      const dataToSend = {
-        ...formData,
-        entry_date: new Date().toISOString()
-      }
-      
-      // Remove campos vazios opcionais para que o backend use valores padrão
-      if (!dataToSend.order_number?.trim()) {
-        delete dataToSend.order_number
-      }
-      if (!dataToSend.client_name?.trim()) {
-        delete dataToSend.client_name
-      }
-      if (!dataToSend.equipment_description?.trim()) {
-        delete dataToSend.equipment_description
-      }
-      if (!dataToSend.model?.trim()) {
-        delete dataToSend.model
-      }
-      if (!dataToSend.accessories?.trim()) {
-        delete dataToSend.accessories
-      }
-      if (!dataToSend.notes?.trim()) {
-        delete dataToSend.notes
-      }
+      // Prepara os dados para envio, incluindo apenas campos preenchidos
+      const dataToSend: any = {
+        serial_number: formData.serial_number,
+        problem_reported: formData.problem_reported,
+        service_type: formData.service_type,
+        total_price: formData.total_price,
+        entry_date: new Date().toISOString(),
+      };
+      if (formData.order_number.trim()) dataToSend.order_number = formData.order_number;
+      if (formData.client_name.trim()) dataToSend.client_name = formData.client_name;
+      if (formData.equipment_description.trim()) dataToSend.equipment_description = formData.equipment_description;
+      if (formData.model.trim()) dataToSend.model = formData.model;
+      if (formData.accessories.trim()) dataToSend.accessories = formData.accessories;
+      if (formData.notes.trim()) dataToSend.notes = formData.notes;
 
       const res = await fetch('/api/orders', {
         method: 'POST',

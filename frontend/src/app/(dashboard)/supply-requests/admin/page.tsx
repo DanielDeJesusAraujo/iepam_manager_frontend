@@ -404,7 +404,8 @@ export default function AdminSupplyRequestsPage() {
         }
     };
 
-    const handleManagerDeliveryConfirmation = async (allocationId: string, confirmation: boolean) => {
+    const handleManagerDeliveryConfirmation = async (requestOrAllocation: any, confirmation: boolean) => {
+        console.log('handleManagerDeliveryConfirmation', requestOrAllocation, confirmation);
         try {
             const token = localStorage.getItem('@ti-assistant:token');
             if (!token) {
@@ -412,7 +413,19 @@ export default function AdminSupplyRequestsPage() {
                 return;
             }
 
-            const response = await fetch(`/api/inventory-allocations/${allocationId}/delivery-confirmation`, {
+            let endpoint = '';
+            if (requestOrAllocation.inventory) {
+                // Alocação de inventário
+                endpoint = `/api/inventory-allocations/${requestOrAllocation.id}/delivery-confirmation`;
+            } else if (requestOrAllocation.is_custom) {
+                // Requisição customizada de suprimento
+                endpoint = `/api/custom-supply-requests/${requestOrAllocation.id}/manager-delivery-confirmation`;
+            } else {
+                // Requisição regular de suprimento
+                endpoint = `/api/supply-requests/${requestOrAllocation.id}/manager-delivery-confirmation`;
+            }
+
+            const response = await fetch(endpoint, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -729,7 +742,7 @@ export default function AdminSupplyRequestsPage() {
                                                                             size="sm"
                                                                             colorScheme="blue"
                                                                             leftIcon={<CheckCircle size={16} />}
-                                                                            onClick={() => handleManagerDeliveryConfirmation(request.id, true)}
+                                                                            onClick={() => handleManagerDeliveryConfirmation(request, true)}
                                                                             isDisabled={request.manager_delivery_confirmation}
                                                                             bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
                                                                             _hover={{
@@ -930,7 +943,7 @@ export default function AdminSupplyRequestsPage() {
                                                                     <Button
                                                                         size="sm"
                                                                         colorScheme="blue"
-                                                                        onClick={() => handleManagerDeliveryConfirmation(request.id, true)}
+                                                                        onClick={() => handleManagerDeliveryConfirmation(request, true)}
                                                                     >
                                                                         Confirmar Entrega
                                                                     </Button>
