@@ -3,16 +3,16 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization')
+    const token = req.headers.get('Authorization')?.split(' ')[1]
 
-    if (!authHeader) {
+    if (!token) {
       return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
     }
 
     // Verificar permissão do usuário
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: {
-        'Authorization': authHeader
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
     const backendRes = await fetch(`${baseUrl}/service-orders`, {
       headers: {
-        'Authorization': authHeader
+        'Authorization': `Bearer ${token}`
       }
     })
 
@@ -59,15 +59,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader) {
+    const token = req.headers.get('Authorization')?.split(' ')[1]
+    if (!token) {
       return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
     }
 
     // Verificar permissão do usuário
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: {
-        'Authorization': authHeader
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: authHeader
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(body)
     })

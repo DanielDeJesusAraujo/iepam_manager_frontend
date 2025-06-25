@@ -107,6 +107,11 @@ interface MobileAdminSupplyRequestsProps {
     onReject: (id: string, status: 'APPROVED' | 'REJECTED') => void;
     onConfirmDelivery: (id: string, confirmation: boolean) => void;
     loading: boolean;
+    allocationRequests: AllocationRequest[];
+    filteredAllocationRequests: AllocationRequest[];
+    onAllocationApprove?: (id: string, status: 'APPROVED' | 'REJECTED') => void;
+    onAllocationReject?: (id: string, status: 'APPROVED' | 'REJECTED') => void;
+    onAllocationConfirmDelivery?: (id: string, confirmation: boolean) => void;
 }
 
 export function MobileAdminSupplyRequests({
@@ -120,6 +125,11 @@ export function MobileAdminSupplyRequests({
     onReject,
     onConfirmDelivery,
     loading,
+    allocationRequests,
+    filteredAllocationRequests,
+    onAllocationApprove,
+    onAllocationReject,
+    onAllocationConfirmDelivery,
 }: MobileAdminSupplyRequestsProps) {
     const { colorMode } = useColorMode();
     const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
@@ -285,7 +295,7 @@ export function MobileAdminSupplyRequests({
                 );
             case 1: // Alocações
                 return (
-                    <VStack spacing={4}>
+                    <VStack spacing={4} py="0">
                         <InputGroup size="md">
                             <InputLeftElement pointerEvents="none">
                                 <Search className="h-5 w-5 text-gray-400" />
@@ -322,7 +332,144 @@ export function MobileAdminSupplyRequests({
                             Filtros
                         </Button>
 
-                        {/* Implementar lista de alocações similar à de requisições */}
+                        {filteredAllocationRequests.length === 0 ? (
+                            <Flex direction="column" align="center" justify="center">
+                                <Image
+                                    src="/Task-complete.svg"
+                                    alt="Nenhuma alocação encontrada"
+                                    maxW="300px"
+                                    mb={4}
+                                />
+                                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">
+                                    Nenhuma alocação encontrada
+                                </Text>
+                            </Flex>
+                        ) : (
+                            <VStack spacing={4} w="full">
+                                {filteredAllocationRequests.map((request) => (
+                                    <Card
+                                        key={request.id}
+                                        w="full"
+                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                                        backdropFilter="blur(12px)"
+                                        borderWidth="1px"
+                                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                                    >
+                                        <CardBody>
+                                            <VStack align="stretch" spacing={3}>
+                                                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                                                    {request.inventory.name}
+                                                </Text>
+                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                                    {request.requester.name} - {request.requester.email}
+                                                </Text>
+                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                                    Modelo: {request.inventory.model}
+                                                </Text>
+                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                                    Série: {request.inventory.serial_number}
+                                                </Text>
+                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                                    Destino: {request.destination}
+                                                </Text>
+                                                <Badge
+                                                    colorScheme={
+                                                        request.status === 'APPROVED'
+                                                            ? 'green'
+                                                            : request.status === 'REJECTED'
+                                                                ? 'red'
+                                                                : request.status === 'DELIVERED'
+                                                                    ? 'purple'
+                                                                    : request.status === 'RETURNED'
+                                                                        ? 'blue'
+                                                                        : 'yellow'
+                                                    }
+                                                    alignSelf="start"
+                                                >
+                                                    {request.status === 'PENDING'
+                                                        ? 'Pendente'
+                                                        : request.status === 'APPROVED'
+                                                            ? 'Aprovado'
+                                                            : request.status === 'REJECTED'
+                                                                ? 'Rejeitado'
+                                                                : request.status === 'DELIVERED'
+                                                                    ? 'Entregue'
+                                                                    : 'Devolvido'}
+                                                </Badge>
+                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                                    Retorno: {new Date(request.return_date).toLocaleDateString('pt-BR')}
+                                                </Text>
+                                                <VStack spacing={2} align="start">
+                                                    <HStack>
+                                                        <Text fontSize="sm">Requerente:</Text>
+                                                        <Badge colorScheme={request.requester_delivery_confirmation ? 'green' : 'gray'}>
+                                                            {request.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                                                        </Badge>
+                                                    </HStack>
+                                                    <HStack>
+                                                        <Text fontSize="sm">Gerente:</Text>
+                                                        <Badge colorScheme={request.manager_delivery_confirmation ? 'green' : 'gray'}>
+                                                            {request.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                                                        </Badge>
+                                                    </HStack>
+                                                </VStack>
+                                            </VStack>
+                                        </CardBody>
+                                        <Divider />
+                                        <CardFooter>
+                                            {request.status === 'PENDING' && (
+                                                <HStack spacing={2} w="full">
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="green"
+                                                        onClick={() => onAllocationApprove?.(request.id, 'APPROVED')}
+                                                        flex={1}
+                                                        bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
+                                                        _hover={{
+                                                            bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
+                                                            transform: 'translateY(-1px)',
+                                                        }}
+                                                        transition="all 0.3s ease"
+                                                    >
+                                                        Aprovar
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="red"
+                                                        onClick={() => onAllocationReject?.(request.id, 'REJECTED')}
+                                                        flex={1}
+                                                        bg={colorMode === 'dark' ? 'rgba(245, 101, 101, 0.8)' : undefined}
+                                                        _hover={{
+                                                            bg: colorMode === 'dark' ? 'rgba(245, 101, 101, 0.9)' : undefined,
+                                                            transform: 'translateY(-1px)',
+                                                        }}
+                                                        transition="all 0.3s ease"
+                                                    >
+                                                        Rejeitar
+                                                    </Button>
+                                                </HStack>
+                                            )}
+                                            {request.status === 'APPROVED' && !request.manager_delivery_confirmation && (
+                                                <Button
+                                                    size="sm"
+                                                    colorScheme="blue"
+                                                    onClick={() => onAllocationConfirmDelivery?.(request.id, true)}
+                                                    w="full"
+                                                    bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
+                                                    _hover={{
+                                                        bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
+                                                        transform: 'translateY(-1px)',
+                                                    }}
+                                                    transition="all 0.3s ease"
+                                                >
+                                                    Confirmar Entrega
+                                                </Button>
+                                            )}
+                                        </CardFooter>
+                                    </Card>
+                                ))}
+                            </VStack>
+                        )}
                     </VStack>
                 );
             default:
@@ -440,6 +587,7 @@ export function MobileAdminSupplyRequests({
                                     <option value="APPROVED">Aprovado</option>
                                     <option value="REJECTED">Rejeitado</option>
                                     <option value="DELIVERED">Entregue</option>
+                                    {activeTab === 1 && <option value="RETURNED">Devolvido</option>}
                                 </Select>
                             </FormControl>
                         </VStack>

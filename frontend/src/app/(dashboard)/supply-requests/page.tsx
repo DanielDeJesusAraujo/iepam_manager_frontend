@@ -99,6 +99,25 @@ interface CartItem {
     supply: Supply;
 }
 
+interface MobileSupplyRequestsProps {
+  supplies: Supply[];
+  categories: { id: string; label: string; }[];
+  onSearch: (query: string) => void;
+  onCategoryChange: (category: string) => void;
+  onAddToCart: (supply: Supply) => void;
+  onRemoveFromCart: (supplyId: string) => void;
+  onUpdateQuantity: (supplyId: string, quantity: number) => void;
+  onSubmitRequest: () => void;
+  onCustomRequest: (data: CustomSupplyRequestData) => void;
+  onAllocateItem: (item: any) => void;
+  onAllocationSubmit: (data: { return_date: string; destination: string; notes: string }) => void;
+  cart: { supply: Supply; quantity: number }[];
+  setCart: (cart: { id: string; quantity: number; supply: Supply }[]) => void;
+  loading: boolean;
+  allocationRequests: any[];
+  filteredAllocationRequests: any[];
+}
+
 export default function SupplyRequestsPage() {
   const [isMobile] = useMediaQuery('(max-width: 768px)');
   const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -423,6 +442,8 @@ export default function SupplyRequestsPage() {
           supply: item.supply
         })))}
         loading={loading}
+        allocationRequests={allocationRequests}
+        filteredAllocationRequests={filteredAllocationRequests}
       />
     );
   }
@@ -494,7 +515,8 @@ export default function SupplyRequestsPage() {
           borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
         >
           <Tabs 
-            variant="enclosed" 
+            variant="enclosed"
+            index={activeTab}
             onChange={(index) => setActiveTab(index)}
             colorScheme={colorMode === 'dark' ? 'blue' : 'blue'}
           >

@@ -9,6 +9,7 @@ export interface InventoryItem {
     acquisition_date: string;
     status: 'STANDBY' | 'IN_USE' | 'MAINTENANCE' | 'DISCARDED';
     location: {
+        id: string;
         name: string;
     };
     locale?: {
@@ -24,6 +25,9 @@ export interface InventoryItem {
         id: string;
         label: string;
     };
+    supplier_id?: string;
+    description?: string;
+    image_url?: string;
 }
 
 export type GroupByOption = 'none' | 'location' | 'category' | 'status' | 'subcategory'; 
