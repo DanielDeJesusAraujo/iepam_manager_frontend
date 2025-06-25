@@ -172,6 +172,11 @@ export default function AdminSupplyRequestsPage() {
     }, [router]);
 
     useEffect(() => {
+        setLoading(true);
+        Promise.all([fetchRequests(), fetchAllocationRequests()]).finally(() => setLoading(false));
+    }, [activeTab]);
+
+    useEffect(() => {
         if (activeTab === 0) {
             fetchRequests();
         } else {
@@ -267,8 +272,6 @@ export default function AdminSupplyRequestsPage() {
                 duration: 3000,
                 isClosable: true,
             });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -555,7 +558,7 @@ export default function AdminSupplyRequestsPage() {
                     </Flex>
                 </Flex>
 
-                <Tabs variant="enclosed" onChange={(index) => setActiveTab(index)}>
+                <Tabs variant="enclosed" onChange={(index) => setActiveTab(index)} index={activeTab}>
                     <TabList>
                         <Tab>Suprimentos</Tab>
                         <Tab>Alocações</Tab>
