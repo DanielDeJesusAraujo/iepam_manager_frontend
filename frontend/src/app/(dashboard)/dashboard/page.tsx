@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Box, SimpleGrid, Stat, StatLabel, StatNumber, StatHelpText, StatArrow, useToast, Heading, VStack, HStack, Text, Badge, useBreakpointValue, Icon, Flex, useColorMode, Spinner } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
-import { Server, Wrench, Box as BoxIcon } from 'lucide-react'
+import { Wrench, Box as BoxIcon } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 interface DashboardStats {
@@ -39,17 +39,6 @@ interface ServiceOrder {
   created_at: string
 }
 
-interface ChartData {
-  name: string
-  value: number
-}
-
-interface LineChartData {
-  date: string
-  orders: number
-  alerts: number
-}
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [recentAlerts, setRecentAlerts] = useState<Alert[]>([])
@@ -61,12 +50,10 @@ export default function DashboardPage() {
 
   const isMobile = useBreakpointValue({ base: true, md: false })
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
-
   useEffect(() => {
         const token = localStorage.getItem('@ti-assistant:token')
         if (!token) {
-          router.push('/login')
+          router.push('/')
           return
     }
 
