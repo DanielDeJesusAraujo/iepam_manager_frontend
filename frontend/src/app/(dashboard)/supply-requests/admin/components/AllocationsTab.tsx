@@ -20,9 +20,12 @@ import {
     HStack,
     useColorModeValue,
     Image,
+    FormControl,
+    FormLabel,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { CheckCircle, XCircle, FileText, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 
 interface AllocationRequest {
     id: string;
@@ -100,6 +103,36 @@ export function AllocationsTab({
     onClearFilters,
 }: AllocationsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
+    const [returnStart, setReturnStart] = useState('');
+    const [returnEnd, setReturnEnd] = useState('');
+    const [localSector, setLocalSector] = useState('');
+    const [localLocation, setLocalLocation] = useState('');
+    const [localLocale, setLocalLocale] = useState('');
+    const [localRequester, setLocalRequester] = useState('');
+    const filtered = allocationRequests
+        .filter(r => {
+            if (!returnStart && !returnEnd) return true;
+            if (!r.return_date) return false;
+            const ret = new Date(r.return_date);
+            const start = returnStart ? new Date(returnStart) : null;
+            const end = returnEnd ? new Date(returnEnd) : null;
+            if (start && end) return ret >= start && ret <= end;
+            if (start) return ret >= start;
+            if (end) return ret <= end;
+            return true;
+        })
+        .filter(r => !localSector || (r.requester_sector && r.requester_sector === localSector))
+        .filter(r => !localLocation || (r.location_name && r.location_name === localLocation))
+        .filter(r => !localLocale || (r.locale_name && r.locale_name === localLocale))
+        .filter(r => !localRequester || (r.requester?.name && r.requester.name === localRequester))
+        .filter(r => !statusFilter || r.status === statusFilter)
+        .filter(r => !search || (
+            r.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
+            r.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
+            r.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
+            r.requester.name.toLowerCase().includes(search.toLowerCase()) ||
+            r.requester.email.toLowerCase().includes(search.toLowerCase())
+        ));
 
     return (
         <Box
@@ -111,173 +144,173 @@ export function AllocationsTab({
             borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
             backdropFilter="blur(12px)"
         >
-            <Flex gap={4} mb={4} justify="space-between">
-                <InputGroup>
-                    <InputLeftElement pointerEvents="none">
-                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                    </InputLeftElement>
-                    <Input
-                        placeholder="Buscar por item ou usuário..."
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                        _hover={{
-                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                        }}
-                        _focus={{
-                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                            boxShadow: 'none',
-                        }}
-                    />
-                </InputGroup>
-                <Select
-                    placeholder="Filtrar por status"
-                    value={statusFilter}
-                    onChange={(e) => onStatusFilterChange(e.target.value)}
-                    maxW="200px"
-                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                    backdropFilter="blur(12px)"
-                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                    _hover={{
-                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                    }}
-                    _focus={{
-                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                        boxShadow: 'none',
-                    }}
-                >
-                    <option value="">Todos</option>
-                    <option value="PENDING">Pendente</option>
-                    <option value="APPROVED">Aprovado</option>
-                    <option value="REJECTED">Rejeitado</option>
-                    <option value="DELIVERED">Entregue</option>
-                    <option value="RETURNED">Devolvido</option>
-                </Select>
-
-                <Button
-                    size="sm"
-                    onClick={onExportPDF}
-                    colorScheme="blue"
-                    leftIcon={<FileText size={16} />}
-                    isDisabled={filteredAllocationRequests.length === 0}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Exportar PDF
-                </Button>
-
-                <Button
-                    size="sm"
-                    onClick={onClearFilters}
-                    colorScheme="gray"
-                    variant="outline"
-                    leftIcon={<RotateCcw size={16} />}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Limpar Filtros
-                </Button>
-            </Flex>
-
-            {/* Filtros Avançados */}
-            <Box mb={4} p={4} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'} borderRadius="md">
-                <Text fontWeight="bold" mb={3} color={colorMode === 'dark' ? 'white' : 'gray.800'}>
-                    Filtros Avançados
-                </Text>
-                <Flex gap={3} flexWrap="wrap">
+            <Flex gap={4} mb={4} flexWrap="wrap" align="end">
+                <FormControl maxW="320px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Buscar por item ou usuário</FormLabel>
+                    <InputGroup>
+                        <InputLeftElement pointerEvents="none">
+                            <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                        </InputLeftElement>
+                        <Input
+                            placeholder="Digite para buscar..."
+                            value={search}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                            backdropFilter="blur(12px)"
+                            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        />
+                    </InputGroup>
+                </FormControl>
+                <FormControl maxW="130px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Retorno (início)</FormLabel>
                     <Input
                         type="date"
-                        placeholder="Data de Retorno"
-                        value={returnDateFilter}
-                        onChange={(e) => onReturnDateFilterChange(e.target.value)}
-                        maxW="180px"
+                        value={returnStart}
+                        onChange={(e) => setReturnStart(e.target.value)}
                         size="sm"
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     />
-
+                </FormControl>
+                <FormControl maxW="130px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Retorno (fim)</FormLabel>
+                    <Input
+                        type="date"
+                        value={returnEnd}
+                        onChange={(e) => setReturnEnd(e.target.value)}
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    />
+                </FormControl>
+                <FormControl maxW="100px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
                     <Select
-                        placeholder="Setor"
-                        value={sectorFilter}
-                        onChange={(e) => onSectorFilterChange(e.target.value)}
-                        maxW="150px"
+                        placeholder="Todos"
+                        value={statusFilter}
+                        onChange={(e) => onStatusFilterChange(e.target.value)}
                         size="sm"
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     >
                         <option value="">Todos</option>
-                        {Array.from(new Set(allocationRequests.map(req => req.requester_sector).filter(Boolean))).map(sector => (
-                            <option key={sector} value={sector}>{sector}</option>
-                        ))}
+                        <option value="PENDING">Pendente</option>
+                        <option value="APPROVED">Aprovado</option>
+                        <option value="REJECTED">Rejeitado</option>
+                        <option value="DELIVERED">Entregue</option>
+                        <option value="RETURNED">Devolvido</option>
                     </Select>
-
+                </FormControl>
+                <FormControl maxW="130px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filial</FormLabel>
                     <Select
-                        placeholder="Filial"
-                        value={locationFilter}
-                        onChange={(e) => onLocationFilterChange(e.target.value)}
-                        maxW="150px"
+                        placeholder="Todas"
+                        value={localLocation}
+                        onChange={(e) => setLocalLocation(e.target.value)}
                         size="sm"
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     >
                         <option value="">Todas</option>
-                        {Array.from(new Set(allocationRequests.map(req => req.location_name).filter(Boolean))).map(location => (
-                            <option key={location} value={location}>{location}</option>
+                        {Array.from(new Set(allocationRequests.map(r => r.location_name).filter(Boolean))).map(loc => (
+                            <option key={loc} value={loc}>{loc}</option>
                         ))}
                     </Select>
-
+                </FormControl>
+                <FormControl maxW="130px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Setor</FormLabel>
                     <Select
-                        placeholder="Local"
-                        value={localeFilter}
-                        onChange={(e) => onLocaleFilterChange(e.target.value)}
-                        maxW="150px"
+                        placeholder="Todos"
+                        value={localSector}
+                        onChange={(e) => setLocalSector(e.target.value)}
                         size="sm"
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     >
                         <option value="">Todos</option>
-                        {Array.from(new Set(allocationRequests.map(req => req.locale_name).filter(Boolean))).map(locale => (
+                        {Array.from(new Set(allocationRequests.map(r => r.requester_sector).filter(Boolean))).map(sector => (
+                            <option key={sector} value={sector}>{sector}</option>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl maxW="130px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local</FormLabel>
+                    <Select
+                        placeholder="Todos"
+                        value={localLocale}
+                        onChange={(e) => setLocalLocale(e.target.value)}
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    >
+                        <option value="">Todos</option>
+                        {Array.from(new Set(allocationRequests.map(r => r.locale_name).filter(Boolean))).map(locale => (
                             <option key={locale} value={locale}>{locale}</option>
                         ))}
                     </Select>
-
+                </FormControl>
+                <FormControl maxW="130px">
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requerente</FormLabel>
                     <Select
-                        placeholder="Requerente"
-                        value={requesterFilter}
-                        onChange={(e) => onRequesterFilterChange(e.target.value)}
-                        maxW="150px"
+                        placeholder="Todos"
+                        value={localRequester}
+                        onChange={(e) => setLocalRequester(e.target.value)}
                         size="sm"
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     >
                         <option value="">Todos</option>
-                        {Array.from(new Set(allocationRequests.map(req => req.requester.name).filter(Boolean))).map(requester => (
-                            <option key={requester} value={requester}>{requester}</option>
+                        {Array.from(new Set(allocationRequests.map(r => r.requester?.name).filter(Boolean))).map(req => (
+                            <option key={req} value={req}>{req}</option>
                         ))}
                     </Select>
-                </Flex>
-            </Box>
+                </FormControl>
+            </Flex>
+
+            <Button
+                size="sm"
+                onClick={onExportPDF}
+                colorScheme="blue"
+                leftIcon={<FileText size={16} />}
+                isDisabled={filteredAllocationRequests.length === 0}
+                minW="140px"
+                h="36px"
+                fontSize="sm"
+                fontWeight="medium"
+                _hover={{
+                    transform: 'translateY(-1px)',
+                    boxShadow: 'lg',
+                }}
+                transition="all 0.2s ease"
+            >
+                Exportar PDF
+            </Button>
+
+            <Button
+                size="sm"
+                onClick={onClearFilters}
+                colorScheme="gray"
+                variant="outline"
+                leftIcon={<RotateCcw size={16} />}
+                minW="140px"
+                h="36px"
+                fontSize="sm"
+                fontWeight="medium"
+                _hover={{
+                    transform: 'translateY(-1px)',
+                    boxShadow: 'lg',
+                }}
+                transition="all 0.2s ease"
+            >
+                Limpar Filtros
+            </Button>
 
             {filteredAllocationRequests.length === 0 ? (
                 <Flex direction="column" align="center" justify="center" py={8}>
@@ -303,6 +336,7 @@ export function AllocationsTab({
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Setor do Requerente</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Retorno</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data da Solicitação</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Confirmações</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
                             </Tr>
@@ -367,6 +401,9 @@ export function AllocationsTab({
                                     </Td>
                                     <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         {request.return_date ? new Date(request.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.created_at ? new Date(request.created_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'Não definida'}
                                     </Td>
                                     <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         <VStack spacing={2} align="start">

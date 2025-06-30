@@ -38,6 +38,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { useToast } from '@chakra-ui/react';
 import { MobileSupplyDetails } from './components/MobileSupplyDetails';
+import { DeliveryDetailsModal } from '../components/DeliveryDetailsModal';
 
 interface Supply {
     id: string;
@@ -99,6 +100,8 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
     const borderColor = useColorModeValue('gray.200', 'gray.600');
     const [request, setRequest] = useState<SupplyRequest | null>(null);
     const [user, setUser] = useState({ role: '' });
+    const [userLocales, setUserLocales] = useState<any[]>([]);
+    const [localeId, setLocaleId] = useState('');
 
     const fetchSupply = useCallback(async () => {
         try {
@@ -137,6 +140,23 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
 
     useEffect(() => {
         fetchSupply();
+        // Buscar locais da filial do usuário
+        const fetchUserLocales = async () => {
+            try {
+                const token = localStorage.getItem('@ti-assistant:token');
+                if (!token) return;
+                const response = await fetch('/api/locales/user-location', {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserLocales(data);
+                }
+            } catch (e) {
+                // Silenciar erro
+            }
+        };
+        fetchUserLocales();
     }, [fetchSupply]);
 
     const handleQuantityChange = (value: string) => {
@@ -184,6 +204,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                 quantity,
                 delivery_deadline: deliveryDeadline,
                 destination,
+                locale_id: localeId,
                 notes: `Pedido direto de ${supply?.name}`
             };
 
@@ -460,46 +481,18 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                     </VStack>
                 </Flex>
 
-                <Modal isOpen={isOpen} onClose={onClose}>
-                    <ModalOverlay />
-                    <ModalContent>
-                        <ModalHeader>Detalhes da Entrega</ModalHeader>
-                        <ModalCloseButton />
-                        <ModalBody>
-                            <VStack spacing={4}>
-                                <FormControl isRequired>
-                                    <FormLabel>Data Limite para Entrega</FormLabel>
-                                    <Input
-                                        type="date"
-                                        value={deliveryDeadline}
-                                        onChange={(e) => setDeliveryDeadline(e.target.value)}
-                                        min={new Date().toISOString().split('T')[0]}
-                                    />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormLabel>Destino</FormLabel>
-                                    <Input
-                                        placeholder="Ex: Departamento de TI - Sala 101"
-                                        value={destination}
-                                        onChange={(e) => setDestination(e.target.value)}
-                                    />
-                                </FormControl>
-                            </VStack>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button variant="ghost" mr={3} onClick={onClose}>
-                                Cancelar
-                            </Button>
-                            <Button
-                                colorScheme="green"
-                                onClick={handleOrderSubmit}
-                                isDisabled={!deliveryDeadline || !destination}
-                            >
-                                Confirmar Pedido
-                            </Button>
-                        </ModalFooter>
-                    </ModalContent>
-                </Modal>
+                <DeliveryDetailsModal
+                    isOpen={isOpen}
+                    onClose={onClose}
+                    deliveryDeadline={deliveryDeadline}
+                    setDeliveryDeadline={setDeliveryDeadline}
+                    destination={destination}
+                    setDestination={setDestination}
+                    userLocales={userLocales}
+                    onSubmit={handleOrderSubmit}
+                    localeId={localeId}
+                    setLocaleId={setLocaleId}
+                />
             </VStack>
         </Container>
     );

@@ -71,6 +71,7 @@ import {
 import { fetchAvailableInventory, fetchAllocations } from '@/utils/apiUtils';
 import { MyAllocationsPage } from '@/app/(dashboard)/supply-requests/components/MyAllocationsPage';
 import { InventoryAllocationModal } from '@/components/InventoryAllocationModal';
+import { DeliveryDetailsModal } from './components/DeliveryDetailsModal';
 
 interface AllocationRequest {
   id: string;
@@ -153,6 +154,8 @@ export default function SupplyRequestsPage() {
   const [filteredAllocationRequests, setFilteredAllocationRequests] = useState<AllocationRequest[]>([]);
   const [allocationStatusFilter, setAllocationStatusFilter] = useState('');
   const [isAllocating, setIsAllocating] = useState(false);
+  const [userLocales, setUserLocales] = useState<any[]>([]);
+  const [localeId, setLocaleId] = useState('');
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -169,6 +172,24 @@ export default function SupplyRequestsPage() {
     // Transformar categorias em objetos
     const uniqueCategories = Array.from(new Set(supplies.map(s => s.category.label)));
     setCategories(uniqueCategories.map((label, index) => ({ id: String(index), label })));
+
+    // Buscar locais da filial do usuário
+    const fetchUserLocales = async () => {
+      try {
+        const token = localStorage.getItem('@ti-assistant:token');
+        if (!token) return;
+        const response = await fetch('/api/locales/user-location', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUserLocales(data);
+        }
+      } catch (e) {
+        // Silenciar erro
+      }
+    };
+    fetchUserLocales();
   }, []);
 
   const loadInitialData = async () => {
@@ -316,7 +337,7 @@ export default function SupplyRequestsPage() {
         throw new Error('Token não encontrado');
       }
 
-      await submitRequest(cart, deadline, dest, token);
+      await submitRequest(cart, deadline, dest, token, localeId);
 
       toast({
         title: 'Sucesso',
@@ -373,6 +394,7 @@ export default function SupplyRequestsPage() {
       });
 
       setIsCustomRequestModalOpen(false);
+      setLocaleId('');
       loadInitialData();
     } catch (error) {
       toast({
@@ -1063,87 +1085,29 @@ export default function SupplyRequestsPage() {
         </Box>
       </VStack>
 
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-        <ModalContent
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'gray.50'}
-          backdropFilter="blur(12px)"
-          borderWidth="1px"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        >
-          <ModalHeader color={colorMode === 'dark' ? 'white' : 'gray.800'}>Detalhes da Entrega</ModalHeader>
-          <ModalCloseButton color={colorMode === 'dark' ? 'white' : 'gray.800'} />
-            <ModalBody>
-              <VStack spacing={4}>
-                <FormControl isRequired>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data Limite para Entrega</FormLabel>
-                  <Input
-                    type="date"
-                    value={deliveryDeadline}
-                    onChange={(e) => setDeliveryDeadline(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-                <FormControl isRequired>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Destino</FormLabel>
-                  <Input
-                    placeholder="Ex: Departamento de TI - Sala 101"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-              </VStack>
-            </ModalBody>
-            <ModalFooter>
-            <Button 
-              variant="ghost" 
-              mr={3} 
-              onClick={onClose}
-              color={colorMode === 'dark' ? 'white' : 'gray.800'}
-            >
-                Cancelar
-              </Button>
-              <Button
-                colorScheme="green"
-                onClick={handleSubmitRequest}
-                isDisabled={!deliveryDeadline || !destination}
-              bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-              >
-                Confirmar Pedido
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+        <DeliveryDetailsModal
+          isOpen={isOpen}
+          onClose={onClose}
+          deliveryDeadline={deliveryDeadline}
+          setDeliveryDeadline={setDeliveryDeadline}
+          destination={destination}
+          setDestination={setDestination}
+          userLocales={userLocales}
+          onSubmit={handleSubmitRequest}
+          localeId={localeId}
+          setLocaleId={setLocaleId}
+        />
 
         <CustomSupplyRequestModal
           isOpen={isCustomRequestModalOpen}
-          onClose={() => setIsCustomRequestModalOpen(false)}
+          onClose={() => {
+            setIsCustomRequestModalOpen(false);
+            setLocaleId('');
+          }}
           onSubmit={handleCustomRequest}
+          userLocales={userLocales}
+          localeId={localeId}
+          setLocaleId={setLocaleId}
         />
 
         <InventoryAllocationModal

@@ -272,192 +272,192 @@ export default function SuppliesPage() {
                 </TabList>
                 <TabPanels>
                     <TabPanel>
-                        <VStack
-                            spacing={4}
-                            align="stretch"
+            <VStack
+                spacing={4}
+                align="stretch"
+                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                backdropFilter="blur(12px)"
+                p={isMobile ? 3 : 6}
+                borderRadius="lg"
+                boxShadow="sm"
+                borderWidth="1px"
+                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                h="full"
+                overflow="hidden"
+            >
+                {!isMobile && (
+                    <Flex justify="space-between" align="center" mb={6}>
+                        <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Gerenciamento de Suprimentos</Heading>
+                        <HStack spacing={4}>
+                            <Button
+                                colorScheme="orange"
+                                onClick={handleExportBelowMinimum}
+                                leftIcon={<FiAlertTriangle />}
+                                bg={colorMode === 'dark' ? 'rgba(237, 137, 54, 0.8)' : undefined}
+                                _hover={{
+                                    bg: colorMode === 'dark' ? 'rgba(237, 137, 54, 0.9)' : undefined,
+                                    transform: 'translateY(-1px)',
+                                }}
+                                transition="all 0.3s ease"
+                            >
+                                Abaixo do Mínimo
+                            </Button>
+                            <Button
+                                leftIcon={<FiPlus />}
+                                colorScheme="blue"
+                                onClick={onOpen}
+                                bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
+                                _hover={{
+                                    bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
+                                    transform: 'translateY(-1px)',
+                                }}
+                                transition="all 0.3s ease"
+                            >
+                                Novo Suprimento
+                            </Button>
+                        </HStack>
+                    </Flex>
+                )}
+
+                <HStack spacing={4} wrap="wrap">
+                    <InputGroup maxW="400px">
+                        <InputLeftElement pointerEvents="none">
+                            <FiSearch color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                        </InputLeftElement>
+                        <Input
+                            placeholder="Buscar suprimentos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                             backdropFilter="blur(12px)"
-                            p={isMobile ? 3 : 6}
-                            borderRadius="lg"
-                            boxShadow="sm"
-                            borderWidth="1px"
                             borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                            h="full"
-                            overflow="hidden"
-                        >
-                            {!isMobile && (
-                                <Flex justify="space-between" align="center" mb={6}>
-                                    <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Gerenciamento de Suprimentos</Heading>
-                                    <HStack spacing={4}>
-                                        <Button
-                                            colorScheme="orange"
-                                            onClick={handleExportBelowMinimum}
-                                            leftIcon={<FiAlertTriangle />}
-                                            bg={colorMode === 'dark' ? 'rgba(237, 137, 54, 0.8)' : undefined}
-                                            _hover={{
-                                                bg: colorMode === 'dark' ? 'rgba(237, 137, 54, 0.9)' : undefined,
-                                                transform: 'translateY(-1px)',
-                                            }}
-                                            transition="all 0.3s ease"
-                                        >
-                                            Abaixo do Mínimo
-                                        </Button>
-                                        <Button
-                                            leftIcon={<FiPlus />}
-                                            colorScheme="blue"
-                                            onClick={onOpen}
-                                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                                            _hover={{
-                                                bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                                transform: 'translateY(-1px)',
-                                            }}
-                                            transition="all 0.3s ease"
-                                        >
-                                            Novo Suprimento
-                                        </Button>
-                                    </HStack>
-                                </Flex>
-                            )}
+                            _hover={{
+                                borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                            }}
+                            _focus={{
+                                borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                                boxShadow: 'none',
+                            }}
+                        />
+                    </InputGroup>
+                    <Select
+                        placeholder="Filtrar por categoria"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        maxW="200px"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        _hover={{
+                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        }}
+                        _focus={{
+                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                            boxShadow: 'none',
+                        }}
+                    >
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.label}
+                            </option>
+                        ))}
+                    </Select>
+                </HStack>
 
-                            <HStack spacing={4} wrap="wrap">
-                                <InputGroup maxW="400px">
-                                    <InputLeftElement pointerEvents="none">
-                                        <FiSearch color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                                    </InputLeftElement>
-                                    <Input
-                                        placeholder="Buscar suprimentos..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                        backdropFilter="blur(12px)"
-                                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                        _hover={{
-                                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                        }}
-                                        _focus={{
-                                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                            boxShadow: 'none',
-                                        }}
-                                    />
-                                </InputGroup>
-                                <Select
-                                    placeholder="Filtrar por categoria"
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    maxW="200px"
-                                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                    backdropFilter="blur(12px)"
-                                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                <Divider />
+
+                <Box
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                    p={6}
+                    borderRadius="lg"
+                    boxShadow="sm"
+                    borderWidth="1px"
+                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    backdropFilter="blur(12px)"
+                    overflowX="auto"
+                    flex="1"
+                    overflowY="auto"
+                                maxH="60vh"
+                >
+                    <Table variant="simple">
+                        <Thead>
+                            <Tr>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Nome</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Descrição</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Quantidade</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Mínimo</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Unidade</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Categoria</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Fornecedor</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {filteredSupplies.map((supply) => (
+                                <Tr
+                                    key={supply.id}
+                                    transition="all 0.3s ease"
                                     _hover={{
-                                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                    }}
-                                    _focus={{
-                                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                        boxShadow: 'none',
+                                        bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)',
+                                        transform: 'translateY(-1px)',
                                     }}
                                 >
-                                    {categories.map((category) => (
-                                        <option key={category.id} value={category.id}>
-                                            {category.label}
-                                        </option>
+                                    {[
+                                        { value: supply.name },
+                                        { value: supply.description },
+                                        { value: supply.quantity },
+                                        { value: supply.minimum_quantity },
+                                        { value: supply.unit.symbol },
+                                        { value: supply.category.label },
+                                        { value: supply.supplier.name }
+                                    ].map((cell, index) => (
+                                        <Td 
+                                            key={index}
+                                            color={colorMode === 'dark' ? 'white' : 'gray.800'} 
+                                            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                                        >
+                                            {cell.value}
+                                        </Td>
                                     ))}
-                                </Select>
-                            </HStack>
-
-                            <Divider />
-
-                            <Box
-                                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                p={6}
-                                borderRadius="lg"
-                                boxShadow="sm"
-                                borderWidth="1px"
-                                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                backdropFilter="blur(12px)"
-                                overflowX="auto"
-                                flex="1"
-                                overflowY="auto"
-                                maxH="60vh"
-                            >
-                                <Table variant="simple">
-                                    <Thead>
-                                        <Tr>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Nome</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Descrição</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Quantidade</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Mínimo</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Unidade</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Categoria</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Fornecedor</Th>
-                                            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-                                        {filteredSupplies.map((supply) => (
-                                            <Tr
-                                                key={supply.id}
-                                                transition="all 0.3s ease"
-                                                _hover={{
-                                                    bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)',
-                                                    transform: 'translateY(-1px)',
-                                                }}
-                                            >
-                                                {[
-                                                    { value: supply.name },
-                                                    { value: supply.description },
-                                                    { value: supply.quantity },
-                                                    { value: supply.minimum_quantity },
-                                                    { value: supply.unit.symbol },
-                                                    { value: supply.category.label },
-                                                    { value: supply.supplier.name }
-                                                ].map((cell, index) => (
-                                                    <Td 
-                                                        key={index}
-                                                        color={colorMode === 'dark' ? 'white' : 'gray.800'} 
-                                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                                    >
-                                                        {cell.value}
-                                                    </Td>
-                                                ))}
-                                                <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                    <HStack spacing={2}>
-                                                        <Tooltip label="Editar">
-                                                            <IconButton
-                                                                aria-label="Editar"
-                                                                icon={<FiEdit2 />}
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => handleOpenEdit(supply)}
-                                                                _hover={{
-                                                                    bg: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                                                                    transform: 'translateY(-1px)'
-                                                                }}
-                                                                transition="all 0.2s ease"
-                                                            />
-                                                        </Tooltip>
-                                                        <Tooltip label="Excluir">
-                                                            <IconButton
-                                                                aria-label="Excluir"
-                                                                icon={<FiTrash2 />}
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                colorScheme="red"
-                                                                onClick={() => handleDelete(supply.id)}
-                                                                _hover={{
-                                                                    bg: colorMode === 'dark' ? 'rgba(255, 0, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
-                                                                    transform: 'translateY(-1px)'
-                                                                }}
-                                                                transition="all 0.2s ease"
-                                                            />
-                                                        </Tooltip>
-                                                    </HStack>
-                                                </Td>
-                                            </Tr>
-                                        ))}
-                                    </Tbody>
-                                </Table>
-                            </Box>
-                        </VStack>
+                                    <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        <HStack spacing={2}>
+                                            <Tooltip label="Editar">
+                                                <IconButton
+                                                    aria-label="Editar"
+                                                    icon={<FiEdit2 />}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => handleOpenEdit(supply)}
+                                                    _hover={{
+                                                        bg: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                                        transform: 'translateY(-1px)'
+                                                    }}
+                                                    transition="all 0.2s ease"
+                                                />
+                                            </Tooltip>
+                                            <Tooltip label="Excluir">
+                                                <IconButton
+                                                    aria-label="Excluir"
+                                                    icon={<FiTrash2 />}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    colorScheme="red"
+                                                    onClick={() => handleDelete(supply.id)}
+                                                    _hover={{
+                                                        bg: colorMode === 'dark' ? 'rgba(255, 0, 0, 0.1)' : 'rgba(255, 0, 0, 0.1)',
+                                                        transform: 'translateY(-1px)'
+                                                    }}
+                                                    transition="all 0.2s ease"
+                                                />
+                                            </Tooltip>
+                                        </HStack>
+                                    </Td>
+                                </Tr>
+                            ))}
+                        </Tbody>
+                    </Table>
+                </Box>
+            </VStack>
                     </TabPanel>
                     <TabPanel>
                         <SupplyStatistics />

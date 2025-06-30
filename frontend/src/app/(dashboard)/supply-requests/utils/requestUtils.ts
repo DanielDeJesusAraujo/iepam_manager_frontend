@@ -73,14 +73,15 @@ export const handleRequesterConfirmation = async (requestId: string, confirmatio
     return response.json();
 };
 
-export const submitRequest = async (cart: { supply: Supply; quantity: number }[], deliveryDeadline: string, destination: string, token: string) => {
+export const submitRequest = async (cart: { supply: Supply; quantity: number }[], deliveryDeadline: string, destination: string, token: string, localeId?: string) => {
     const payload = {
         items: cart.map(item => ({
             supply_id: item.supply.id,
             quantity: item.quantity,
             delivery_deadline: new Date(deliveryDeadline).toISOString(),
             destination,
-            notes: `Pedido do carrinho - ${item.supply.name}`
+            notes: `Pedido do carrinho - ${item.supply.name}`,
+            locale_id: localeId || null
         }))
     };
 

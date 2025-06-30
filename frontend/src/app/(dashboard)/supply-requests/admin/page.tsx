@@ -26,6 +26,7 @@ import {
 } from './components';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { exportToPDF as exportToPDFUtil } from '@/utils/exportToPDF';
 
 interface SupplyRequest {
     id: string;
@@ -61,6 +62,11 @@ interface SupplyRequest {
     requester_delivery_confirmation: boolean;
     manager_delivery_confirmation: boolean;
     is_custom?: boolean;
+    delivery_deadline?: string;
+    updated_at?: string;
+    location?: { name: string };
+    sector?: { name: string };
+    locale?: { name: string };
 }
 
 interface AllocationRequest {
@@ -647,6 +653,17 @@ export default function AdminSupplyRequestsPage() {
     };
 
     const exportToPDF = () => {
+        if (activeTab === 0 && filteredRequests.length === 0) {
+            toast({
+                title: 'Aviso',
+                description: 'Não há dados para exportar',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
         if (activeTab === 1 && filteredAllocationRequests.length === 0) {
             toast({
                 title: 'Aviso',
@@ -674,6 +691,48 @@ export default function AdminSupplyRequestsPage() {
                 title: 'Aviso',
                 description: 'Não há dados para exportar',
                 status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        if (activeTab === 0) {
+            const now = new Date();
+            const head = [
+                'Suprimento',
+                'Usuário',
+                'Quantidade',
+                'Status',
+                'Data da Solicitação',
+                'Data Limite de Entrega',
+                'Data de Entrega',
+                'Filial',
+                'Setor',
+                'Local',
+            ];
+            const body = filteredRequests.map(request => [
+                request.is_custom ? request.item_name : request.supply?.name,
+                request.user.name,
+                `${request.quantity} ${request.supply?.unit?.symbol || request.unit?.symbol || ''}`,
+                request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : 'Entregue',
+                request.created_at ? new Date(request.created_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-',
+                request.delivery_deadline ? new Date(request.delivery_deadline).toLocaleDateString('pt-BR') : '-',
+                request.status === 'DELIVERED' && request.updated_at ? new Date(request.updated_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-',
+                request.location?.name || '-',
+                request.sector?.name || '-',
+                request.locale?.name || '-',
+            ]);
+            exportToPDFUtil({
+                title: 'Relatório de Requisições de Suprimentos',
+                head,
+                body,
+                fileName: `requisicoes_suprimentos_${now.toISOString().split('T')[0]}.pdf`,
+            });
+            toast({
+                title: 'Sucesso',
+                description: 'PDF exportado com sucesso!',
+                status: 'success',
                 duration: 3000,
                 isClosable: true,
             });
@@ -931,6 +990,8 @@ export default function AdminSupplyRequestsPage() {
                                 onApprove={handleStatusUpdate}
                                 onReject={handleStatusUpdate}
                                 onConfirmDelivery={handleManagerDeliveryConfirmation}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
                             />
                         </TabPanel>
 
