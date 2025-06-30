@@ -88,6 +88,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
     ...(!isEmployee ? [{ label: 'Categorias', href: '/settings/categories' }] : []),
     ...(!isEmployee ? [{ label: 'Localizações', href: '/settings/branches' }] : []),
     ...(!isEmployee ? [{ label: 'Locais', href: '/settings/locations' }] : []),
+    ...(!isEmployee ? [{ label: 'Setores', href: '/settings/sectors' }] : []),
     ...(!isEmployee ? [{ label: 'Fornecedores', href: '/settings/suppliers' }] : []),
     ...(isAdmin ? [{ label: 'Usuários', href: '/settings/users' }] : []),
   ]

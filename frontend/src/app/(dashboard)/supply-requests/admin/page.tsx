@@ -3,43 +3,29 @@
 import { useEffect, useState } from 'react';
 import {
     Box,
-    Container,
     Heading,
-    Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
-    Badge,
-    Button,
     useToast,
     Spinner,
     Flex,
     useColorModeValue,
-    Card,
-    CardBody,
-    InputGroup,
-    InputLeftElement,
-    Input,
-    Select,
-    Text,
     VStack,
-    useBreakpointValue,
-    useDisclosure,
-    Image,
-    HStack,
+    useMediaQuery,
     Tabs,
     TabList,
     TabPanels,
     Tab,
     TabPanel,
-    useMediaQuery,
 } from '@chakra-ui/react';
-import { SearchIcon, TimeIcon } from '@chakra-ui/icons';
-import { CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { MobileAdminSupplyRequests } from './components/MobileAdminSupplyRequests';
+import { 
+    MobileAdminSupplyRequests,
+    SupplyRequestsTab,
+    AllocationsTab,
+    InventoryTransactionsTab,
+    SupplyTransactionsTab
+} from './components';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface SupplyRequest {
     id: string;
@@ -72,6 +58,7 @@ interface SupplyRequest {
     notes: string;
     created_at: string;
     requester_confirmation: boolean;
+    requester_delivery_confirmation: boolean;
     manager_delivery_confirmation: boolean;
     is_custom?: boolean;
 }
@@ -91,6 +78,11 @@ interface AllocationRequest {
         email: string;
     };
     destination: string;
+    destination_name?: string;
+    destination_id?: string;
+    locale_name?: string;
+    location_name?: string;
+    requester_sector?: string;
     notes: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'RETURNED';
     created_at: string;
@@ -99,64 +91,121 @@ interface AllocationRequest {
     manager_delivery_confirmation: boolean;
 }
 
-export interface InventoryItem {
+interface InventoryTransaction {
     id: string;
-    item: string;
-    name: string;
-    model: string;
-    serial_number: string;
-    finality: string;
-    acquisition_price: number;
-    acquisition_date: string;
-    status: 'STANDBY' | 'IN_USE' | 'MAINTENANCE' | 'DISCARDED';
-    location_id: string;
-    locale_id?: string;
-    category_id: string;
-    subcategory_id: string;
-    supplier_id?: string;
-    description?: string;
-    image_url?: string;
-    location: {
+    inventory: {
         id: string;
         name: string;
-        // outros campos...
+        model: string;
+        serial_number: string;
+        status: string;
     };
-    locale?: {
+    from_user: {
         id: string;
         name: string;
-        // outros campos...
+        email: string;
+        role: string;
     };
-    supplier?: {
+    to_user?: {
         id: string;
         name: string;
-        // outros campos...
+        email: string;
+        role: string;
     };
-    category: {
+    transaction_type: 'ALLOCATION' | 'RETURN' | 'MAINTENANCE' | 'DISCARD' | 'TRANSFER';
+    movement_type: 'IN' | 'OUT';
+    quantity: number;
+    supply?: {
+        unit?: {
+            symbol?: string;
+        };
+    };
+    notes?: string;
+    sector?: {
         id: string;
-        label: string;
-        // outros campos...
+        name: string;
+        location: {
+            id: string;
+            name: string;
+        };
     };
-    subcategory: {
+    destination: string;
+    destination_locale?: {
         id: string;
-        label: string;
-        // outros campos...
+        name: string;
+        location: {
+            id: string;
+            name: string;
+        };
     };
+    expected_return_date?: string;
+    actual_return_date?: string;
+    status: 'ACTIVE' | 'RETURNED' | 'OVERDUE';
+    created_at: string;
+}
+
+interface SupplyTransaction {
+    id: string;
+    supply: {
+        id: string;
+        name: string;
+        description?: string;
+        quantity: number;
+        unit: {
+            id: string;
+            name: string;
+            symbol: string;
+        };
+    };
+    from_user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    to_user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    quantity: number;
+    transaction_type: string;
+    movement_type: 'IN' | 'OUT';
+    notes?: string;
+    sector?: {
+        id: string;
+        name: string;
+        location: {
+            id: string;
+            name: string;
+        };
+    };
+    created_at: string;
 }
 
 export default function AdminSupplyRequestsPage() {
     const [requests, setRequests] = useState<SupplyRequest[]>([]);
     const [allocationRequests, setAllocationRequests] = useState<AllocationRequest[]>([]);
+    const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>([]);
+    const [supplyTransactions, setSupplyTransactions] = useState<SupplyTransaction[]>([]);
     const [filteredRequests, setFilteredRequests] = useState<SupplyRequest[]>([]);
     const [filteredAllocationRequests, setFilteredAllocationRequests] = useState<AllocationRequest[]>([]);
+    const [filteredInventoryTransactions, setFilteredInventoryTransactions] = useState<InventoryTransaction[]>([]);
+    const [filteredSupplyTransactions, setFilteredSupplyTransactions] = useState<SupplyTransaction[]>([]);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [returnDateFilter, setReturnDateFilter] = useState('');
+    const [sectorFilter, setSectorFilter] = useState('');
+    const [locationFilter, setLocationFilter] = useState('');
+    const [localeFilter, setLocaleFilter] = useState('');
+    const [requesterFilter, setRequesterFilter] = useState('');
+    const [transactionLocationFilter, setTransactionLocationFilter] = useState('');
+    const [transactionLocaleFilter, setTransactionLocaleFilter] = useState('');
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(0);
     const router = useRouter();
     const toast = useToast();
-    const bgColor = useColorModeValue('white', 'gray.800');
-    const borderColor = useColorModeValue('gray.200', 'gray.700');
-    const { isOpen, onOpen, onClose } = useDisclosure();
     const colorMode = useColorModeValue('light', 'dark');
     const [isMobile] = useMediaQuery('(max-width: 768px)');
 
@@ -169,18 +218,24 @@ export default function AdminSupplyRequestsPage() {
 
         fetchRequests();
         fetchAllocationRequests();
+        fetchInventoryTransactions();
+        fetchSupplyTransactions();
     }, [router]);
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([fetchRequests(), fetchAllocationRequests()]).finally(() => setLoading(false));
+        Promise.all([fetchRequests(), fetchAllocationRequests(), fetchInventoryTransactions(), fetchSupplyTransactions()]).finally(() => setLoading(false));
     }, [activeTab]);
 
     useEffect(() => {
         if (activeTab === 0) {
             fetchRequests();
-        } else {
+        } else if (activeTab === 1) {
             fetchAllocationRequests();
+        } else if (activeTab === 2) {
+            fetchInventoryTransactions();
+        } else if (activeTab === 3) {
+            fetchSupplyTransactions();
         }
     }, [activeTab]);
 
@@ -201,24 +256,85 @@ export default function AdminSupplyRequestsPage() {
             } else {
                 setFilteredRequests(requests);
             }
-        } else {
-            if (search || statusFilter) {
+        } else if (activeTab === 1) {
+            if (search || statusFilter || returnDateFilter || sectorFilter || locationFilter || localeFilter || requesterFilter) {
                 const filtered = allocationRequests.filter(request => {
                     const matchesSearch =
                         request.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
                         request.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
                         request.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
                         request.requester.name.toLowerCase().includes(search.toLowerCase()) ||
-                        request.requester.email.toLowerCase().includes(search.toLowerCase());
+                        request.requester.email.toLowerCase().includes(search.toLowerCase()) ||
+                        (request.locale_name && request.locale_name.toLowerCase().includes(search.toLowerCase())) ||
+                        (request.location_name && request.location_name.toLowerCase().includes(search.toLowerCase())) ||
+                        (request.requester_sector && request.requester_sector.toLowerCase().includes(search.toLowerCase()));
+                    
                     const matchesStatus = !statusFilter || request.status === statusFilter;
-                    return matchesSearch && matchesStatus;
+                    const matchesReturnDate = !returnDateFilter || (request.return_date && new Date(request.return_date).toLocaleDateString('pt-BR') === returnDateFilter);
+                    const matchesSector = !sectorFilter || (request.requester_sector && request.requester_sector === sectorFilter);
+                    const matchesLocation = !locationFilter || (request.location_name && request.location_name === locationFilter);
+                    const matchesLocale = !localeFilter || (request.locale_name && request.locale_name === localeFilter);
+                    const matchesRequester = !requesterFilter || (request.requester.name && request.requester.name === requesterFilter);
+                    
+                    return matchesSearch && matchesStatus && matchesReturnDate && matchesSector && matchesLocation && matchesLocale && matchesRequester;
                 });
                 setFilteredAllocationRequests(filtered);
             } else {
                 setFilteredAllocationRequests(allocationRequests);
             }
+        } else if (activeTab === 2) {
+            let filtered = inventoryTransactions;
+
+            if (search) {
+                filtered = filtered.filter(transaction =>
+                    transaction.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.from_user.name.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.from_user.email.toLowerCase().includes(search.toLowerCase()) ||
+                    (transaction.to_user && transaction.to_user.name.toLowerCase().includes(search.toLowerCase())) ||
+                    (transaction.to_user && transaction.to_user.email.toLowerCase().includes(search.toLowerCase()))
+                );
+            }
+
+            if (statusFilter) {
+                filtered = filtered.filter(transaction => transaction.transaction_type === statusFilter);
+            }
+
+            if (transactionLocationFilter) {
+                filtered = filtered.filter(transaction => 
+                    transaction.destination_locale?.location.name === transactionLocationFilter
+                );
+            }
+
+            if (transactionLocaleFilter) {
+                filtered = filtered.filter(transaction => 
+                    transaction.destination_locale?.name === transactionLocaleFilter
+                );
+            }
+
+            setFilteredInventoryTransactions(filtered);
+        } else if (activeTab === 3) {
+            let filtered = supplyTransactions;
+
+            if (search) {
+                filtered = filtered.filter(transaction =>
+                    transaction.supply.name.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.supply.description?.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.from_user.name.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.from_user.email.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.to_user.name.toLowerCase().includes(search.toLowerCase()) ||
+                    transaction.to_user.email.toLowerCase().includes(search.toLowerCase())
+                );
+            }
+
+            if (statusFilter) {
+                filtered = filtered.filter(transaction => transaction.transaction_type === statusFilter);
+            }
+
+            setFilteredSupplyTransactions(filtered);
         }
-    }, [search, statusFilter, requests, allocationRequests, activeTab]);
+    }, [inventoryTransactions, search, statusFilter, returnDateFilter, sectorFilter, locationFilter, localeFilter, requesterFilter, activeTab, requests, allocationRequests, transactionLocationFilter, transactionLocaleFilter, supplyTransactions]);
 
     const fetchRequests = async () => {
         try {
@@ -277,32 +393,61 @@ export default function AdminSupplyRequestsPage() {
 
     const fetchAllocationRequests = async () => {
         try {
-            const token = localStorage.getItem('@ti-assistant:token');
-            if (!token) {
-                throw new Error('Token não encontrado');
-            }
-
             const response = await fetch('/api/inventory-allocations', {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${localStorage.getItem('@ti-assistant:token')}`
                 }
             });
 
-            if (!response.ok) {
-                throw new Error('Erro ao carregar alocações');
+            if (response.ok) {
+                const data = await response.json();
+                setAllocationRequests(data);
+                setFilteredAllocationRequests(data);
+            } else {
+                console.error('Erro ao buscar alocações:', response.statusText);
             }
-
-            const data = await response.json();
-            setAllocationRequests(data);
-            setFilteredAllocationRequests(data);
         } catch (error) {
-            toast({
-                title: 'Erro',
-                description: error instanceof Error ? error.message : 'Erro ao carregar alocações',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
+            console.error('Erro ao buscar alocações:', error);
+        }
+    };
+
+    const fetchInventoryTransactions = async () => {
+        try {
+            const response = await fetch('/api/inventory-transactions', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('@ti-assistant:token')}`
+                }
             });
+
+            if (response.ok) {
+                const data = await response.json();
+                setInventoryTransactions(data);
+                setFilteredInventoryTransactions(data);
+            } else {
+                console.error('Erro ao buscar transações de inventário:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar transações de inventário:', error);
+        }
+    };
+
+    const fetchSupplyTransactions = async () => {
+        try {
+            const response = await fetch('/api/supply-transactions', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('@ti-assistant:token')}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setSupplyTransactions(data);
+                setFilteredSupplyTransactions(data);
+            } else {
+                console.error('Erro ao buscar transações de suprimento:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar transações de suprimento:', error);
         }
     };
 
@@ -501,6 +646,218 @@ export default function AdminSupplyRequestsPage() {
         }
     };
 
+    const exportToPDF = () => {
+        if (activeTab === 1 && filteredAllocationRequests.length === 0) {
+            toast({
+                title: 'Aviso',
+                description: 'Não há dados para exportar',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        if (activeTab === 2 && filteredInventoryTransactions.length === 0) {
+            toast({
+                title: 'Aviso',
+                description: 'Não há dados para exportar',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        if (activeTab === 3 && filteredSupplyTransactions.length === 0) {
+            toast({
+                title: 'Aviso',
+                description: 'Não há dados para exportar',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        const doc = new jsPDF();
+        
+        // Título do documento baseado na aba
+        let title = '';
+        if (activeTab === 1) {
+            title = 'Relatório de Alocações de Inventário';
+        } else if (activeTab === 2) {
+            title = 'Relatório de Transações de Inventário';
+        } else if (activeTab === 3) {
+            title = 'Relatório de Transações de Suprimentos';
+        }
+        doc.setFontSize(18);
+        doc.text(title, 14, 22);
+        
+        // Informações dos filtros aplicados
+        doc.setFontSize(10);
+        let yPosition = 35;
+        
+        const filters = [];
+        if (search) filters.push(`Busca: ${search}`);
+        if (statusFilter) filters.push(`Status: ${statusFilter}`);
+        if (returnDateFilter) filters.push(`Data de Retorno: ${returnDateFilter}`);
+        if (sectorFilter) filters.push(`Setor: ${sectorFilter}`);
+        if (locationFilter) filters.push(`Filial: ${locationFilter}`);
+        if (localeFilter) filters.push(`Local: ${localeFilter}`);
+        if (requesterFilter) filters.push(`Requerente: ${requesterFilter}`);
+        if (transactionLocationFilter) filters.push(`Filial: ${transactionLocationFilter}`);
+        if (transactionLocaleFilter) filters.push(`Local: ${transactionLocaleFilter}`);
+        
+        if (filters.length > 0) {
+            doc.text('Filtros Aplicados:', 14, yPosition);
+            yPosition += 5;
+            filters.forEach(filter => {
+                doc.text(`• ${filter}`, 20, yPosition);
+                yPosition += 4;
+            });
+            yPosition += 5;
+        }
+        
+        // Data e hora da exportação
+        const now = new Date();
+        doc.text(`Exportado em: ${now.toLocaleString('pt-BR')}`, 14, yPosition);
+        yPosition += 10;
+        
+        if (activeTab === 1) {
+            // Dados da tabela de alocações
+            const tableData = filteredAllocationRequests.map(request => [
+                request.inventory.name,
+                request.requester.name,
+                request.locale_name || 'N/A',
+                request.location_name || 'N/A',
+                request.requester_sector || 'N/A',
+                request.status,
+                request.return_date ? new Date(request.return_date).toLocaleDateString('pt-BR') : 'Não definida'
+            ]);
+            
+            autoTable(doc, {
+                head: [['Item', 'Requerente', 'Local', 'Filial', 'Setor', 'Status', 'Data Retorno']],
+                body: tableData,
+                startY: yPosition,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                },
+                headStyles: {
+                    fillColor: [66, 139, 202],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245],
+                },
+                margin: { top: 10 },
+            });
+        } else if (activeTab === 2) {
+            // Dados da tabela de transações de inventário
+            const tableData = filteredInventoryTransactions.map(transaction => [
+                transaction.inventory.name,
+                transaction.transaction_type === 'ALLOCATION' ? 'Alocação' :
+                transaction.transaction_type === 'RETURN' ? 'Devolução' :
+                transaction.transaction_type === 'MAINTENANCE' ? 'Manutenção' :
+                transaction.transaction_type === 'DISCARD' ? 'Descarte' : 'Transferência',
+                transaction.from_user.name,
+                transaction.to_user ? transaction.to_user.name : 'N/A',
+                transaction.destination_locale ? 
+                    `${transaction.destination_locale.name} - ${transaction.destination_locale.location.name}` : 
+                    transaction.destination,
+                transaction.status === 'ACTIVE' ? 'Ativa' :
+                transaction.status === 'RETURNED' ? 'Devolvida' : 'Vencida',
+                new Date(transaction.created_at).toLocaleDateString('pt-BR')
+            ]);
+            
+            autoTable(doc, {
+                head: [['Item', 'Tipo', 'De', 'Para', 'Destino', 'Status', 'Data']],
+                body: tableData,
+                startY: yPosition,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                },
+                headStyles: {
+                    fillColor: [66, 139, 202],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245],
+                },
+                margin: { top: 10 },
+            });
+        } else if (activeTab === 3) {
+            // Dados da tabela de transações de suprimentos
+            const tableData = filteredSupplyTransactions.map(transaction => [
+                transaction.supply.name,
+                transaction.transaction_type === 'DELIVERY' ? 'Entrega' :
+                transaction.transaction_type === 'RETURN' ? 'Devolução' :
+                transaction.transaction_type === 'PURCHASE' ? 'Compra' :
+                transaction.transaction_type === 'ADJUSTMENT' ? 'Ajuste' : transaction.transaction_type,
+                transaction.movement_type === 'IN' ? 'Entrada' : 'Saída',
+                transaction.from_user.name,
+                transaction.to_user.name,
+                `${transaction.quantity} ${transaction.supply.unit?.symbol || 'un'}`,
+                transaction.sector ? `${transaction.sector.name} - ${transaction.sector.location.name}` : 'N/A',
+                new Date(transaction.created_at).toLocaleDateString('pt-BR')
+            ]);
+            
+            autoTable(doc, {
+                head: [['Suprimento', 'Tipo', 'Movimento', 'De', 'Para', 'Quantidade', 'Setor', 'Data']],
+                body: tableData,
+                startY: yPosition,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                },
+                headStyles: {
+                    fillColor: [66, 139, 202],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245],
+                },
+                margin: { top: 10 },
+            });
+        }
+        
+        // Salvar o PDF
+        let fileName = '';
+        if (activeTab === 1) {
+            fileName = `alocacoes_inventario_${now.toISOString().split('T')[0]}.pdf`;
+        } else if (activeTab === 2) {
+            fileName = `transacoes_inventario_${now.toISOString().split('T')[0]}.pdf`;
+        } else if (activeTab === 3) {
+            fileName = `transacoes_suprimentos_${now.toISOString().split('T')[0]}.pdf`;
+        }
+        doc.save(fileName);
+        
+        toast({
+            title: 'Sucesso',
+            description: `PDF exportado com sucesso: ${fileName}`,
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+        });
+    };
+
+    const clearFilters = () => {
+        setSearch('');
+        setStatusFilter('');
+        setReturnDateFilter('');
+        setSectorFilter('');
+        setLocationFilter('');
+        setLocaleFilter('');
+        setRequesterFilter('');
+        setTransactionLocationFilter('');
+        setTransactionLocaleFilter('');
+    };
+
     if (loading) {
         return (
             <Box p={8}>
@@ -518,6 +875,10 @@ export default function AdminSupplyRequestsPage() {
                 filteredRequests={filteredRequests}
                 allocationRequests={allocationRequests}
                 filteredAllocationRequests={filteredAllocationRequests}
+                inventoryTransactions={inventoryTransactions}
+                filteredInventoryTransactions={filteredInventoryTransactions}
+                supplyTransactions={supplyTransactions}
+                filteredSupplyTransactions={filteredSupplyTransactions}
                 search={search}
                 onSearchChange={setSearch}
                 statusFilter={statusFilter}
@@ -547,416 +908,86 @@ export default function AdminSupplyRequestsPage() {
                 h="full"
             >
                 <Flex justify="space-between" align="center">
-                    {!isMobile && (
-                        <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requisições</Heading>
-                    )}
-                    <Flex
-                        flex={1}
-                        justify={isMobile ? 'center' : 'flex-end'}
-                        marginTop={isMobile ? '15px' : '0px'}
-                    >
-                        <Button
-                            leftIcon={<TimeIcon />}
-                            colorScheme="blue"
-                            onClick={() => router.push('/supply-requests/history')}
-                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                            _hover={{
-                                bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                transform: 'translateY(-1px)',
-                            }}
-                            transition="all 0.3s ease"
-                        >
-                            Histórico
-                        </Button>
-                    </Flex>
+                    <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requisições</Heading>
                 </Flex>
 
                 <Tabs variant="enclosed" onChange={(index) => setActiveTab(index)} index={activeTab}>
                     <TabList>
                         <Tab>Suprimentos</Tab>
                         <Tab>Alocações</Tab>
+                        <Tab>Transações de Inventário</Tab>
+                        <Tab>Transações de Suprimento</Tab>
                     </TabList>
 
                     <TabPanels>
                         <TabPanel>
-                            <Box
-                                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                p={6}
-                                borderRadius="lg"
-                                boxShadow="sm"
-                                borderWidth="1px"
-                                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                backdropFilter="blur(12px)"
-                            >
-                                <Flex gap={4} mb={4} justify={isMobile ? 'center' : 'space-between'}>
-                                    <InputGroup>
-                                        <InputLeftElement pointerEvents="none">
-                                            <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                                        </InputLeftElement>
-                                        <Input
-                                            placeholder="Buscar por suprimento ou usuário..."
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                            backdropFilter="blur(12px)"
-                                            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                            _hover={{
-                                                borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                            }}
-                                            _focus={{
-                                                borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                                boxShadow: 'none',
-                                            }}
-                                        />
-                                    </InputGroup>
-                                    <Select
-                                        placeholder="Filtrar por status"
-                                        value={statusFilter}
-                                        onChange={(e) => setStatusFilter(e.target.value)}
-                                        maxW="200px"
-                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                        backdropFilter="blur(12px)"
-                                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                        _hover={{
-                                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                        }}
-                                        _focus={{
-                                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                            boxShadow: 'none',
-                                        }}
-                                    >
-                                        <option value="">Todos</option>
-                                        <option value="PENDING">Pendente</option>
-                                        <option value="APPROVED">Aprovado</option>
-                                        <option value="REJECTED">Rejeitado</option>
-                                        <option value="DELIVERED">Entregue</option>
-                                    </Select>
-                                </Flex>
-
-                                {filteredRequests.length === 0 ? (
-                                    <Flex direction="column" align="center" justify="center" py={8}>
-                                        <Image
-                                            src="/Task-complete.svg"
-                                            alt="Nenhuma requisição encontrada"
-                                            maxW="300px"
-                                            mb={4}
-                                        />
-                                        <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">
-                                            Nenhuma requisição encontrada
-                                        </Text>
-                                    </Flex>
-                                ) : (
-                                    <Box overflowX="auto">
-                                        <Table variant="simple">
-                                            <Thead>
-                                                <Tr>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Suprimento</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Usuário</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Quantidade</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
-                                                </Tr>
-                                            </Thead>
-                                            <Tbody>
-                                                {filteredRequests.map((request) => (
-                                                    <Tr
-                                                        key={request.id}
-                                                        transition="all 0.3s ease"
-                                                        _hover={{
-                                                            bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)',
-                                                            transform: 'translateY(-1px)',
-                                                        }}
-                                                    >
-                                                        <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            {request.is_custom ? request.item_name : request.supply?.name}
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <Text color={colorMode === 'dark' ? 'white' : 'gray.800'}>{request.user.name}</Text>
-                                                            <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                                                                {request.user.email}
-                                                            </Text>
-                                                        </Td>
-                                                        <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            {request.quantity} {request.supply?.unit?.symbol || request.supply?.unit?.name}
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <Badge
-                                                                colorScheme={
-                                                                    request.status === 'APPROVED'
-                                                                        ? 'green'
-                                                                        : request.status === 'REJECTED'
-                                                                            ? 'red'
-                                                                            : request.status === 'DELIVERED'
-                                                                                ? 'purple'
-                                                                                : 'yellow'
-                                                                }
-                                                            >
-                                                                {request.status === 'PENDING'
-                                                                    ? 'Pendente'
-                                                                    : request.status === 'APPROVED'
-                                                                        ? 'Aprovado'
-                                                                        : request.status === 'REJECTED'
-                                                                            ? 'Rejeitado'
-                                                                            : 'Entregue'}
-                                                            </Badge>
-                                                        </Td>
-                                                        <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            {new Date(request.created_at).toLocaleDateString('pt-BR')}
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <VStack spacing={2} align="start">
-                                                                {request.status === 'PENDING' && (
-                                                                    <Flex gap={2}>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            colorScheme="green"
-                                                                            onClick={() => handleStatusUpdate(request.id, 'APPROVED')}
-                                                                            bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-                                                                            _hover={{
-                                                                                bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                                                                                transform: 'translateY(-1px)',
-                                                                            }}
-                                                                            transition="all 0.3s ease"
-                                                                        >
-                                                                            Aprovar
-                                                                        </Button>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            colorScheme="red"
-                                                                            onClick={() => handleStatusUpdate(request.id, 'REJECTED')}
-                                                                            bg={colorMode === 'dark' ? 'rgba(245, 101, 101, 0.8)' : undefined}
-                                                                            _hover={{
-                                                                                bg: colorMode === 'dark' ? 'rgba(245, 101, 101, 0.9)' : undefined,
-                                                                                transform: 'translateY(-1px)',
-                                                                            }}
-                                                                            transition="all 0.3s ease"
-                                                                        >
-                                                                            Rejeitar
-                                                                        </Button>
-                                                                    </Flex>
-                                                                )}
-                                                                {request.status === 'APPROVED' && (
-                                                                    <Flex gap={2}>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            colorScheme="blue"
-                                                                            leftIcon={<CheckCircle size={16} />}
-                                                                            onClick={() => handleManagerDeliveryConfirmation(request, true)}
-                                                                            isDisabled={request.manager_delivery_confirmation}
-                                                                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                                                                            _hover={{
-                                                                                bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                                                                transform: 'translateY(-1px)',
-                                                                            }}
-                                                                            transition="all 0.3s ease"
-                                                                        >
-                                                                            Confirmar Entrega
-                                                                        </Button>
-                                                                    </Flex>
-                                                                )}
-                                                            </VStack>
-                                                        </Td>
-                                                    </Tr>
-                                                ))}
-                                            </Tbody>
-                                        </Table>
-                                    </Box>
-                                )}
-                            </Box>
+                            <SupplyRequestsTab
+                                requests={requests}
+                                filteredRequests={filteredRequests}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                onApprove={handleStatusUpdate}
+                                onReject={handleStatusUpdate}
+                                onConfirmDelivery={handleManagerDeliveryConfirmation}
+                            />
                         </TabPanel>
 
                         <TabPanel>
-                            <Box
-                                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                p={6}
-                                borderRadius="lg"
-                                boxShadow="sm"
-                                borderWidth="1px"
-                                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                backdropFilter="blur(12px)"
-                            >
-                                <Flex gap={4} mb={4} justify={isMobile ? 'center' : 'space-between'}>
-                                    <InputGroup>
-                                        <InputLeftElement pointerEvents="none">
-                                            <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                                        </InputLeftElement>
-                                        <Input
-                                            placeholder="Buscar por item ou usuário..."
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                            backdropFilter="blur(12px)"
-                                            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                            _hover={{
-                                                borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                            }}
-                                            _focus={{
-                                                borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                                boxShadow: 'none',
-                                            }}
-                                        />
-                                    </InputGroup>
-                                    <Select
-                                        placeholder="Filtrar por status"
-                                        value={statusFilter}
-                                        onChange={(e) => setStatusFilter(e.target.value)}
-                                        maxW="200px"
-                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                        backdropFilter="blur(12px)"
-                                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                        _hover={{
-                                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                        }}
-                                        _focus={{
-                                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                            boxShadow: 'none',
-                                        }}
-                                    >
-                                        <option value="">Todos</option>
-                                        <option value="PENDING">Pendente</option>
-                                        <option value="APPROVED">Aprovado</option>
-                                        <option value="REJECTED">Rejeitado</option>
-                                        <option value="DELIVERED">Entregue</option>
-                                        <option value="RETURNED">Devolvido</option>
-                                    </Select>
-                                </Flex>
+                            <AllocationsTab
+                                allocationRequests={allocationRequests}
+                                filteredAllocationRequests={filteredAllocationRequests}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                returnDateFilter={returnDateFilter}
+                                onReturnDateFilterChange={setReturnDateFilter}
+                                sectorFilter={sectorFilter}
+                                onSectorFilterChange={setSectorFilter}
+                                locationFilter={locationFilter}
+                                onLocationFilterChange={setLocationFilter}
+                                localeFilter={localeFilter}
+                                onLocaleFilterChange={setLocaleFilter}
+                                requesterFilter={requesterFilter}
+                                onRequesterFilterChange={setRequesterFilter}
+                                onAllocationApprove={handleAllocationStatusUpdate}
+                                onAllocationReject={handleAllocationStatusUpdate}
+                                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                            />
+                        </TabPanel>
 
-                                {filteredAllocationRequests.length === 0 ? (
-                                    <Flex direction="column" align="center" justify="center" py={8}>
-                                        <Image
-                                            src="/Task-complete.svg"
-                                            alt="Nenhuma alocação encontrada"
-                                            maxW="300px"
-                                            mb={4}
-                                        />
-                                        <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">
-                                            Nenhuma alocação encontrada
-                                        </Text>
-                                    </Flex>
-                                ) : (
-                                    <Box overflowX="auto">
-                                        <Table variant="simple">
-                                            <Thead>
-                                                <Tr>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Item</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Requerente</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Destino</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Retorno</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Confirmações</Th>
-                                                    <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
-                                                </Tr>
-                                            </Thead>
-                                            <Tbody>
-                                                {filteredAllocationRequests.map((request) => (
-                                                    <Tr
-                                                        key={request.id}
-                                                        transition="all 0.3s ease"
-                                                        _hover={{
-                                                            bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)',
-                                                            transform: 'translateY(-1px)',
-                                                        }}
-                                                    >
-                                                        <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <VStack align="start" spacing={1}>
-                                                                <Text fontWeight="bold">{request.inventory.name}</Text>
-                                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                                                                    {request.inventory.model} - {request.inventory.serial_number}
-                                                                </Text>
-                                                            </VStack>
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <Text color={colorMode === 'dark' ? 'white' : 'gray.800'}>{request.requester.name}</Text>
-                                                            <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                                                                {request.requester.email}
-                                                            </Text>
-                                                        </Td>
-                                                        <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            {request.destination}
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <Badge
-                                                                colorScheme={
-                                                                    request.status === 'APPROVED'
-                                                                        ? 'green'
-                                                                        : request.status === 'REJECTED'
-                                                                            ? 'red'
-                                                                            : request.status === 'DELIVERED'
-                                                                                ? 'purple'
-                                                                                : request.status === 'RETURNED'
-                                                                                    ? 'blue'
-                                                                                    : 'yellow'
-                                                                }
-                                                            >
-                                                                {request.status === 'PENDING'
-                                                                    ? 'Pendente'
-                                                                    : request.status === 'APPROVED'
-                                                                        ? 'Aprovado'
-                                                                        : request.status === 'REJECTED'
-                                                                            ? 'Rejeitado'
-                                                                            : request.status === 'DELIVERED'
-                                                                                ? 'Entregue'
-                                                                                : 'Devolvido'}
-                                                            </Badge>
-                                                        </Td>
-                                                        <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            {new Date(request.return_date).toLocaleDateString('pt-BR')}
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <VStack spacing={2} align="start">
-                                                                <HStack>
-                                                                    <Text fontSize="sm">Requerente:</Text>
-                                                                    <Badge colorScheme={request.requester_delivery_confirmation ? 'green' : 'gray'}>
-                                                                        {request.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                                                                    </Badge>
-                                                                </HStack>
-                                                                <HStack>
-                                                                    <Text fontSize="sm">Gerente:</Text>
-                                                                    <Badge colorScheme={request.manager_delivery_confirmation ? 'green' : 'gray'}>
-                                                                        {request.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                                                                    </Badge>
-                                                                </HStack>
-                                                            </VStack>
-                                                        </Td>
-                                                        <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                                            <HStack spacing={2}>
-                                                                {request.status === 'PENDING' && (
-                                                                    <>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            colorScheme="green"
-                                                                            onClick={() => handleAllocationStatusUpdate(request.id, 'APPROVED')}
-                                                                        >
-                                                                            Aprovar
-                                                                        </Button>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            colorScheme="red"
-                                                                            onClick={() => handleAllocationStatusUpdate(request.id, 'REJECTED')}
-                                                                        >
-                                                                            Rejeitar
-                                                                        </Button>
-                                                                    </>
-                                                                )}
-                                                                {request.status === 'APPROVED' && !request.manager_delivery_confirmation && (
-                                                                    <Button
-                                                                        size="sm"
-                                                                        colorScheme="blue"
-                                                                        onClick={() => handleManagerDeliveryConfirmation(request, true)}
-                                                                    >
-                                                                        Confirmar Entrega
-                                                                    </Button>
-                                                                )}
-                                                            </HStack>
-                                                        </Td>
-                                                    </Tr>
-                                                ))}
-                                            </Tbody>
-                                        </Table>
-                                    </Box>
-                                )}
-                            </Box>
+                        <TabPanel>
+                            <InventoryTransactionsTab
+                                inventoryTransactions={inventoryTransactions}
+                                filteredInventoryTransactions={filteredInventoryTransactions}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                transactionLocationFilter={transactionLocationFilter}
+                                onTransactionLocationFilterChange={setTransactionLocationFilter}
+                                transactionLocaleFilter={transactionLocaleFilter}
+                                onTransactionLocaleFilterChange={setTransactionLocaleFilter}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                            />
+                        </TabPanel>
+
+                        <TabPanel>
+                            <SupplyTransactionsTab
+                                supplyTransactions={supplyTransactions}
+                                filteredSupplyTransactions={filteredSupplyTransactions}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                            />
                         </TabPanel>
                     </TabPanels>
                 </Tabs>

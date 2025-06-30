@@ -976,6 +976,7 @@ export default function SupplyRequestsPage() {
                     ) : (
                       <>
                         {cart.map((item) => (
+                          item.supply ? (
                             <Card 
                               key={item.id} 
                               bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
@@ -1034,6 +1035,7 @@ export default function SupplyRequestsPage() {
                               </VStack>
                             </CardBody>
                           </Card>
+                          ) : null
                         ))}
 
                         <Button

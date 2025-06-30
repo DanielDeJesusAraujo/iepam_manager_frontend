@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -13,7 +13,9 @@ import {
   FormLabel,
   Input,
   Textarea,
+  Select,
   useColorMode,
+  useToast,
 } from '@chakra-ui/react';
 
 interface InventoryItem {
@@ -21,6 +23,16 @@ interface InventoryItem {
   name: string;
   description?: string;
   // Adicione outros campos necessários
+}
+
+interface Locale {
+  id: string;
+  name: string;
+  description?: string;
+  location: {
+    id: string;
+    name: string;
+  };
 }
 
 interface InventoryAllocationModalProps {
@@ -41,7 +53,64 @@ export const InventoryAllocationModal: React.FC<InventoryAllocationModalProps> =
   const [returnDate, setReturnDate] = useState('');
   const [destination, setDestination] = useState('');
   const [notes, setNotes] = useState('');
+  const [locales, setLocales] = useState<Locale[]>([]);
+  const [loadingLocales, setLoadingLocales] = useState(false);
+  const [userSector, setUserSector] = useState<string>('');
   const { colorMode } = useColorMode();
+  const toast = useToast();
+
+  // Buscar locais da filial do usuário
+  useEffect(() => {
+    if (isOpen) {
+      fetchUserLocales();
+    }
+  }, [isOpen]);
+
+  const fetchUserLocales = async () => {
+    setLoadingLocales(true);
+    try {
+      const token = localStorage.getItem('@ti-assistant:token');
+      if (!token) {
+        throw new Error('Token não encontrado');
+      }
+
+      const response = await fetch('/api/locales/user-location', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao buscar locais');
+      }
+
+      const localesData = await response.json();
+      setLocales(localesData);
+
+      // Buscar dados do usuário para obter seu setor
+      const userResponse = await fetch('/api/users/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUserSector(userData.sector?.id || '');
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao carregar locais',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingLocales(false);
+    }
+  };
 
   const handleSubmit = () => {
     onSubmit({
@@ -94,11 +163,12 @@ export const InventoryAllocationModal: React.FC<InventoryAllocationModalProps> =
               />
             </FormControl>
             <FormControl isRequired>
-              <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local de Uso</FormLabel>
-              <Input
-                placeholder="Ex: Departamento de TI - Sala 101"
+              <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local de Destino</FormLabel>
+              <Select
+                placeholder="Selecione o local de destino"
                 value={destination}
                 onChange={e => setDestination(e.target.value)}
+                isLoading={loadingLocales}
                 bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                 backdropFilter="blur(12px)"
                 borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -109,7 +179,13 @@ export const InventoryAllocationModal: React.FC<InventoryAllocationModalProps> =
                   borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
                   boxShadow: 'none',
                 }}
-              />
+              >
+                {locales.map((locale) => (
+                  <option key={locale.id} value={locale.id}>
+                    {locale.name} - {locale.location.name}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
             <FormControl>
               <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Observações</FormLabel>

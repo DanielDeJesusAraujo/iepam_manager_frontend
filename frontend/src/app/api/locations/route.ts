@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   try {
-    const token = request.headers.get('Authorization')?.split(' ')[1];
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
     if (!token) {
       return NextResponse.json(

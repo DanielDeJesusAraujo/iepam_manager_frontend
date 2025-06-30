@@ -240,12 +240,12 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                 ...formData,
                 image_url: imageUrl,
                 acquisition_price: parseFloat(formData.acquisition_price),
-                acquisition_date: new Date(formData.acquisition_date).toISOString(),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            })
+            acquisition_date: new Date(formData.acquisition_date).toISOString(),
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
         } catch (error) {
             toast({
                 title: 'Erro ao fazer upload da imagem',
@@ -322,7 +322,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                 <FormControl isInvalid={!!errors.acquisition_price} isRequired>
                                     <FormLabel>Preço de Aquisição</FormLabel>
                                     <Input
-                                        value={formData.acquisition_price}
+                                            value={formData.acquisition_price}
                                         onChange={(e) => {
                                             const inputValue = e.target.value;
                                             

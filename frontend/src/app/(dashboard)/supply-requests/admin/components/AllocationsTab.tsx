@@ -1,0 +1,456 @@
+'use client';
+
+import {
+    Box,
+    Table,
+    Thead,
+    Tbody,
+    Tr,
+    Th,
+    Td,
+    Badge,
+    Button,
+    InputGroup,
+    InputLeftElement,
+    Input,
+    Select,
+    Text,
+    Flex,
+    VStack,
+    HStack,
+    useColorModeValue,
+    Image,
+} from '@chakra-ui/react';
+import { SearchIcon } from '@chakra-ui/icons';
+import { CheckCircle, XCircle, FileText, RotateCcw } from 'lucide-react';
+
+interface AllocationRequest {
+    id: string;
+    inventory: {
+        id: string;
+        name: string;
+        description: string;
+        model: string;
+        serial_number: string;
+    };
+    requester: {
+        id: string;
+        name: string;
+        email: string;
+    };
+    destination: string;
+    destination_name?: string;
+    destination_id?: string;
+    locale_name?: string;
+    location_name?: string;
+    requester_sector?: string;
+    notes: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'RETURNED';
+    created_at: string;
+    return_date: string;
+    requester_delivery_confirmation: boolean;
+    manager_delivery_confirmation: boolean;
+}
+
+interface AllocationsTabProps {
+    allocationRequests: AllocationRequest[];
+    filteredAllocationRequests: AllocationRequest[];
+    search: string;
+    onSearchChange: (value: string) => void;
+    statusFilter: string;
+    onStatusFilterChange: (value: string) => void;
+    returnDateFilter: string;
+    onReturnDateFilterChange: (value: string) => void;
+    sectorFilter: string;
+    onSectorFilterChange: (value: string) => void;
+    locationFilter: string;
+    onLocationFilterChange: (value: string) => void;
+    localeFilter: string;
+    onLocaleFilterChange: (value: string) => void;
+    requesterFilter: string;
+    onRequesterFilterChange: (value: string) => void;
+    onAllocationApprove: (id: string, status: 'APPROVED' | 'REJECTED') => void;
+    onAllocationReject: (id: string, status: 'APPROVED' | 'REJECTED') => void;
+    onAllocationConfirmDelivery: (request: any, confirmation: boolean) => void;
+    onExportPDF: () => void;
+    onClearFilters: () => void;
+}
+
+export function AllocationsTab({
+    allocationRequests,
+    filteredAllocationRequests,
+    search,
+    onSearchChange,
+    statusFilter,
+    onStatusFilterChange,
+    returnDateFilter,
+    onReturnDateFilterChange,
+    sectorFilter,
+    onSectorFilterChange,
+    locationFilter,
+    onLocationFilterChange,
+    localeFilter,
+    onLocaleFilterChange,
+    requesterFilter,
+    onRequesterFilterChange,
+    onAllocationApprove,
+    onAllocationReject,
+    onAllocationConfirmDelivery,
+    onExportPDF,
+    onClearFilters,
+}: AllocationsTabProps) {
+    const colorMode = useColorModeValue('light', 'dark');
+
+    return (
+        <Box
+            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+            p={6}
+            borderRadius="lg"
+            boxShadow="sm"
+            borderWidth="1px"
+            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+            backdropFilter="blur(12px)"
+        >
+            <Flex gap={4} mb={4} justify="space-between">
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                    </InputLeftElement>
+                    <Input
+                        placeholder="Buscar por item ou usuário..."
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        _hover={{
+                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        }}
+                        _focus={{
+                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                            boxShadow: 'none',
+                        }}
+                    />
+                </InputGroup>
+                <Select
+                    placeholder="Filtrar por status"
+                    value={statusFilter}
+                    onChange={(e) => onStatusFilterChange(e.target.value)}
+                    maxW="200px"
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                    backdropFilter="blur(12px)"
+                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    _hover={{
+                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                    }}
+                    _focus={{
+                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                        boxShadow: 'none',
+                    }}
+                >
+                    <option value="">Todos</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="APPROVED">Aprovado</option>
+                    <option value="REJECTED">Rejeitado</option>
+                    <option value="DELIVERED">Entregue</option>
+                    <option value="RETURNED">Devolvido</option>
+                </Select>
+
+                <Button
+                    size="sm"
+                    onClick={onExportPDF}
+                    colorScheme="blue"
+                    leftIcon={<FileText size={16} />}
+                    isDisabled={filteredAllocationRequests.length === 0}
+                    minW="140px"
+                    h="36px"
+                    fontSize="sm"
+                    fontWeight="medium"
+                    _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s ease"
+                >
+                    Exportar PDF
+                </Button>
+
+                <Button
+                    size="sm"
+                    onClick={onClearFilters}
+                    colorScheme="gray"
+                    variant="outline"
+                    leftIcon={<RotateCcw size={16} />}
+                    minW="140px"
+                    h="36px"
+                    fontSize="sm"
+                    fontWeight="medium"
+                    _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s ease"
+                >
+                    Limpar Filtros
+                </Button>
+            </Flex>
+
+            {/* Filtros Avançados */}
+            <Box mb={4} p={4} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'} borderRadius="md">
+                <Text fontWeight="bold" mb={3} color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                    Filtros Avançados
+                </Text>
+                <Flex gap={3} flexWrap="wrap">
+                    <Input
+                        type="date"
+                        placeholder="Data de Retorno"
+                        value={returnDateFilter}
+                        onChange={(e) => onReturnDateFilterChange(e.target.value)}
+                        maxW="180px"
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    />
+
+                    <Select
+                        placeholder="Setor"
+                        value={sectorFilter}
+                        onChange={(e) => onSectorFilterChange(e.target.value)}
+                        maxW="150px"
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    >
+                        <option value="">Todos</option>
+                        {Array.from(new Set(allocationRequests.map(req => req.requester_sector).filter(Boolean))).map(sector => (
+                            <option key={sector} value={sector}>{sector}</option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        placeholder="Filial"
+                        value={locationFilter}
+                        onChange={(e) => onLocationFilterChange(e.target.value)}
+                        maxW="150px"
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    >
+                        <option value="">Todas</option>
+                        {Array.from(new Set(allocationRequests.map(req => req.location_name).filter(Boolean))).map(location => (
+                            <option key={location} value={location}>{location}</option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        placeholder="Local"
+                        value={localeFilter}
+                        onChange={(e) => onLocaleFilterChange(e.target.value)}
+                        maxW="150px"
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    >
+                        <option value="">Todos</option>
+                        {Array.from(new Set(allocationRequests.map(req => req.locale_name).filter(Boolean))).map(locale => (
+                            <option key={locale} value={locale}>{locale}</option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        placeholder="Requerente"
+                        value={requesterFilter}
+                        onChange={(e) => onRequesterFilterChange(e.target.value)}
+                        maxW="150px"
+                        size="sm"
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    >
+                        <option value="">Todos</option>
+                        {Array.from(new Set(allocationRequests.map(req => req.requester.name).filter(Boolean))).map(requester => (
+                            <option key={requester} value={requester}>{requester}</option>
+                        ))}
+                    </Select>
+                </Flex>
+            </Box>
+
+            {filteredAllocationRequests.length === 0 ? (
+                <Flex direction="column" align="center" justify="center" py={8}>
+                    <Image
+                        src="/Task-complete.svg"
+                        alt="Nenhuma alocação encontrada"
+                        maxW="300px"
+                        mb={4}
+                    />
+                    <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">
+                        Nenhuma alocação encontrada
+                    </Text>
+                </Flex>
+            ) : (
+                <Box overflowX="auto">
+                    <Table variant="simple">
+                        <Thead>
+                            <Tr>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Item</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Requerente</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Local</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Localização/Filial</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Setor do Requerente</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Retorno</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Confirmações</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {filteredAllocationRequests.map((request) => (
+                                <Tr
+                                    key={request.id}
+                                    transition="all 0.3s ease"
+                                    _hover={{
+                                        bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)',
+                                        transform: 'translateY(-1px)',
+                                    }}
+                                >
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        <VStack align="start" spacing={1}>
+                                            <Text fontWeight="bold">{request.inventory.name}</Text>
+                                            <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                                {request.inventory.model} - {request.inventory.serial_number}
+                                            </Text>
+                                        </VStack>
+                                    </Td>
+                                    <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        <Text color={colorMode === 'dark' ? 'white' : 'gray.800'}>{request.requester.name}</Text>
+                                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                                            {request.requester.email}
+                                        </Text>
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.locale_name}
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.location_name}
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.requester_sector}
+                                    </Td>
+                                    <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        <Badge
+                                            colorScheme={
+                                                request.status === 'APPROVED'
+                                                    ? 'green'
+                                                    : request.status === 'REJECTED'
+                                                        ? 'red'
+                                                        : request.status === 'DELIVERED'
+                                                            ? 'purple'
+                                                            : request.status === 'RETURNED'
+                                                                ? 'blue'
+                                                                : 'yellow'
+                                            }
+                                        >
+                                            {request.status === 'PENDING'
+                                                ? 'Pendente'
+                                                : request.status === 'APPROVED'
+                                                    ? 'Aprovado'
+                                                    : request.status === 'REJECTED'
+                                                        ? 'Rejeitado'
+                                                        : request.status === 'DELIVERED'
+                                                            ? 'Entregue'
+                                                            : 'Devolvido'}
+                                        </Badge>
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.return_date ? new Date(request.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
+                                    </Td>
+                                    <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        <VStack spacing={2} align="start">
+                                            <HStack>
+                                                <Text fontSize="sm">Requerente:</Text>
+                                                <Badge colorScheme={request.requester_delivery_confirmation ? 'green' : 'gray'}>
+                                                    {request.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                                                </Badge>
+                                            </HStack>
+                                            <HStack>
+                                                <Text fontSize="sm">Gerente:</Text>
+                                                <Badge colorScheme={request.manager_delivery_confirmation ? 'green' : 'gray'}>
+                                                    {request.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                                                </Badge>
+                                            </HStack>
+                                        </VStack>
+                                    </Td>
+                                    <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        <HStack spacing={2}>
+                                            {request.status === 'PENDING' && (
+                                                <>
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="green"
+                                                        leftIcon={<CheckCircle size={14} />}
+                                                        onClick={() => onAllocationApprove(request.id, 'APPROVED')}
+                                                        minW="100px"
+                                                        h="32px"
+                                                        fontSize="xs"
+                                                        fontWeight="medium"
+                                                        _hover={{
+                                                            transform: 'translateY(-1px)',
+                                                            boxShadow: 'md',
+                                                        }}
+                                                        transition="all 0.2s ease"
+                                                    >
+                                                        Aprovar
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="red"
+                                                        leftIcon={<XCircle size={14} />}
+                                                        onClick={() => onAllocationReject(request.id, 'REJECTED')}
+                                                        minW="100px"
+                                                        h="32px"
+                                                        fontSize="xs"
+                                                        fontWeight="medium"
+                                                        _hover={{
+                                                            transform: 'translateY(-1px)',
+                                                            boxShadow: 'md',
+                                                        }}
+                                                        transition="all 0.2s ease"
+                                                    >
+                                                        Rejeitar
+                                                    </Button>
+                                                </>
+                                            )}
+                                            {request.status === 'APPROVED' && !request.manager_delivery_confirmation && (
+                                                <Button
+                                                    size="sm"
+                                                    colorScheme="blue"
+                                                    leftIcon={<CheckCircle size={14} />}
+                                                    onClick={() => onAllocationConfirmDelivery(request, true)}
+                                                    minW="140px"
+                                                    h="32px"
+                                                    fontSize="xs"
+                                                    fontWeight="medium"
+                                                    _hover={{
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: 'md',
+                                                    }}
+                                                    transition="all 0.2s ease"
+                                                >
+                                                    Confirmar Entrega
+                                                </Button>
+                                            )}
+                                        </HStack>
+                                    </Td>
+                                </Tr>
+                            ))}
+                        </Tbody>
+                    </Table>
+                </Box>
+            )}
+        </Box>
+    );
+} 

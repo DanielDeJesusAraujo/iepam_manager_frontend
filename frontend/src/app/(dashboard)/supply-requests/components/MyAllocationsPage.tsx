@@ -38,6 +38,8 @@ interface AllocationRequest {
     serial_number: string;
   };
   destination: string;
+  destination_name?: string;
+  destination_id?: string;
   notes: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'RETURNED';
   created_at: string;
@@ -223,7 +225,11 @@ export function MyAllocationsPage() {
                     <Td>{allocation.inventory.name}</Td>
                     <Td>{allocation.inventory.model}</Td>
                     <Td>{allocation.inventory.serial_number}</Td>
-                    <Td>{allocation.destination}</Td>
+                    <Td>
+                      <Text fontSize="sm" color="gray.500">
+                        Destino: {allocation.destination_name || allocation.destination}
+                      </Text>
+                    </Td>
                     <Td>
                       <Badge
                         colorScheme={
@@ -249,7 +255,7 @@ export function MyAllocationsPage() {
                                 : 'Devolvido'}
                       </Badge>
                     </Td>
-                    <Td>{new Date(allocation.return_date).toLocaleDateString('pt-BR')}</Td>
+                    <Td>{allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}</Td>
                     <Td>
                       <Flex direction="column" gap={2}>
                         <Badge colorScheme={allocation.requester_delivery_confirmation ? 'green' : 'gray'}>

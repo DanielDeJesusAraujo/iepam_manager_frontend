@@ -25,6 +25,8 @@ interface AllocationRequest {
     serial_number: string;
   };
   destination: string;
+  destination_name?: string;
+  destination_id?: string;
   notes: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'RETURNED';
   created_at: string;
@@ -154,8 +156,8 @@ export function MobileMyAllocationsPage() {
               </HStack>
               <Text fontSize="sm" color="gray.500">Modelo: {allocation.inventory.model}</Text>
               <Text fontSize="sm" color="gray.500">Nº Série: {allocation.inventory.serial_number}</Text>
-              <Text fontSize="sm" color="gray.500">Destino: {allocation.destination}</Text>
-              <Text fontSize="sm" color="gray.500">Retorno: {new Date(allocation.return_date).toLocaleDateString('pt-BR')}</Text>
+              <Text fontSize="sm" color="gray.500">Destino: {allocation.destination_name || allocation.destination}</Text>
+              <Text fontSize="sm" color="gray.500">Retorno: {allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}</Text>
               <HStack>
                 <Badge colorScheme={allocation.requester_delivery_confirmation ? 'green' : 'gray'}>
                   Requerente: {allocation.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}

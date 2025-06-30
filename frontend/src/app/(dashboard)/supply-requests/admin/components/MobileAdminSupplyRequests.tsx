@@ -88,12 +88,100 @@ interface AllocationRequest {
         email: string;
     };
     destination: string;
+    destination_name?: string;
+    destination_id?: string;
     notes: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'RETURNED';
     created_at: string;
     return_date: string;
     requester_delivery_confirmation: boolean;
     manager_delivery_confirmation: boolean;
+}
+
+interface InventoryTransaction {
+    id: string;
+    inventory: {
+        id: string;
+        name: string;
+        model: string;
+        serial_number: string;
+        status: string;
+    };
+    from_user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    to_user?: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    transaction_type: 'ALLOCATION' | 'RETURN' | 'MAINTENANCE' | 'DISCARD' | 'TRANSFER';
+    notes?: string;
+    sector?: {
+        id: string;
+        name: string;
+        location: {
+            id: string;
+            name: string;
+        };
+    };
+    destination: string;
+    destination_locale?: {
+        id: string;
+        name: string;
+        location: {
+            id: string;
+            name: string;
+        };
+    };
+    expected_return_date?: string;
+    actual_return_date?: string;
+    status: 'ACTIVE' | 'RETURNED' | 'OVERDUE';
+    created_at: string;
+}
+
+interface SupplyTransaction {
+    id: string;
+    supply: {
+        id: string;
+        name: string;
+        description?: string;
+        quantity: number;
+        unit: {
+            id: string;
+            name: string;
+            symbol: string;
+        };
+    };
+    from_user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    to_user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    quantity: number;
+    transaction_type: string;
+    movement_type: 'IN' | 'OUT';
+    notes?: string;
+    sector?: {
+        id: string;
+        name: string;
+        location: {
+            id: string;
+            name: string;
+        };
+    };
+    created_at: string;
 }
 
 interface MobileAdminSupplyRequestsProps {
@@ -112,6 +200,10 @@ interface MobileAdminSupplyRequestsProps {
     onAllocationApprove?: (id: string, status: 'APPROVED' | 'REJECTED') => void;
     onAllocationReject?: (id: string, status: 'APPROVED' | 'REJECTED') => void;
     onAllocationConfirmDelivery?: (id: string, confirmation: boolean) => void;
+    inventoryTransactions?: InventoryTransaction[];
+    filteredInventoryTransactions?: InventoryTransaction[];
+    supplyTransactions?: SupplyTransaction[];
+    filteredSupplyTransactions?: SupplyTransaction[];
 }
 
 export function MobileAdminSupplyRequests({
@@ -130,6 +222,10 @@ export function MobileAdminSupplyRequests({
     onAllocationApprove,
     onAllocationReject,
     onAllocationConfirmDelivery,
+    inventoryTransactions,
+    filteredInventoryTransactions,
+    supplyTransactions,
+    filteredSupplyTransactions,
 }: MobileAdminSupplyRequestsProps) {
     const { colorMode } = useColorMode();
     const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
@@ -369,8 +465,8 @@ export function MobileAdminSupplyRequests({
                                                 <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
                                                     Série: {request.inventory.serial_number}
                                                 </Text>
-                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                                                    Destino: {request.destination}
+                                                <Text fontSize="sm" color="gray.500">
+                                                    Destino: {request.destination_name || request.destination}
                                                 </Text>
                                                 <Badge
                                                     colorScheme={
@@ -396,8 +492,8 @@ export function MobileAdminSupplyRequests({
                                                                     ? 'Entregue'
                                                                     : 'Devolvido'}
                                                 </Badge>
-                                                <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                                                    Retorno: {new Date(request.return_date).toLocaleDateString('pt-BR')}
+                                                <Text fontSize="sm" color="gray.500">
+                                                    Retorno: {request.return_date ? new Date(request.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
                                                 </Text>
                                                 <VStack spacing={2} align="start">
                                                     <HStack>
