@@ -293,8 +293,8 @@ export default function SectorSettings() {
                             <Td>{sector.description || '-'}</Td>
                             <Td>{sector.location?.name || '-'}</Td>
                             <Td>
-                                <Badge colorScheme={sector._count?.inventory > 0 ? 'green' : 'gray'}>
-                                    {sector._count?.inventory || 0} itens
+                                <Badge colorScheme={sector._count?.inventory && sector._count.inventory > 0 ? 'green' : 'gray'}>
+                                    {sector._count?.inventory ?? 0} itens
                                 </Badge>
                             </Td>
                             <Td>
@@ -311,7 +311,7 @@ export default function SectorSettings() {
                                         size="sm"
                                         colorScheme="red"
                                         onClick={() => handleSectorDelete(sector.id)}
-                                        isDisabled={sector._count?.inventory > 0}
+                                        isDisabled={!!sector._count?.inventory && sector._count.inventory > 0}
                                     />
                                 </HStack>
                             </Td>
