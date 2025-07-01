@@ -15,6 +15,8 @@ import {
     TabPanels,
     Tab,
     TabPanel,
+    HStack,
+    Divider,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { 
@@ -712,8 +714,8 @@ export default function AdminSupplyRequestsPage() {
                 'Local',
             ];
             const body = filteredRequests.map(request => [
-                request.is_custom ? request.item_name : request.supply?.name,
-                request.user.name,
+                request.is_custom ? request.item_name || '-' : request.supply?.name || '-',
+                request.user.name || '-',
                 `${request.quantity} ${request.supply?.unit?.symbol || request.unit?.symbol || ''}`,
                 request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : 'Entregue',
                 request.created_at ? new Date(request.created_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-',
@@ -954,22 +956,26 @@ export default function AdminSupplyRequestsPage() {
     }
 
     return (
-        <Box w="full" h="full" p={0}>
+        <Box w="full" h="full" py={{ base: '6vh', md: 0 }}>
             <VStack
                 spacing={4}
                 align="stretch"
                 bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                 backdropFilter="blur(12px)"
+                p={{ base: 3, md: 6 }}
                 borderRadius="lg"
                 boxShadow="sm"
                 borderWidth="1px"
                 borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                 h="full"
             >
-                <Flex justify="space-between" align="center">
+                <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
                     <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requisições</Heading>
+                    <HStack spacing={2} w="100%" justify={{ base: 'space-between', md: 'flex-end' }} wrap="wrap">
+                        {/* Botões de exportação e outros podem ser adicionados aqui se necessário */}
+                    </HStack>
                 </Flex>
-
+                <Divider />
                 <Tabs variant="enclosed" onChange={(index) => setActiveTab(index)} index={activeTab}>
                     <TabList>
                         <Tab>Suprimentos</Tab>
@@ -977,7 +983,6 @@ export default function AdminSupplyRequestsPage() {
                         <Tab>Transações de Inventário</Tab>
                         <Tab>Transações de Suprimento</Tab>
                     </TabList>
-
                     <TabPanels>
                         <TabPanel>
                             <SupplyRequestsTab
@@ -994,7 +999,6 @@ export default function AdminSupplyRequestsPage() {
                                 onClearFilters={clearFilters}
                             />
                         </TabPanel>
-
                         <TabPanel>
                             <AllocationsTab
                                 allocationRequests={allocationRequests}
@@ -1020,7 +1024,6 @@ export default function AdminSupplyRequestsPage() {
                                 onClearFilters={clearFilters}
                             />
                         </TabPanel>
-
                         <TabPanel>
                             <InventoryTransactionsTab
                                 inventoryTransactions={inventoryTransactions}
@@ -1037,7 +1040,6 @@ export default function AdminSupplyRequestsPage() {
                                 onClearFilters={clearFilters}
                             />
                         </TabPanel>
-
                         <TabPanel>
                             <SupplyTransactionsTab
                                 supplyTransactions={supplyTransactions}

@@ -136,26 +136,26 @@ export function SupplyRequestsTab({
             <Flex gap={4} mb={4} flexWrap="wrap" align="end">
                 <FormControl maxW="320px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Buscar por suprimento ou usuário</FormLabel>
-                    <InputGroup>
-                        <InputLeftElement pointerEvents="none">
-                            <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                        </InputLeftElement>
-                        <Input
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                    </InputLeftElement>
+                    <Input
                             placeholder="Digite para buscar..."
-                            value={search}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                            backdropFilter="blur(12px)"
-                            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                            _hover={{
-                                borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                            }}
-                            _focus={{
-                                borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                boxShadow: 'none',
-                            }}
-                        />
-                    </InputGroup>
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        _hover={{
+                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        }}
+                        _focus={{
+                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                            boxShadow: 'none',
+                        }}
+                    />
+                </InputGroup>
                 </FormControl>
                 <FormControl maxW="130px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data Limite de Entrega (início)</FormLabel>
@@ -183,28 +183,28 @@ export function SupplyRequestsTab({
                 </FormControl>
                 <FormControl maxW="100px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
-                    <Select
+                <Select
                         placeholder="Todos"
-                        value={statusFilter}
-                        onChange={(e) => onStatusFilterChange(e.target.value)}
+                    value={statusFilter}
+                    onChange={(e) => onStatusFilterChange(e.target.value)}
                         size="sm"
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                        _hover={{
-                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                        }}
-                        _focus={{
-                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                            boxShadow: 'none',
-                        }}
-                    >
-                        <option value="">Todos</option>
-                        <option value="PENDING">Pendente</option>
-                        <option value="APPROVED">Aprovado</option>
-                        <option value="REJECTED">Rejeitado</option>
-                        <option value="DELIVERED">Entregue</option>
-                    </Select>
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                    backdropFilter="blur(12px)"
+                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    _hover={{
+                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                    }}
+                    _focus={{
+                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                        boxShadow: 'none',
+                    }}
+                >
+                    <option value="">Todos</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="APPROVED">Aprovado</option>
+                    <option value="REJECTED">Rejeitado</option>
+                    <option value="DELIVERED">Entregue</option>
+                </Select>
                 </FormControl>
                 <FormControl maxW="200px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filial</FormLabel>
@@ -241,7 +241,7 @@ export function SupplyRequestsTab({
                     </Select>
                 </FormControl>
                 <FormControl maxW="200px">
-                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local</FormLabel>
+                    <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local de Entrega</FormLabel>
                     <Select
                         placeholder="Todos"
                         value={localeFilter}
@@ -319,6 +319,7 @@ export function SupplyRequestsTab({
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data da Solicitação</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data Limite de Entrega</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Entrega</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Local de Entrega</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
                             </Tr>
                         </Thead>
@@ -373,6 +374,9 @@ export function SupplyRequestsTab({
                                     </Td>
                                     <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         {request.status === 'DELIVERED' && request.updated_at ? new Date(request.updated_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.locale?.name || '-'}
                                     </Td>
                                     <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         <VStack spacing={2} align="start">

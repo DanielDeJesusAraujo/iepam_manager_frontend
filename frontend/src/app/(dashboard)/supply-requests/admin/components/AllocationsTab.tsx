@@ -147,14 +147,14 @@ export function AllocationsTab({
             <Flex gap={4} mb={4} flexWrap="wrap" align="end">
                 <FormControl maxW="320px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Buscar por item ou usuário</FormLabel>
-                    <InputGroup>
-                        <InputLeftElement pointerEvents="none">
-                            <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                        </InputLeftElement>
-                        <Input
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                    </InputLeftElement>
+                    <Input
                             placeholder="Digite para buscar..."
-                            value={search}
-                            onChange={(e) => onSearchChange(e.target.value)}
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
                             bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                             backdropFilter="blur(12px)"
                             borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -187,22 +187,22 @@ export function AllocationsTab({
                 </FormControl>
                 <FormControl maxW="100px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
-                    <Select
+                <Select
                         placeholder="Todos"
-                        value={statusFilter}
-                        onChange={(e) => onStatusFilterChange(e.target.value)}
+                    value={statusFilter}
+                    onChange={(e) => onStatusFilterChange(e.target.value)}
                         size="sm"
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                    >
-                        <option value="">Todos</option>
-                        <option value="PENDING">Pendente</option>
-                        <option value="APPROVED">Aprovado</option>
-                        <option value="REJECTED">Rejeitado</option>
-                        <option value="DELIVERED">Entregue</option>
-                        <option value="RETURNED">Devolvido</option>
-                    </Select>
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                    backdropFilter="blur(12px)"
+                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                >
+                    <option value="">Todos</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="APPROVED">Aprovado</option>
+                    <option value="REJECTED">Rejeitado</option>
+                    <option value="DELIVERED">Entregue</option>
+                    <option value="RETURNED">Devolvido</option>
+                </Select>
                 </FormControl>
                 <FormControl maxW="130px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filial</FormLabel>
@@ -274,43 +274,43 @@ export function AllocationsTab({
                 </FormControl>
             </Flex>
 
-            <Button
-                size="sm"
-                onClick={onExportPDF}
-                colorScheme="blue"
-                leftIcon={<FileText size={16} />}
-                isDisabled={filteredAllocationRequests.length === 0}
-                minW="140px"
-                h="36px"
-                fontSize="sm"
-                fontWeight="medium"
-                _hover={{
-                    transform: 'translateY(-1px)',
-                    boxShadow: 'lg',
-                }}
-                transition="all 0.2s ease"
-            >
-                Exportar PDF
-            </Button>
+                <Button
+                    size="sm"
+                    onClick={onExportPDF}
+                    colorScheme="blue"
+                    leftIcon={<FileText size={16} />}
+                    isDisabled={filteredAllocationRequests.length === 0}
+                    minW="140px"
+                    h="36px"
+                    fontSize="sm"
+                    fontWeight="medium"
+                    _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s ease"
+                >
+                    Exportar PDF
+                </Button>
 
-            <Button
-                size="sm"
-                onClick={onClearFilters}
-                colorScheme="gray"
-                variant="outline"
-                leftIcon={<RotateCcw size={16} />}
-                minW="140px"
-                h="36px"
-                fontSize="sm"
-                fontWeight="medium"
-                _hover={{
-                    transform: 'translateY(-1px)',
-                    boxShadow: 'lg',
-                }}
-                transition="all 0.2s ease"
-            >
-                Limpar Filtros
-            </Button>
+                <Button
+                    size="sm"
+                    onClick={onClearFilters}
+                    colorScheme="gray"
+                    variant="outline"
+                    leftIcon={<RotateCcw size={16} />}
+                    minW="140px"
+                    h="36px"
+                    fontSize="sm"
+                    fontWeight="medium"
+                    _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s ease"
+                >
+                    Limpar Filtros
+                </Button>
 
             {filteredAllocationRequests.length === 0 ? (
                 <Flex direction="column" align="center" justify="center" py={8}>
@@ -330,14 +330,13 @@ export function AllocationsTab({
                         <Thead>
                             <Tr>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Item</Th>
-                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Requerente</Th>
-                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Local</Th>
-                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Localização/Filial</Th>
-                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Setor do Requerente</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Usuário</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Quantidade</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
-                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Retorno</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data da Solicitação</Th>
-                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Confirmações</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data Limite de Entrega</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Entrega</Th>
+                                <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Local de Entrega</Th>
                                 <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
                             </Tr>
                         </Thead>
@@ -366,13 +365,7 @@ export function AllocationsTab({
                                         </Text>
                                     </Td>
                                     <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                        {request.locale_name}
-                                    </Td>
-                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                        {request.location_name}
-                                    </Td>
-                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                        {request.requester_sector}
+                                        1
                                     </Td>
                                     <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         <Badge
@@ -400,26 +393,16 @@ export function AllocationsTab({
                                         </Badge>
                                     </Td>
                                     <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                        {request.return_date ? new Date(request.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
-                                    </Td>
-                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         {request.created_at ? new Date(request.created_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'Não definida'}
                                     </Td>
-                                    <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-                                        <VStack spacing={2} align="start">
-                                            <HStack>
-                                                <Text fontSize="sm">Requerente:</Text>
-                                                <Badge colorScheme={request.requester_delivery_confirmation ? 'green' : 'gray'}>
-                                                    {request.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                                                </Badge>
-                                            </HStack>
-                                            <HStack>
-                                                <Text fontSize="sm">Gerente:</Text>
-                                                <Badge colorScheme={request.manager_delivery_confirmation ? 'green' : 'gray'}>
-                                                    {request.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                                                </Badge>
-                                            </HStack>
-                                        </VStack>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.return_date ? new Date(request.return_date).toLocaleDateString('pt-BR') : '-'}
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.status === 'DELIVERED' && request.manager_delivery_confirmation ? new Date(request.return_date).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-'}
+                                    </Td>
+                                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
+                                        {request.locale_name || '-'}
                                     </Td>
                                     <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
                                         <HStack spacing={2}>
