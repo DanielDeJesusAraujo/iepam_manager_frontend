@@ -30,6 +30,8 @@ interface AllocationRequest {
     serial_number: string;
   };
   destination: string;
+  destination_name?: string;
+  destination_id?: string;
   notes: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'RETURNED';
   created_at: string;
@@ -190,11 +192,11 @@ export default function MyAllocationsPage() {
                   </HStack>
 
                   <Text fontSize="sm" color="gray.500">
-                    Destino: {allocation.destination}
+                    Destino: {allocation.destination_name || allocation.destination}
                   </Text>
 
                   <Text fontSize="sm" color="gray.500">
-                    Data de Retorno: {new Date(allocation.return_date).toLocaleDateString('pt-BR')}
+                    Data de Retorno: {allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
                   </Text>
 
                   <Divider />

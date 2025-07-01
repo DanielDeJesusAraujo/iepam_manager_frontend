@@ -31,6 +31,11 @@ import {
     Divider,
     useBreakpointValue,
     useColorMode,
+    Tabs,
+    TabList,
+    TabPanels,
+    Tab,
+    TabPanel,
 } from '@chakra-ui/react';
 import { FiPlus, FiSearch, FiFilter, FiEdit2, FiTrash2, FiBarChart2, FiAlertTriangle } from 'react-icons/fi';
 import { SupplyModal } from './components/SupplyModal';
@@ -38,6 +43,8 @@ import { MobileSupplies } from './components/MobileSupplies';
 import { Supply } from './utils/types';
 import { filterSupplies } from './utils/filterUtils';
 import { exportSuppliesBelowMinimum } from './utils/exportUtils';
+import { SupplyStatistics } from './components/SupplyStatistics';
+import { SupplyBatchList } from './components/SupplyBatchList';
 
 export default function SuppliesPage() {
     const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -257,6 +264,14 @@ export default function SuppliesPage() {
 
     return (
         <Container maxW="100%" py={4} px={isMobile ? 2 : 8} h="calc(100vh - 64px)" overflow="hidden">
+            <Tabs variant="enclosed" colorScheme="blue">
+                <TabList>
+                    <Tab>Lista de Suprimentos</Tab>
+                    <Tab>Estatísticas</Tab>
+                    <Tab>Lotes</Tab>
+                </TabList>
+                <TabPanels>
+                    <TabPanel>
             <VStack
                 spacing={4}
                 align="stretch"
@@ -362,6 +377,7 @@ export default function SuppliesPage() {
                     overflowX="auto"
                     flex="1"
                     overflowY="auto"
+                                maxH="60vh"
                 >
                     <Table variant="simple">
                         <Thead>
@@ -442,6 +458,15 @@ export default function SuppliesPage() {
                     </Table>
                 </Box>
             </VStack>
+                    </TabPanel>
+                    <TabPanel>
+                        <SupplyStatistics />
+                    </TabPanel>
+                    <TabPanel>
+                        <SupplyBatchList />
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
 
             <SupplyModal
                 isOpen={isOpen}

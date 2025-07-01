@@ -91,6 +91,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
             onSubmit({
                 ...formData,
                 image_url: imageUrl,
+                unit_price: formData.unit_price,
             });
         } catch (error) {
             toast({
@@ -205,6 +206,23 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                         </option>
                                     ))}
                                 </Select>
+                            </FormControl>
+
+                            <FormControl isRequired>
+                                <FormLabel>Preço Unitário</FormLabel>
+                                <NumberInput
+                                    min={0}
+                                    precision={2}
+                                    step={0.01}
+                                    value={formData.unit_price || ''}
+                                    onChange={(_, value) => setFormData({ ...formData, unit_price: value })}
+                                >
+                                    <NumberInputField />
+                                    <NumberInputStepper>
+                                        <NumberIncrementStepper />
+                                        <NumberDecrementStepper />
+                                    </NumberInputStepper>
+                                </NumberInput>
                             </FormControl>
 
                             <FormControl>

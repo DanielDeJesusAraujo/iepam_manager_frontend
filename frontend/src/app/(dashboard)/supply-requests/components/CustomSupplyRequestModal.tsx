@@ -26,6 +26,9 @@ interface CustomSupplyRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: CustomSupplyRequestData) => void;
+    userLocales: { id: string; name: string }[];
+    localeId: string;
+    setLocaleId: (value: string) => void;
 }
 
 export interface CustomSupplyRequestData {
@@ -35,6 +38,7 @@ export interface CustomSupplyRequestData {
     unit_id: string;
     delivery_deadline: string;
     destination: string;
+    locale_id?: string;
     notes?: string;
 }
 
@@ -43,17 +47,16 @@ interface Unit {
     name: string;
 }
 
-export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit }: CustomSupplyRequestModalProps) {
+export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit, userLocales, localeId, setLocaleId }: CustomSupplyRequestModalProps) {
     const [itemName, setItemName] = useState('');
     const [description, setDescription] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [unitId, setUnitId] = useState('');
     const [deliveryDeadline, setDeliveryDeadline] = useState('');
-    const [destination, setDestination] = useState('');
-    const [notes, setNotes] = useState('');
     const [units, setUnits] = useState<Unit[]>([]);
     const [loading, setLoading] = useState(false);
     const toast = useToast();
+    const [notes, setNotes] = useState('');
 
     useEffect(() => {
         fetchUnits();
@@ -77,7 +80,7 @@ export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit }: CustomSu
     };
 
     const handleSubmit = async () => {
-        if (!itemName || !quantity || !unitId || !deliveryDeadline || !destination) {
+        if (!itemName || !quantity || !unitId || !deliveryDeadline || !localeId) {
             toast({
                 title: 'Erro',
                 description: 'Por favor, preencha todos os campos obrigatórios',
@@ -87,7 +90,7 @@ export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit }: CustomSu
             });
             return;
         }
-
+        const selectedLocale = userLocales.find(l => l.id === localeId);
         setLoading(true);
         try {
             const token = localStorage.getItem('@ti-assistant:token');
@@ -103,7 +106,8 @@ export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit }: CustomSu
                     quantity,
                     unit_id: unitId,
                     delivery_deadline: deliveryDeadline,
-                    destination,
+                    destination: selectedLocale ? selectedLocale.name : '',
+                    locale_id: localeId,
                     notes
                 })
             });
@@ -130,8 +134,7 @@ export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit }: CustomSu
             setQuantity(1);
             setUnitId('');
             setDeliveryDeadline('');
-            setDestination('');
-            setNotes('');
+            setLocaleId('');
             onClose();
         } catch (error) {
             toast({
@@ -214,11 +217,16 @@ export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit }: CustomSu
 
                         <FormControl isRequired>
                             <FormLabel>Destino</FormLabel>
-                            <Input
-                                placeholder="Ex: Departamento de TI - Sala 101"
-                                value={destination}
-                                onChange={(e) => setDestination(e.target.value)}
-                            />
+                            <Select
+                                placeholder="Selecione o local de destino"
+                                value={localeId}
+                                onChange={(e) => setLocaleId(e.target.value)}
+                            >
+                                <option value="">Selecione</option>
+                                {userLocales.map((locale) => (
+                                    <option key={locale.id} value={locale.id}>{locale.name}</option>
+                                ))}
+                            </Select>
                         </FormControl>
 
                         <FormControl>

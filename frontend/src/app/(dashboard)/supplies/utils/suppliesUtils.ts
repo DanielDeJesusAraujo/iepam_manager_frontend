@@ -11,6 +11,7 @@ export const initializeFormData = (initialData?: Supply) => {
             category_id: initialData.category?.id || '',
             supplier_id: initialData.supplier?.id || '',
             image_url: initialData.image_url || '',
+            unit_price: (initialData as any).unit_price || 0,
         };
     }
     return {
@@ -22,5 +23,6 @@ export const initializeFormData = (initialData?: Supply) => {
         category_id: '',
         supplier_id: '',
         image_url: '',
+        unit_price: 0,
     };
 }; 

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Grid,
@@ -53,6 +53,9 @@ import {
   FormLabel,
   Textarea,
   useMediaQuery,
+  Skeleton,
+  SkeletonText,
+  Divider,
 } from '@chakra-ui/react';
 import { SearchIcon, ShoppingCart, TimerIcon, CheckCircle, Trash2, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -71,6 +74,7 @@ import {
 import { fetchAvailableInventory, fetchAllocations } from '@/utils/apiUtils';
 import { MyAllocationsPage } from '@/app/(dashboard)/supply-requests/components/MyAllocationsPage';
 import { InventoryAllocationModal } from '@/components/InventoryAllocationModal';
+import { DeliveryDetailsModal } from './components/DeliveryDetailsModal';
 
 interface AllocationRequest {
   id: string;
@@ -118,6 +122,70 @@ interface MobileSupplyRequestsProps {
   filteredAllocationRequests: any[];
 }
 
+// Layout reutilizável para abas persistentes (copiado/adaptado do admin)
+function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = 'persistentTabIndexColab' }: { tabLabels: string[], children: React.ReactNode[], onTabChange?: (() => void)[], storageKey?: string }) {
+  const [activeTab, setActiveTab] = useState(0);
+  const prevTab = useRef(0);
+  const [hasFetched, setHasFetched] = useState(() => tabLabels.map(() => false));
+
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) setActiveTab(Number(saved));
+  }, [storageKey]);
+
+  useEffect(() => {
+    // Ao trocar de aba, resetar o status da aba anterior
+    setHasFetched(arr => arr.map((v, i) => i === prevTab.current ? false : v));
+    prevTab.current = activeTab;
+    // eslint-disable-next-line
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!hasFetched[activeTab] && onTabChange && onTabChange[activeTab]) {
+      onTabChange[activeTab]();
+      setHasFetched(arr => arr.map((v, i) => i === activeTab ? true : v));
+    }
+    // eslint-disable-next-line
+  }, [activeTab, onTabChange, hasFetched]);
+
+  return (
+    <Box w="full" h="full">
+      <VStack
+        spacing={4}
+        align="stretch"
+        bg={useColorModeValue('white', 'gray.700')}
+        backdropFilter="blur(12px)"
+        p={6}
+        borderRadius="lg"
+        boxShadow="sm"
+        borderWidth="1px"
+        borderColor={useColorModeValue('gray.200', 'gray.600')}
+        h="full"
+      >
+        <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
+          <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>Requisições de Suprimentos</Heading>
+          <HStack spacing={2} w="100%" justify={{ base: 'space-between', md: 'flex-end' }} wrap="wrap">
+            {/* Botões de ação */}
+          </HStack>
+        </Flex>
+        <Divider />
+        <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab}>
+          <TabList>
+            {tabLabels.map(label => <Tab key={label}>{label}</Tab>)}
+          </TabList>
+        </Tabs>
+        <Box mt={4}>
+          {children.map((child, idx) => (
+            <Box key={idx} display={activeTab === idx ? 'block' : 'none'} w="full" h="full">
+              {child}
+            </Box>
+          ))}
+        </Box>
+      </VStack>
+    </Box>
+  );
+}
+
 export default function SupplyRequestsPage() {
   const [isMobile] = useMediaQuery('(max-width: 768px)');
   const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -153,6 +221,9 @@ export default function SupplyRequestsPage() {
   const [filteredAllocationRequests, setFilteredAllocationRequests] = useState<AllocationRequest[]>([]);
   const [allocationStatusFilter, setAllocationStatusFilter] = useState('');
   const [isAllocating, setIsAllocating] = useState(false);
+  const [userLocales, setUserLocales] = useState<any[]>([]);
+  const [localeId, setLocaleId] = useState('');
+  const [loadingTabs, setLoadingTabs] = useState([true, true, true, true, true]);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -169,6 +240,24 @@ export default function SupplyRequestsPage() {
     // Transformar categorias em objetos
     const uniqueCategories = Array.from(new Set(supplies.map(s => s.category.label)));
     setCategories(uniqueCategories.map((label, index) => ({ id: String(index), label })));
+
+    // Buscar locais da filial do usuário
+    const fetchUserLocales = async () => {
+      try {
+        const token = localStorage.getItem('@ti-assistant:token');
+        if (!token) return;
+        const response = await fetch('/api/locales/user-location', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUserLocales(data);
+        }
+      } catch (e) {
+        // Silenciar erro
+      }
+    };
+    fetchUserLocales();
   }, []);
 
   const loadInitialData = async () => {
@@ -316,7 +405,7 @@ export default function SupplyRequestsPage() {
         throw new Error('Token não encontrado');
       }
 
-      await submitRequest(cart, deadline, dest, token);
+      await submitRequest(cart, deadline, dest, token, localeId);
 
       toast({
         title: 'Sucesso',
@@ -373,6 +462,7 @@ export default function SupplyRequestsPage() {
       });
 
       setIsCustomRequestModalOpen(false);
+      setLocaleId('');
       loadInitialData();
     } catch (error) {
       toast({
@@ -418,6 +508,33 @@ export default function SupplyRequestsPage() {
     }
   };
 
+  // Funções para buscar dados de cada aba
+  const fetchTabCatalog = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? true : v));
+    await loadInitialData();
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? false : v));
+  };
+  const fetchTabInventory = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? true : v));
+    await loadInitialData();
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? false : v));
+  };
+  const fetchTabMyRequests = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 2 ? true : v));
+    await loadInitialData();
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 2 ? false : v));
+  };
+  const fetchTabMyAllocations = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 3 ? true : v));
+    await loadInitialData();
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 3 ? false : v));
+  };
+  const fetchTabCart = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 4 ? true : v));
+    await loadInitialData();
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 4 ? false : v));
+  };
+
   if (isMobile) {
     return (
       <MobileSupplyRequests
@@ -448,173 +565,19 @@ export default function SupplyRequestsPage() {
     );
   }
 
-  if (loading) {
     return (
-      <Box p={1}>
-        <Flex justify="center" align="center" minH="200px">
-          <Spinner size="xl" />
-        </Flex>
-      </Box>
-    );
-  }
-
-  return (
-    <Box w="full" h="full">
-      <VStack
-        spacing={4}
-        align="stretch"
-        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-        backdropFilter="blur(12px)"
-        p={isMobile ? 0 : 6}
-        borderRadius="lg"
-        boxShadow="sm"
-        borderWidth="1px"
-        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        h="full"
-      >
-        <Flex 
-          direction={isMobile ? "column" : "row"} 
-          justify="space-between" 
-          align={isMobile ? "stretch" : "center"}
-          gap={3}
-        >
-          {!isMobile && (
-          <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>
-            Requisições de Suprimentos
-          </Heading>
-          )}
-          <HStack 
-            spacing={2} 
-            w="100%" 
-            justify={isMobile ? "space-between" : "flex-end"}
-            wrap="wrap"
-          >
-            <Button
-              leftIcon={<Plus />}
-              colorScheme="blue"
-              onClick={() => setIsCustomRequestModalOpen(true)}
-              size={isMobile ? "sm" : "md"}
-              flex={isMobile ? 1 : undefined}
-              bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            >
-              Pedido Customizado
-            </Button>
-          </HStack>
-        </Flex>
-
-        <Box
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-          backdropFilter="blur(12px)"
-          borderRadius="lg"
-          borderWidth="1px"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        >
-          <Tabs 
-            variant="enclosed"
-            index={activeTab}
-            onChange={(index) => setActiveTab(index)}
-            colorScheme={colorMode === 'dark' ? 'blue' : 'blue'}
-          >
-            <TabList 
-              borderBottom="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              overflowX={isMobile ? "auto" : "visible"}
-              css={{
-                '&::-webkit-scrollbar': {
-                  height: '4px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: '4px',
-                },
-              }}
-            >
-              <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                }}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
-                }}
-                minW={isMobile ? "120px" : undefined}
-              >
-                Catálogo
-              </Tab>
-              <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                }}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
-                }}
-                minW={isMobile ? "120px" : undefined}
-              >
-                Inventário
-              </Tab>
-              <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                }}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
-                }}
-                minW={isMobile ? "120px" : undefined}
-              >
-                Meus Pedidos
-              </Tab>
-              <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                }}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
-                }}
-                minW={isMobile ? "120px" : undefined}
-              >
-                Minhas Alocações
-              </Tab>
-              <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                }}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
-                }}
-                minW={isMobile ? "120px" : undefined}
-              >
-                Carrinho
-              </Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
+    <PersistentTabsLayout
+      tabLabels={["Catálogo", "Inventário", "Meus Pedidos", "Minhas Alocações", "Carrinho"]}
+      onTabChange={[fetchTabCatalog, fetchTabInventory, fetchTabMyRequests, fetchTabMyAllocations, fetchTabCart]}
+    >
+      {[
+        loadingTabs[0] ? (
+          <Skeleton key="skeleton-catalog" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+        ) : (
+          <>
               <Flex justify="space-between" align="center" mb={6}>
                   <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Catálogo de Suprimentos</Heading>
               </Flex>
-
               <InputGroup mb={6}>
                 <InputLeftElement pointerEvents="none">
                     <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
@@ -626,24 +589,11 @@ export default function SupplyRequestsPage() {
                     bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                     backdropFilter="blur(12px)"
                     borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                    _hover={{
-                      borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                    }}
-                    _focus={{
-                      borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                      boxShadow: 'none',
-                    }}
+                _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+                _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
                 />
               </InputGroup>
-
-                <Grid 
-                  templateColumns={{ 
-                    base: '1fr', 
-                    md: 'repeat(2, 1fr)', 
-                    lg: 'repeat(3, 1fr)' 
-                  }} 
-                  gap={6}
-                >
+            <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
                 {filteredSupplies.map((supply) => (
                   <Card
                     key={supply.id}
@@ -653,46 +603,18 @@ export default function SupplyRequestsPage() {
                       borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     cursor="pointer"
                     onClick={() => router.push(`/supply-requests/${supply.id}`)}
-                    _hover={{
-                        bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                      transform: 'translateY(-2px)',
-                      transition: 'all 0.2s ease-in-out',
-                    }}
+                  _hover={{ bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)', transform: 'translateY(-2px)', transition: 'all 0.2s ease-in-out' }}
                   >
                     <CardBody>
                       <VStack align="stretch" spacing={4}>
-                        <Image
-                          src="/placeholder.png"
-                          alt={supply.name}
-                          borderRadius="md"
-                          height="200px"
-                          objectFit="cover"
-                        />
+                      <Image src="/placeholder.png" alt={supply.name} borderRadius="md" height="200px" objectFit="cover" />
                           <Heading size="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>{supply.name}</Heading>
-                          <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>
-                          {supply.description}
-                        </Text>
+                      <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>{supply.description}</Text>
                         <HStack justify="space-between" hidden={true}>
                           <Badge colorScheme="blue">{supply.category.label}</Badge>
                         </HStack>
-                          <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                          Quantidade disponível: {supply.quantity}
-                        </Text>
-                        <Button
-                          colorScheme="blue"
-                          leftIcon={<ShoppingCart size={20} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddToCart(supply);
-                          }}
-                          isDisabled={supply.quantity <= 0}
-                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                            _hover={{
-                              bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                              transform: 'translateY(-1px)',
-                            }}
-                            transition="all 0.3s ease"
-                        >
+                      <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Quantidade disponível: {supply.quantity}</Text>
+                      <Button colorScheme="blue" leftIcon={<ShoppingCart size={20} />} onClick={(e) => { e.stopPropagation(); handleAddToCart(supply); }} isDisabled={supply.quantity <= 0} bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} transition="all 0.3s ease">
                           Adicionar ao Carrinho
                         </Button>
                       </VStack>
@@ -700,13 +622,15 @@ export default function SupplyRequestsPage() {
                   </Card>
                 ))}
               </Grid>
-            </TabPanel>
-
-            <TabPanel>
+          </>
+        ),
+        loadingTabs[1] ? (
+          <Skeleton key="skeleton-inventory" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+        ) : (
+          <>
               <Flex justify="space-between" align="center" mb={6}>
                   <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Itens do Inventário</Heading>
               </Flex>
-
               <InputGroup mb={6}>
                 <InputLeftElement pointerEvents="none">
                     <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
@@ -718,16 +642,10 @@ export default function SupplyRequestsPage() {
                     bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                     backdropFilter="blur(12px)"
                     borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                    _hover={{
-                      borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                    }}
-                    _focus={{
-                      borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                      boxShadow: 'none',
-                    }}
+                _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+                _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
                 />
               </InputGroup>
-
               <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={6}>
                 {filteredInventoryItems.map((item) => (
                   <Card
@@ -738,47 +656,18 @@ export default function SupplyRequestsPage() {
                       borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     cursor="pointer"
                     onClick={() => router.push(`/supply-requests/inventory/${item.id}`)}
-                    _hover={{
-                        bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                      transform: 'translateY(-2px)',
-                      transition: 'all 0.2s ease-in-out',
-                    }}
+                  _hover={{ bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)', transform: 'translateY(-2px)', transition: 'all 0.2s ease-in-out' }}
                   >
                     <CardBody>
                       <VStack align="stretch" spacing={4}>
-                        <Image
-                          src={item.image_url || "/placeholder.png"}
-                          alt={item.name}
-                          borderRadius="md"
-                          height="200px"
-                          width="100%"
-                          objectFit="cover"
-                        />
+                      <Image src={item.image_url || "/placeholder.png"} alt={item.name} borderRadius="md" height="200px" width="100%" objectFit="cover" />
                           <Heading size="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>{item.name}</Heading>
-                          <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>
-                          {item.description}
-                        </Text>
+                      <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>{item.description}</Text>
                         <HStack justify="space-between">
                           <Badge colorScheme="blue">{item.category.label}</Badge>
                         </HStack>
-                          <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                          Status: {item.status === 'STANDBY' ? 'Disponível' : 'Em Uso'}
-                        </Text>
-                        <Button
-                          colorScheme="purple"
-                          leftIcon={<TimerIcon size={20} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAllocateItem(item);
-                          }}
-                          isDisabled={item.status !== 'STANDBY'}
-                            bg={colorMode === 'dark' ? 'rgba(159, 122, 234, 0.8)' : undefined}
-                            _hover={{
-                              bg: colorMode === 'dark' ? 'rgba(159, 122, 234, 0.9)' : undefined,
-                              transform: 'translateY(-1px)',
-                            }}
-                            transition="all 0.3s ease"
-                        >
+                      <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Status: {item.status === 'STANDBY' ? 'Disponível' : 'Em Uso'}</Text>
+                      <Button colorScheme="purple" leftIcon={<TimerIcon size={20} />} onClick={(e) => { e.stopPropagation(); handleAllocateItem(item); }} isDisabled={item.status !== 'STANDBY'} bg={colorMode === 'dark' ? 'rgba(159, 122, 234, 0.8)' : undefined} _hover={{ bg: colorMode === 'dark' ? 'rgba(159, 122, 234, 0.9)' : undefined, transform: 'translateY(-1px)' }} transition="all 0.3s ease">
                           Alocar Item
                         </Button>
                       </VStack>
@@ -786,15 +675,13 @@ export default function SupplyRequestsPage() {
                   </Card>
                 ))}
               </Grid>
-            </TabPanel>
-
-            <TabPanel>
-                <Card 
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                  backdropFilter="blur(12px)"
-                  borderWidth="1px"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                >
+          </>
+        ),
+        loadingTabs[2] ? (
+          <Skeleton key="skeleton-reqs" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+        ) : (
+          <>
+            <Card bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} backdropFilter="blur(12px)" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}>
                 <CardBody>
                   <Flex gap={4} mb={6} justify={isMobile ? 'center' : 'space-between'}>
                     <InputGroup>
@@ -808,13 +695,8 @@ export default function SupplyRequestsPage() {
                           bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                           backdropFilter="blur(12px)"
                           borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                          _hover={{
-                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                          }}
-                          _focus={{
-                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                            boxShadow: 'none',
-                          }}
+                      _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+                      _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
                       />
                     </InputGroup>
                     <Select
@@ -825,13 +707,8 @@ export default function SupplyRequestsPage() {
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
                         backdropFilter="blur(12px)"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                        _hover={{
-                          borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                        }}
-                        _focus={{
-                          borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                          boxShadow: 'none',
-                        }}
+                    _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+                    _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
                     >
                       <option value="">Todos</option>
                       <option value="PENDING">Pendente</option>
@@ -840,18 +717,10 @@ export default function SupplyRequestsPage() {
                       <option value="DELIVERED">Entregue</option>
                     </Select>
                   </Flex>
-
                   {filteredRequests.length === 0 ? (
                     <Flex direction="column" align="center" justify="center">
-                      <Image
-                        src="/Task-complete.svg"
-                        alt="Nenhuma requisição encontrada"
-                        maxW="300px"
-                        mb={4}
-                      />
-                        <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">
-                        Nenhuma requisição encontrada
-                      </Text>
+                    <Image src="/Task-complete.svg" alt="Nenhuma requisição encontrada" maxW="300px" mb={4} />
+                    <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">Nenhuma requisição encontrada</Text>
                     </Flex>
                   ) : (
                     <Box overflowX="auto">
@@ -870,64 +739,28 @@ export default function SupplyRequestsPage() {
                           {filteredRequests.map((request) => (
                             <Tr key={request.id}>
                                 <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>{request.is_custom ? request.item_name : request.supply?.name}</Td>
-                                <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>
-                                {request.quantity} {request.is_custom ? request.unit?.symbol || request.unit?.name : request.supply?.unit?.symbol || request.supply?.unit?.name}
-                              </Td>
+                            <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>{request.quantity} {request.is_custom ? request.unit?.symbol || request.unit?.name : request.supply?.unit?.symbol || request.supply?.unit?.name}</Td>
                               <Td>
-                                <Badge
-                                  colorScheme={
-                                    request.status === 'APPROVED'
-                                      ? 'green'
-                                      : request.status === 'REJECTED'
-                                        ? 'red'
-                                        : request.status === 'DELIVERED'
-                                          ? 'purple'
-                                          : 'yellow'
-                                  }
-                                >
-                                  {request.status === 'PENDING'
-                                    ? 'Pendente'
-                                    : request.status === 'APPROVED'
-                                      ? 'Aprovado'
-                                      : request.status === 'REJECTED'
-                                        ? 'Rejeitado'
-                                        : 'Entregue'}
+                              <Badge colorScheme={request.status === 'APPROVED' ? 'green' : request.status === 'REJECTED' ? 'red' : request.status === 'DELIVERED' ? 'purple' : 'yellow'}>
+                                {request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : 'Entregue'}
                                 </Badge>
                               </Td>
-                                <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>
-                                {new Date(request.created_at).toLocaleDateString('pt-BR')}
-                              </Td>
+                            <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>{new Date(request.created_at).toLocaleDateString('pt-BR')}</Td>
                               <Td>
                                 <VStack spacing={2} align="start">
                                   <HStack>
                                       <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requerente:</Text>
-                                    <Badge colorScheme={request.requester_confirmation ? 'green' : 'gray'}>
-                                      {request.requester_confirmation ? 'Confirmado' : 'Pendente'}
-                                    </Badge>
+                                  <Badge colorScheme={request.requester_confirmation ? 'green' : 'gray'}>{request.requester_confirmation ? 'Confirmado' : 'Pendente'}</Badge>
                                   </HStack>
                                   <HStack>
                                       <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Gerente:</Text>
-                                    <Badge colorScheme={request.manager_delivery_confirmation ? 'green' : 'gray'}>
-                                      {request.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                                    </Badge>
+                                  <Badge colorScheme={request.manager_delivery_confirmation ? 'green' : 'gray'}>{request.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}</Badge>
                                   </HStack>
                                 </VStack>
                               </Td>
                               <Td>
                                 {request.status === 'APPROVED' && (
-                                  <Button
-                                    size="sm"
-                                    colorScheme="blue"
-                                    leftIcon={<CheckCircle size={16} />}
-                                    onClick={() => handleRequesterConfirmation(request.id, true, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
-                                    isDisabled={request.requester_confirmation}
-                                      bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                                      _hover={{
-                                        bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                        transform: 'translateY(-1px)',
-                                      }}
-                                      transition="all 0.3s ease"
-                                  >
+                                <Button size="sm" colorScheme="blue" leftIcon={<CheckCircle size={16} />} onClick={() => handleRequesterConfirmation(request.id, true, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)} isDisabled={request.requester_confirmation} bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} transition="all 0.3s ease">
                                     Confirmar Recebimento
                                   </Button>
                                 )}
@@ -940,19 +773,18 @@ export default function SupplyRequestsPage() {
                   )}
                 </CardBody>
               </Card>
-            </TabPanel>
-
-            <TabPanel>
+          </>
+        ),
+        loadingTabs[3] ? (
+          <Skeleton key="skeleton-allocs" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+        ) : (
               <MyAllocationsPage />
-            </TabPanel>
-
-            <TabPanel>
-                <Card 
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                  backdropFilter="blur(12px)"
-                  borderWidth="1px"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                >
+        ),
+        loadingTabs[4] ? (
+          <Skeleton key="skeleton-cart" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+        ) : (
+          <>
+            <Card bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} backdropFilter="blur(12px)" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}>
                 <CardBody>
                   <VStack spacing={4}>
                       <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Carrinho de Pedidos</Heading>
@@ -960,71 +792,28 @@ export default function SupplyRequestsPage() {
                       <VStack spacing={4}>
                         <ShoppingCart size={48} />
                           <Text fontSize="lg" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Seu carrinho está vazio</Text>
-                        <Button
-                          colorScheme="blue"
-                          onClick={() => router.push('/supply-requests')}
-                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                            _hover={{
-                              bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                              transform: 'translateY(-1px)',
-                            }}
-                            transition="all 0.3s ease"
-                        >
+                      <Button colorScheme="blue" onClick={() => router.push('/supply-requests')} bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} transition="all 0.3s ease">
                           Continuar Comprando
                         </Button>
                       </VStack>
                     ) : (
                       <>
                         {cart.map((item) => (
-                            <Card 
-                              key={item.id} 
-                              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                              backdropFilter="blur(12px)"
-                              borderWidth="1px"
-                              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                            >
+                          item.supply ? (
+                          <Card key={item.id} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} backdropFilter="blur(12px)" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}>
                             <CardBody>
                               <VStack align="stretch" spacing={4}>
                                 <HStack justify="space-between">
                                   <VStack align="start" spacing={1}>
                                       <Heading size="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>{item.supply.name}</Heading>
-                                      <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>
-                                      {item.supply.description}
-                                    </Text>
+                                    <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>{item.supply.description}</Text>
                                   </VStack>
-                                  <IconButton
-                                    aria-label="Remover item"
-                                    icon={<Trash2 size={20} />}
-                                    colorScheme="red"
-                                    variant="ghost"
-                                    onClick={() => handleRemoveFromCart(item.id)}
-                                  />
+                                  <IconButton aria-label="Remover item" icon={<Trash2 size={20} />} colorScheme="red" variant="ghost" onClick={() => handleRemoveFromCart(item.id)} />
                                 </HStack>
-
                                 <HStack justify="space-between">
-                                    <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
-                                    Quantidade disponível: {item.quantity}
-                                  </Text>
-                                  <NumberInput
-                                    value={item.quantity}
-                                    min={1}
-                                    max={item.supply.quantity}
-                                    onChange={(_, value) => handleUpdateQuantity(item.id, value)}
-                                    size="sm"
-                                    maxW="120px"
-                                  >
-                                      <NumberInputField 
-                                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                                        backdropFilter="blur(12px)"
-                                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                        _hover={{
-                                          borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                        }}
-                                        _focus={{
-                                          borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                          boxShadow: 'none',
-                                        }}
-                                      />
+                                  <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Quantidade disponível: {item.quantity}</Text>
+                                  <NumberInput value={item.quantity} min={1} max={item.supply.quantity} onChange={(_, value) => handleUpdateQuantity(item.id, value)} size="sm" maxW="120px">
+                                    <NumberInputField bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} backdropFilter="blur(12px)" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }} _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }} />
                                     <NumberInputStepper>
                                       <NumberIncrementStepper />
                                       <NumberDecrementStepper />
@@ -1034,20 +823,9 @@ export default function SupplyRequestsPage() {
                               </VStack>
                             </CardBody>
                           </Card>
+                          ) : null
                         ))}
-
-                        <Button
-                          colorScheme="green"
-                          size="lg"
-                          onClick={onOpen}
-                          leftIcon={<ShoppingCart size={24} />}
-                            bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-                            _hover={{
-                              bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                              transform: 'translateY(-1px)',
-                            }}
-                            transition="all 0.3s ease"
-                        >
+                      <Button colorScheme="green" size="lg" onClick={onOpen} leftIcon={<ShoppingCart size={24} />} bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined} _hover={{ bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined, transform: 'translateY(-1px)' }} transition="all 0.3s ease">
                           Enviar Pedido
                         </Button>
                       </>
@@ -1055,102 +833,9 @@ export default function SupplyRequestsPage() {
                   </VStack>
                 </CardBody>
               </Card>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-        </Box>
-      </VStack>
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-        <ModalContent
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'gray.50'}
-          backdropFilter="blur(12px)"
-          borderWidth="1px"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        >
-          <ModalHeader color={colorMode === 'dark' ? 'white' : 'gray.800'}>Detalhes da Entrega</ModalHeader>
-          <ModalCloseButton color={colorMode === 'dark' ? 'white' : 'gray.800'} />
-            <ModalBody>
-              <VStack spacing={4}>
-                <FormControl isRequired>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data Limite para Entrega</FormLabel>
-                  <Input
-                    type="date"
-                    value={deliveryDeadline}
-                    onChange={(e) => setDeliveryDeadline(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-                <FormControl isRequired>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Destino</FormLabel>
-                  <Input
-                    placeholder="Ex: Departamento de TI - Sala 101"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-                  />
-                </FormControl>
-              </VStack>
-            </ModalBody>
-            <ModalFooter>
-            <Button 
-              variant="ghost" 
-              mr={3} 
-              onClick={onClose}
-              color={colorMode === 'dark' ? 'white' : 'gray.800'}
-            >
-                Cancelar
-              </Button>
-              <Button
-                colorScheme="green"
-                onClick={handleSubmitRequest}
-                isDisabled={!deliveryDeadline || !destination}
-              bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-              >
-                Confirmar Pedido
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-
-        <CustomSupplyRequestModal
-          isOpen={isCustomRequestModalOpen}
-          onClose={() => setIsCustomRequestModalOpen(false)}
-          onSubmit={handleCustomRequest}
-        />
-
-        <InventoryAllocationModal
-          isOpen={isAllocationModalOpen}
-          onClose={() => setIsAllocationModalOpen(false)}
-          item={selectedItem}
-          onSubmit={handleAllocationSubmit}
-          isLoading={isAllocating}
-        />
-    </Box>
+          </>
+        )
+      ]}
+    </PersistentTabsLayout>
   );
 } 

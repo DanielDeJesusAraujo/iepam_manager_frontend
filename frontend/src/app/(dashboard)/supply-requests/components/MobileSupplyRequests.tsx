@@ -129,6 +129,8 @@ export function MobileSupplyRequests({
     const { isOpen: isDeliveryModalOpen, onOpen: onDeliveryModalOpen, onClose: onDeliveryModalClose } = useDisclosure();
     const [deliveryDeadline, setDeliveryDeadline] = useState('');
     const [destination, setDestination] = useState('');
+    const [userLocales, setUserLocales] = useState<{ id: string; name: string }[]>([]);
+    const [localeId, setLocaleId] = useState('');
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -209,6 +211,26 @@ export function MobileSupplyRequests({
     useEffect(() => {
         setIsLoading(loading);
     }, [loading]);
+
+    useEffect(() => {
+        // Buscar locais da filial do usuário
+        const fetchUserLocales = async () => {
+            try {
+                const token = localStorage.getItem('@ti-assistant:token');
+                if (!token) return;
+                const response = await fetch('/api/locales/user-location', {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserLocales(data);
+                }
+            } catch (e) {
+                // Silenciar erro
+            }
+        };
+        fetchUserLocales();
+    }, [router]);
 
     const handleCardClick = async (itemId: string) => {
         if (activeTab === 1) {
@@ -858,6 +880,9 @@ export function MobileSupplyRequests({
                 isOpen={isCustomRequestOpen}
                 onClose={onCustomRequestClose}
                 onSubmit={handleCustomRequestSubmit}
+                userLocales={userLocales}
+                localeId={localeId}
+                setLocaleId={setLocaleId}
             />
 
             <Modal isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}>
