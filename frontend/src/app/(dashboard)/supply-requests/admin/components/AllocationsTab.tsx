@@ -22,6 +22,13 @@ import {
     Image,
     FormControl,
     FormLabel,
+    Drawer,
+    DrawerOverlay,
+    DrawerContent,
+    DrawerHeader,
+    DrawerBody,
+    DrawerFooter,
+    useDisclosure,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { CheckCircle, XCircle, FileText, RotateCcw } from 'lucide-react';
@@ -77,6 +84,7 @@ interface AllocationsTabProps {
     onAllocationConfirmDelivery: (request: any, confirmation: boolean) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
+    isMobile?: boolean;
 }
 
 export function AllocationsTab({
@@ -101,6 +109,7 @@ export function AllocationsTab({
     onAllocationConfirmDelivery,
     onExportPDF,
     onClearFilters,
+    isMobile = false,
 }: AllocationsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
     const [returnStart, setReturnStart] = useState('');
@@ -109,6 +118,7 @@ export function AllocationsTab({
     const [localLocation, setLocalLocation] = useState('');
     const [localLocale, setLocalLocale] = useState('');
     const [localRequester, setLocalRequester] = useState('');
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const filtered = allocationRequests
         .filter(r => {
             if (!returnStart && !returnEnd) return true;
@@ -133,6 +143,136 @@ export function AllocationsTab({
             r.requester.name.toLowerCase().includes(search.toLowerCase()) ||
             r.requester.email.toLowerCase().includes(search.toLowerCase())
         ));
+
+    if (isMobile) {
+        return (
+            <Box bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'} p={1} borderRadius="lg" boxShadow="sm" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} backdropFilter="blur(12px)">
+                <InputGroup size="md" mb={3} mt="5vh">
+                    <InputLeftElement pointerEvents="none">
+                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                    </InputLeftElement>
+                    <Input
+                        placeholder="Buscar item ou usuário..."
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    />
+                </InputGroup>
+                <Button w="full" size="sm" colorScheme="gray" mb={3} onClick={onOpen}>Filtros</Button>
+                <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="full">
+                    <DrawerOverlay />
+                    <DrawerContent bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'} backdropFilter="blur(12px)" p={2}>
+                        <DrawerHeader borderBottomWidth="1px" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filtros Avançados</DrawerHeader>
+                        <DrawerBody>
+                            <VStack spacing={4} align="stretch">
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
+                                    <Select value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value)} size="sm">
+                                        <option value="">Todos os status</option>
+                                        <option value="PENDING">Pendente</option>
+                                        <option value="APPROVED">Aprovado</option>
+                                        <option value="REJECTED">Rejeitado</option>
+                                        <option value="DELIVERED">Entregue</option>
+                                        <option value="RETURNED">Devolvido</option>
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filial</FormLabel>
+                                    <Select value={localLocation} onChange={(e) => setLocalLocation(e.target.value)} size="sm">
+                                        <option value="">Todas</option>
+                                        {Array.from(new Set(allocationRequests.map(r => r.location_name).filter(Boolean))).map(loc => (
+                                            <option key={loc} value={loc}>{loc}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Setor</FormLabel>
+                                    <Select value={localSector} onChange={(e) => setLocalSector(e.target.value)} size="sm">
+                                        <option value="">Todos</option>
+                                        {Array.from(new Set(allocationRequests.map(r => r.requester_sector).filter(Boolean))).map(sector => (
+                                            <option key={sector} value={sector}>{sector}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local</FormLabel>
+                                    <Select value={localLocale} onChange={(e) => setLocalLocale(e.target.value)} size="sm">
+                                        <option value="">Todos</option>
+                                        {Array.from(new Set(allocationRequests.map(r => r.locale_name).filter(Boolean))).map(locale => (
+                                            <option key={locale} value={locale}>{locale}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requerente</FormLabel>
+                                    <Select value={localRequester} onChange={(e) => setLocalRequester(e.target.value)} size="sm">
+                                        <option value="">Todos</option>
+                                        {Array.from(new Set(allocationRequests.map(r => r.requester?.name).filter(Boolean))).map(req => (
+                                            <option key={req} value={req}>{req}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Retorno (início)</FormLabel>
+                                    <Input type="date" value={returnStart} onChange={(e) => setReturnStart(e.target.value)} size="sm" />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Retorno (fim)</FormLabel>
+                                    <Input type="date" value={returnEnd} onChange={(e) => setReturnEnd(e.target.value)} size="sm" />
+                                </FormControl>
+                                <Button w="full" size="md" colorScheme="gray" variant="outline" mt={4} onClick={() => {
+                                    onClearFilters();
+                                    setLocalLocation('');
+                                    setLocalSector('');
+                                    setLocalLocale('');
+                                    setLocalRequester('');
+                                    setReturnStart('');
+                                    setReturnEnd('');
+                                    onClose();
+                                }}>Limpar Filtros</Button>
+                            </VStack>
+                        </DrawerBody>
+                        <DrawerFooter borderTopWidth="1px">
+                            <Button variant="outline" mr={3} onClick={onClose}>Fechar</Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+                {filteredAllocationRequests.length === 0 ? (
+                    <Flex direction="column" align="center" justify="center" py={8}>
+                        <Image src="/Task-complete.svg" alt="Nenhuma alocação encontrada" maxW="200px" mb={4} />
+                        <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="md">Nenhuma alocação encontrada</Text>
+                    </Flex>
+                ) : (
+                    <VStack spacing={3} align="stretch">
+                        {filteredAllocationRequests.map((request) => (
+                            <Box key={request.id} p={1} borderRadius="md" boxShadow="sm" bg={colorMode === 'dark' ? 'rgba(45,55,72,0.7)' : 'white'} borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255,255,255,0.08)' : 'gray.200'}>
+                                <Text fontWeight="bold">{request.inventory.name}</Text>
+                                <Text fontSize="sm" color="gray.500">{request.requester.name} - {request.requester.email}</Text>
+                                <Text fontSize="sm">Modelo: {request.inventory.model}</Text>
+                                <Text fontSize="sm">Série: {request.inventory.serial_number}</Text>
+                                <Badge colorScheme={request.status === 'APPROVED' ? 'green' : request.status === 'REJECTED' ? 'red' : request.status === 'DELIVERED' ? 'purple' : request.status === 'RETURNED' ? 'blue' : 'yellow'} mt={1} mb={1}>
+                                    {request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : request.status === 'DELIVERED' ? 'Entregue' : 'Devolvido'}
+                                </Badge>
+                                <Text fontSize="xs" color="gray.400">Data: {new Date(request.created_at).toLocaleDateString('pt-BR')}</Text>
+                                <VStack spacing={2} mt={2} align="stretch">
+                                    {request.status === 'PENDING' && (
+                                        <HStack>
+                                            <Button size="sm" colorScheme="green" flex={1} onClick={() => onAllocationApprove(request.id, 'APPROVED')}>Aprovar</Button>
+                                            <Button size="sm" colorScheme="red" flex={1} onClick={() => onAllocationReject(request.id, 'REJECTED')}>Rejeitar</Button>
+                                        </HStack>
+                                    )}
+                                    {request.status === 'APPROVED' && !request.manager_delivery_confirmation && (
+                                        <Button size="sm" colorScheme="blue" w="full" onClick={() => onAllocationConfirmDelivery(request, true)}>Confirmar Entrega</Button>
+                                    )}
+                                </VStack>
+                            </Box>
+                        ))}
+                    </VStack>
+                )}
+            </Box>
+        );
+    }
 
     return (
         <Box

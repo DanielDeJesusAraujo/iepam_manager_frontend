@@ -22,6 +22,13 @@ import {
     Image,
     FormControl,
     FormLabel,
+    Drawer,
+    DrawerOverlay,
+    DrawerContent,
+    DrawerHeader,
+    DrawerBody,
+    DrawerFooter,
+    useDisclosure,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { CheckCircle, XCircle } from 'lucide-react';
@@ -86,6 +93,7 @@ interface SupplyRequestsTabProps {
     onConfirmDelivery: (request: any, confirmation: boolean) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
+    isMobile?: boolean;
 }
 
 export function SupplyRequestsTab({
@@ -100,6 +108,7 @@ export function SupplyRequestsTab({
     onConfirmDelivery,
     onExportPDF,
     onClearFilters,
+    isMobile = false,
 }: SupplyRequestsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
     const [deliveryDeadlineStart, setDeliveryDeadlineStart] = useState('');
@@ -107,6 +116,7 @@ export function SupplyRequestsTab({
     const [locationFilter, setLocationFilter] = useState('');
     const [sectorFilter, setSectorFilter] = useState('');
     const [localeFilter, setLocaleFilter] = useState('');
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const filtered = filteredRequests
         .filter(r => {
             if (!deliveryDeadlineStart && !deliveryDeadlineEnd) return true;
@@ -122,6 +132,124 @@ export function SupplyRequestsTab({
         .filter(r => !locationFilter || (r.location?.name && r.location.name === locationFilter))
         .filter(r => !sectorFilter || (r.sector?.name && r.sector.name === sectorFilter))
         .filter(r => !localeFilter || (r.locale?.name && r.locale.name === localeFilter));
+
+    if (isMobile) {
+        return (
+            <Box bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'} p={1} borderRadius="lg" boxShadow="sm" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} backdropFilter="blur(12px)">
+                <InputGroup size="md" mb={3} mt="5vh">
+                    <InputLeftElement pointerEvents="none">
+                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                    </InputLeftElement>
+                    <Input
+                        placeholder="Buscar suprimentos ou usuário..."
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    />
+                </InputGroup>
+                <Button w="full" size="sm" colorScheme="gray" mb={3} onClick={onOpen}>Filtros</Button>
+                <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="full">
+                    <DrawerOverlay />
+                    <DrawerContent bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'} backdropFilter="blur(12px)" p={2}>
+                        <DrawerHeader borderBottomWidth="1px" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filtros Avançados</DrawerHeader>
+                        <DrawerBody>
+                            <VStack spacing={4} align="stretch">
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
+                                    <Select value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value)} size="sm">
+                                        <option value="">Todos os status</option>
+                                        <option value="PENDING">Pendente</option>
+                                        <option value="APPROVED">Aprovado</option>
+                                        <option value="REJECTED">Rejeitado</option>
+                                        <option value="DELIVERED">Entregue</option>
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filial</FormLabel>
+                                    <Select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} size="sm">
+                                        <option value="">Todas</option>
+                                        {Array.from(new Set(filteredRequests.map(r => r.location?.name).filter(Boolean))).map(loc => (
+                                            <option key={loc} value={loc}>{loc}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Setor</FormLabel>
+                                    <Select value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)} size="sm">
+                                        <option value="">Todos</option>
+                                        {Array.from(new Set(filteredRequests.map(r => r.sector?.name).filter(Boolean))).map(sector => (
+                                            <option key={sector} value={sector}>{sector}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Local de Entrega</FormLabel>
+                                    <Select value={localeFilter} onChange={(e) => setLocaleFilter(e.target.value)} size="sm">
+                                        <option value="">Todos</option>
+                                        {Array.from(new Set(filteredRequests.map(r => r.locale?.name).filter(Boolean))).map(locale => (
+                                            <option key={locale} value={locale}>{locale}</option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data Limite de Entrega (início)</FormLabel>
+                                    <Input type="date" value={deliveryDeadlineStart} onChange={(e) => setDeliveryDeadlineStart(e.target.value)} size="sm" />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data Limite de Entrega (fim)</FormLabel>
+                                    <Input type="date" value={deliveryDeadlineEnd} onChange={(e) => setDeliveryDeadlineEnd(e.target.value)} size="sm" />
+                                </FormControl>
+                                <Button w="full" size="md" colorScheme="gray" variant="outline" mt={4} onClick={() => {
+                                    onClearFilters();
+                                    setLocationFilter('');
+                                    setSectorFilter('');
+                                    setLocaleFilter('');
+                                    setDeliveryDeadlineStart('');
+                                    setDeliveryDeadlineEnd('');
+                                    onClose();
+                                }}>Limpar Filtros</Button>
+                            </VStack>
+                        </DrawerBody>
+                        <DrawerFooter borderTopWidth="1px">
+                            <Button variant="outline" mr={3} onClick={onClose}>Fechar</Button>
+                        </DrawerFooter>
+                    </DrawerContent>
+                </Drawer>
+                {filtered.length === 0 ? (
+                    <Flex direction="column" align="center" justify="center" py={8}>
+                        <Image src="/Task-complete.svg" alt="Nenhuma requisição encontrada" maxW="200px" mb={4} />
+                        <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="md">Nenhuma requisição encontrada</Text>
+                    </Flex>
+                ) : (
+                    <VStack spacing={3} align="stretch">
+                        {filtered.map((request) => (
+                            <Box key={request.id} p={1} borderRadius="md" boxShadow="sm" bg={colorMode === 'dark' ? 'rgba(45,55,72,0.7)' : 'white'} borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255,255,255,0.08)' : 'gray.200'}>
+                                <Text fontWeight="bold">{request.is_custom ? request.item_name : request.supply?.name}</Text>
+                                <Text fontSize="sm" color="gray.500">{request.user.name} - {request.user.email}</Text>
+                                <Text fontSize="sm">Qtd: {request.quantity} {request.supply?.unit?.symbol || request.unit?.symbol}</Text>
+                                <Badge colorScheme={request.status === 'APPROVED' ? 'green' : request.status === 'REJECTED' ? 'red' : request.status === 'DELIVERED' ? 'purple' : 'yellow'} mt={1} mb={1}>
+                                    {request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : 'Entregue'}
+                                </Badge>
+                                <Text fontSize="xs" color="gray.400">Data: {new Date(request.created_at).toLocaleDateString('pt-BR')}</Text>
+                                <VStack spacing={2} mt={2} align="stretch">
+                                    {request.status === 'PENDING' && (
+                                        <HStack>
+                                            <Button size="sm" colorScheme="green" flex={1} onClick={() => onApprove(request.id, 'APPROVED')}>Aprovar</Button>
+                                            <Button size="sm" colorScheme="red" flex={1} onClick={() => onReject(request.id, 'REJECTED')}>Rejeitar</Button>
+                                        </HStack>
+                                    )}
+                                    {request.status === 'APPROVED' && !request.manager_delivery_confirmation && (
+                                        <Button size="sm" colorScheme="blue" w="full" onClick={() => onConfirmDelivery(request, true)}>Confirmar Entrega</Button>
+                                    )}
+                                </VStack>
+                            </Box>
+                        ))}
+                    </VStack>
+                )}
+            </Box>
+        );
+    }
 
     return (
         <Box

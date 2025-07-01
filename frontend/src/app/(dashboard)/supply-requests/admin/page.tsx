@@ -18,11 +18,11 @@ import {
     HStack,
     Divider,
     Skeleton,
-    SkeletonText
+    SkeletonText,
+    Button
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { 
-    MobileAdminSupplyRequests,
     SupplyRequestsTab,
     AllocationsTab,
     InventoryTransactionsTab,
@@ -31,6 +31,7 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { exportToPDF as exportToPDFUtil } from '@/utils/exportToPDF';
+import { ShoppingCart, TimerIcon, FileText, RotateCcw } from 'lucide-react';
 
 interface SupplyRequest {
     id: string;
@@ -283,6 +284,7 @@ export default function AdminSupplyRequestsPage() {
     const [isMobile] = useMediaQuery('(max-width: 768px)');
     // Estados de loading para cada aba
     const [loadingTabs, setLoadingTabs] = useState([true, true, true, true]);
+    const [activeTab, setActiveTab] = useState(0);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -807,27 +809,24 @@ export default function AdminSupplyRequestsPage() {
         setTransactionLocaleFilter('');
     };
 
-    // Funções para buscar dados de cada aba
-    const fetchTabRequests = async () => {
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? true : v));
-        await fetchRequests();
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? false : v));
+    // faz request ao trocar de aba
+    const fetchTabData = async (tabIndex: number, fetchFn: () => Promise<void>) => {
+        setLoadingTabs(tabs => tabs.map((v, i) => i === tabIndex ? true : v));
+        await fetchFn();
+        setLoadingTabs(tabs => tabs.map((v, i) => i === tabIndex ? false : v));
     };
-    const fetchTabAllocations = async () => {
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? true : v));
-        await fetchAllocationRequests();
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? false : v));
-    };
-    const fetchTabInventoryTransactions = async () => {
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 2 ? true : v));
-        await fetchInventoryTransactions();
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 2 ? false : v));
-    };
-    const fetchTabSupplyTransactions = async () => {
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 3 ? true : v));
-        await fetchSupplyTransactions();
-        setLoadingTabs(tabs => tabs.map((v, i) => i === 3 ? false : v));
-    };
+
+    // Adicionar este efeito para mobile: faz request ao trocar de aba
+    useEffect(() => {
+        if (isMobile) {
+            setLoadingTabs(tabs => tabs.map((v, i) => i === activeTab ? true : v));
+            const fetchFns = [() => fetchTabData(0, fetchRequests), () => fetchTabData(1, fetchAllocationRequests), () => fetchTabData(2, fetchInventoryTransactions), () => fetchTabData(3, fetchSupplyTransactions)];
+            fetchFns[activeTab]().finally(() => {
+                setLoadingTabs(tabs => tabs.map((v, i) => i === activeTab ? false : v));
+            });
+        }
+        // eslint-disable-next-line
+    }, [activeTab, isMobile]);
 
     if (loading) {
         return (
@@ -841,34 +840,190 @@ export default function AdminSupplyRequestsPage() {
 
     if (isMobile) {
         return (
-            <MobileAdminSupplyRequests
-                requests={requests}
-                filteredRequests={filteredRequests}
-                allocationRequests={allocationRequests}
-                filteredAllocationRequests={filteredAllocationRequests}
-                inventoryTransactions={inventoryTransactions}
-                filteredInventoryTransactions={filteredInventoryTransactions}
-                supplyTransactions={supplyTransactions}
-                filteredSupplyTransactions={filteredSupplyTransactions}
-                search={search}
-                onSearchChange={setSearch}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                onApprove={handleStatusUpdate}
-                onReject={handleStatusUpdate}
-                onConfirmDelivery={handleManagerDeliveryConfirmation}
-                onAllocationApprove={handleAllocationStatusUpdate}
-                onAllocationReject={handleAllocationStatusUpdate}
-                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
-                loading={loading}
-            />
+            <Box position="relative" h="100vh" overflow="hidden" py="0">
+                <Box
+                    position="fixed"
+                    bottom={0}
+                    left={0}
+                    right={0}
+                    zIndex={10}
+                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
+                    backdropFilter="blur(12px)"
+                    borderTop="1px solid"
+                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    p={0}
+                >
+                    <HStack spacing={0} justify="space-around">
+                        <Button
+                            flex={1}
+                            variant="ghost"
+                            bg={activeTab === 0 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
+                            color={activeTab === 0 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            onClick={() => setActiveTab(0)}
+                            borderRadius="md"
+                            size="md"
+                            boxShadow="none"
+                            _hover={{ bg: activeTab === 0 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            _active={{ bg: activeTab === 0 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            p={0}
+                            minW={0}
+                            h="56px"
+                            justifyContent="center"
+                        >
+                            <ShoppingCart size={24} />
+                        </Button>
+                        <Button
+                            flex={1}
+                            variant="ghost"
+                            bg={activeTab === 1 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
+                            color={activeTab === 1 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            onClick={() => setActiveTab(1)}
+                            borderRadius="md"
+                            size="md"
+                            boxShadow="none"
+                            _hover={{ bg: activeTab === 1 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            _active={{ bg: activeTab === 1 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            p={0}
+                            minW={0}
+                            h="56px"
+                            justifyContent="center"
+                        >
+                            <TimerIcon size={24} />
+                        </Button>
+                        <Button
+                            flex={1}
+                            variant="ghost"
+                            bg={activeTab === 2 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
+                            color={activeTab === 2 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            onClick={() => setActiveTab(2)}
+                            borderRadius="md"
+                            size="md"
+                            boxShadow="none"
+                            _hover={{ bg: activeTab === 2 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            _active={{ bg: activeTab === 2 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            p={0}
+                            minW={0}
+                            h="56px"
+                            justifyContent="center"
+                        >
+                            <FileText size={24} />
+                        </Button>
+                        <Button
+                            flex={1}
+                            variant="ghost"
+                            bg={activeTab === 3 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
+                            color={activeTab === 3 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            onClick={() => setActiveTab(3)}
+                            borderRadius="md"
+                            size="md"
+                            boxShadow="none"
+                            _hover={{ bg: activeTab === 3 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            _active={{ bg: activeTab === 3 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
+                            p={0}
+                            minW={0}
+                            h="56px"
+                            justifyContent="center"
+                        >
+                            <RotateCcw size={24} />
+                        </Button>
+                    </HStack>
+                </Box>
+                <Box pt={0} pb="80px" h="100vh" overflowY="auto" px={0}>
+                    {[
+                        loadingTabs[0] ? (
+                            <Skeleton key="skeleton-req" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+                        ) : (
+                            <SupplyRequestsTab
+                                key="suprimentos"
+                                requests={requests}
+                                filteredRequests={filteredRequests}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                onApprove={handleStatusUpdate}
+                                onReject={handleStatusUpdate}
+                                onConfirmDelivery={handleManagerDeliveryConfirmation}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                                isMobile={true}
+                            />
+                        ),
+                        loadingTabs[1] ? (
+                            <Skeleton key="skeleton-alloc" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+                        ) : (
+                            <AllocationsTab
+                                key="alocacoes"
+                                allocationRequests={allocationRequests}
+                                filteredAllocationRequests={filteredAllocationRequests}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                returnDateFilter={returnDateFilter}
+                                onReturnDateFilterChange={setReturnDateFilter}
+                                sectorFilter={sectorFilter}
+                                onSectorFilterChange={setSectorFilter}
+                                locationFilter={locationFilter}
+                                onLocationFilterChange={setLocationFilter}
+                                localeFilter={localeFilter}
+                                onLocaleFilterChange={setLocaleFilter}
+                                requesterFilter={requesterFilter}
+                                onRequesterFilterChange={setRequesterFilter}
+                                onAllocationApprove={handleAllocationStatusUpdate}
+                                onAllocationReject={handleAllocationStatusUpdate}
+                                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                                isMobile={true}
+                            />
+                        ),
+                        loadingTabs[2] ? (
+                            <Skeleton key="skeleton-inv" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+                        ) : (
+                            <InventoryTransactionsTab
+                                key="transacoes-inventario"
+                                inventoryTransactions={inventoryTransactions}
+                                filteredInventoryTransactions={filteredInventoryTransactions}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                transactionLocationFilter={transactionLocationFilter}
+                                onTransactionLocationFilterChange={setTransactionLocationFilter}
+                                transactionLocaleFilter={transactionLocaleFilter}
+                                onTransactionLocaleFilterChange={setTransactionLocaleFilter}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                                isMobile={true}
+                            />
+                        ),
+                        loadingTabs[3] ? (
+                            <Skeleton key="skeleton-supply" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
+                        ) : (
+                            <SupplyTransactionsTab
+                                key="transacoes-suprimento"
+                                supplyTransactions={supplyTransactions}
+                                filteredSupplyTransactions={filteredSupplyTransactions}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                onExportPDF={exportToPDF}
+                                onClearFilters={clearFilters}
+                                isMobile={true}
+                            />
+                        )
+                    ][activeTab]}
+                </Box>
+            </Box>
         );
     }
 
     return (
         <PersistentTabsLayout
             tabLabels={["Suprimentos", "Alocações", "Transações de Inventário", "Transações de Suprimento"]}
-            onTabChange={[fetchTabRequests, fetchTabAllocations, fetchTabInventoryTransactions, fetchTabSupplyTransactions]}
+            onTabChange={[() => fetchTabData(0, fetchRequests), () => fetchTabData(1, fetchAllocationRequests), () => fetchTabData(2, fetchInventoryTransactions), () => fetchTabData(3, fetchSupplyTransactions)]}
         >
             {[
                 loadingTabs[0] ? (

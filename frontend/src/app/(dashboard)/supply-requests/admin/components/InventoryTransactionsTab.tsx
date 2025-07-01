@@ -89,6 +89,7 @@ interface InventoryTransactionsTabProps {
     onTransactionLocaleFilterChange: (value: string) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
+    isMobile?: boolean;
 }
 
 export function InventoryTransactionsTab({
@@ -104,8 +105,59 @@ export function InventoryTransactionsTab({
     onTransactionLocaleFilterChange,
     onExportPDF,
     onClearFilters,
+    isMobile = false,
 }: InventoryTransactionsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
+
+    if (isMobile) {
+        return (
+            <Box bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'} p={2} borderRadius="lg" boxShadow="sm" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} backdropFilter="blur(12px)">
+                <InputGroup size="md" mb={3} mt="5vh">
+                    <InputLeftElement pointerEvents="none">
+                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                    </InputLeftElement>
+                    <Input
+                        placeholder="Buscar item ou usuário..."
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                    />
+                </InputGroup>
+                <Select value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value)} size="sm" mb={3}>
+                    <option value="">Todos os status</option>
+                    <option value="ALLOCATION">Alocação</option>
+                    <option value="RETURN">Devolução</option>
+                    <option value="MAINTENANCE">Manutenção</option>
+                    <option value="DISCARD">Descarte</option>
+                    <option value="TRANSFER">Transferência</option>
+                </Select>
+                <Button w="full" size="sm" colorScheme="blue" mb={2} onClick={onExportPDF} isDisabled={filteredInventoryTransactions.length === 0}>Exportar PDF</Button>
+                <Button w="full" size="sm" colorScheme="gray" variant="outline" mb={4} onClick={onClearFilters}>Limpar Filtros</Button>
+                {filteredInventoryTransactions.length === 0 ? (
+                    <Flex direction="column" align="center" justify="center" py={8}>
+                        <Image src="/Task-complete.svg" alt="Nenhuma transação encontrada" maxW="200px" mb={4} />
+                        <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="md">Nenhuma transação encontrada</Text>
+                    </Flex>
+                ) : (
+                    <VStack spacing={3} align="stretch">
+                        {filteredInventoryTransactions.map((transaction) => (
+                            <Box key={transaction.id} p={3} borderRadius="md" boxShadow="sm" bg={colorMode === 'dark' ? 'rgba(45,55,72,0.7)' : 'white'} borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255,255,255,0.08)' : 'gray.200'}>
+                                <Text fontWeight="bold">{transaction.inventory.name}</Text>
+                                <Text fontSize="sm" color="gray.500">{transaction.inventory.model} - {transaction.inventory.serial_number}</Text>
+                                <Badge colorScheme={transaction.transaction_type === 'ALLOCATION' ? 'blue' : transaction.transaction_type === 'RETURN' ? 'green' : transaction.transaction_type === 'MAINTENANCE' ? 'orange' : transaction.transaction_type === 'DISCARD' ? 'red' : 'purple'} mt={1} mb={1}>
+                                    {transaction.transaction_type === 'ALLOCATION' ? 'Alocação' : transaction.transaction_type === 'RETURN' ? 'Devolução' : transaction.transaction_type === 'MAINTENANCE' ? 'Manutenção' : transaction.transaction_type === 'DISCARD' ? 'Descarte' : 'Transferência'}
+                                </Badge>
+                                <Badge colorScheme={transaction.movement_type === 'IN' ? 'green' : 'red'}>{transaction.movement_type === 'IN' ? 'Entrada' : 'Saída'}</Badge>
+                                <Text fontSize="sm">Usuário: {transaction.from_user.name}</Text>
+                                <Text fontSize="xs" color="gray.400">Data: {new Date(transaction.created_at).toLocaleDateString('pt-BR')}</Text>
+                            </Box>
+                        ))}
+                    </VStack>
+                )}
+            </Box>
+        );
+    }
 
     return (
         <Box
