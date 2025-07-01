@@ -147,7 +147,7 @@ export function AllocationsTab({
     if (isMobile) {
         return (
             <Box bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'} p={1} borderRadius="lg" boxShadow="sm" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} backdropFilter="blur(12px)">
-                <InputGroup size="md" mb={3} mt="5vh">
+                <InputGroup size="md" mb={3}>
                     <InputLeftElement pointerEvents="none">
                         <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
                     </InputLeftElement>
