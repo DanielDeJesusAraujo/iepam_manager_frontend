@@ -60,7 +60,6 @@ import {
 } from '../utils/requestUtils';
 import { fetchAvailableInventory, fetchAllocations, fetchInventoryItemById } from '@/utils/apiUtils';
 import { createAllocation } from '@/utils/apiUtils';
-import { AllocationModal } from './AllocationModal';
 import { MobileMyAllocationsPage } from './MobileMyAllocationsPage';
 
 interface MobileSupplyRequestsProps {
@@ -80,6 +79,7 @@ interface MobileSupplyRequestsProps {
     loading?: boolean;
     allocationRequests: any[];
     filteredAllocationRequests: any[];
+    userLocales: { id: string; name: string }[];
 }
 
 export function MobileSupplyRequests({
@@ -99,6 +99,7 @@ export function MobileSupplyRequests({
     loading = false,
     allocationRequests,
     filteredAllocationRequests,
+    userLocales,
 }: MobileSupplyRequestsProps) {
     const router = useRouter();
     const toast = useToast();
@@ -129,7 +130,6 @@ export function MobileSupplyRequests({
     const { isOpen: isDeliveryModalOpen, onOpen: onDeliveryModalOpen, onClose: onDeliveryModalClose } = useDisclosure();
     const [deliveryDeadline, setDeliveryDeadline] = useState('');
     const [destination, setDestination] = useState('');
-    const [userLocales, setUserLocales] = useState<{ id: string; name: string }[]>([]);
     const [localeId, setLocaleId] = useState('');
 
     useEffect(() => {
@@ -212,26 +212,6 @@ export function MobileSupplyRequests({
         setIsLoading(loading);
     }, [loading]);
 
-    useEffect(() => {
-        // Buscar locais da filial do usuário
-        const fetchUserLocales = async () => {
-            try {
-                const token = localStorage.getItem('@ti-assistant:token');
-                if (!token) return;
-                const response = await fetch('/api/locales/user-location', {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserLocales(data);
-                }
-            } catch (e) {
-                // Silenciar erro
-            }
-        };
-        fetchUserLocales();
-    }, [router]);
-
     const handleCardClick = async (itemId: string) => {
         if (activeTab === 1) {
             try {
@@ -289,7 +269,7 @@ export function MobileSupplyRequests({
 
     const handleAllocateItem = (item: any) => {
         setSelectedItem(item);
-        onAllocationOpen();
+        setIsAllocationModalOpen(true);
     };
 
     const handleAllocationSubmit = async () => {
@@ -307,6 +287,7 @@ export function MobileSupplyRequests({
             await createAllocation({
                 inventory_id: selectedItem.id,
                 destination: allocationDestination,
+                return_date: allocationDeadline,
                 notes: allocationNotes
             }, token);
 
@@ -903,11 +884,16 @@ export function MobileSupplyRequests({
                             </FormControl>
                             <FormControl isRequired>
                                 <FormLabel>Local de Uso</FormLabel>
-                                <Input
-                                    placeholder="Ex: Departamento de TI - Sala 101"
+                                <Select
+                                    placeholder="Selecione o local de destino"
                                     value={allocationDestination}
                                     onChange={(e) => setAllocationDestination(e.target.value)}
-                                />
+                                >
+                                    <option value="">Selecione</option>
+                                    {userLocales.length > 0 && userLocales.map((locale) => (
+                                        <option key={locale.id} value={locale.id}>{locale.name}</option>
+                                    ))}
+                                </Select>
                             </FormControl>
                             <FormControl>
                                 <FormLabel>Observações</FormLabel>
@@ -962,15 +948,6 @@ export function MobileSupplyRequests({
                     </DrawerBody>
                 </DrawerContent>
             </Drawer>
-
-            {selectedItem && (
-                <AllocationModal
-                    isOpen={isAllocationOpen}
-                    onClose={onAllocationClose}
-                    onSubmit={handleAllocationSubmit}
-                    item={selectedItem}
-                />
-            )}
 
             <Modal isOpen={isDeliveryModalOpen} onClose={onDeliveryModalClose}>
                 <ModalOverlay />

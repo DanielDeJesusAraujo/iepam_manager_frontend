@@ -561,6 +561,7 @@ export default function SupplyRequestsPage() {
         loading={loading}
         allocationRequests={allocationRequests}
         filteredAllocationRequests={filteredAllocationRequests}
+        userLocales={userLocales}
       />
     );
   }

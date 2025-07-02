@@ -23,6 +23,17 @@ import {
   Button,
   useToast,
   Spinner,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Textarea,
+  useDisclosure,
+  FormControl,
+  FormLabel
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { CheckCircle } from 'lucide-react';
@@ -58,6 +69,10 @@ export function MyAllocationsPage() {
   const toast = useToast();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const [returnModalOpen, setReturnModalOpen] = useState(false);
+  const [returnNotes, setReturnNotes] = useState('');
+  const [returningId, setReturningId] = useState<string | null>(null);
+  const [isReturning, setIsReturning] = useState(false);
 
   useEffect(() => {
     fetchAllocations();
@@ -152,6 +167,33 @@ export function MyAllocationsPage() {
         duration: 3000,
         isClosable: true,
       });
+    }
+  };
+
+  const handleReturnItem = async () => {
+    if (!returningId) return;
+    setIsReturning(true);
+    try {
+      const token = localStorage.getItem('@ti-assistant:token');
+      if (!token) throw new Error('Token não encontrado');
+      const response = await fetch(`/api/inventory-allocations/${returningId}/return`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ return_notes: returnNotes })
+      });
+      if (!response.ok) throw new Error('Erro ao devolver item');
+      toast({ title: 'Sucesso', description: 'Item devolvido com sucesso', status: 'success', duration: 3000, isClosable: true });
+      setReturnModalOpen(false);
+      setReturnNotes('');
+      setReturningId(null);
+      fetchAllocations();
+    } catch (error) {
+      toast({ title: 'Erro', description: error instanceof Error ? error.message : 'Erro ao devolver item', status: 'error', duration: 3000, isClosable: true });
+    } finally {
+      setIsReturning(false);
     }
   };
 
@@ -277,6 +319,17 @@ export function MyAllocationsPage() {
                           Confirmar Recebimento
                         </Button>
                       )}
+                      {allocation.status === 'DELIVERED' && (
+                        <Button
+                          size="sm"
+                          colorScheme="blue"
+                          onClick={() => { setReturningId(allocation.id); setReturnModalOpen(true); }}
+                          isDisabled={allocation.status !== 'DELIVERED'}
+                          hidden={allocation.status !== 'DELIVERED'}
+                        >
+                          Devolver Item
+                        </Button>
+                      )}
                     </Td>
                   </Tr>
                 ))}
@@ -285,6 +338,23 @@ export function MyAllocationsPage() {
           </Box>
         )}
       </CardBody>
+      <Modal isOpen={returnModalOpen} onClose={() => setReturnModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Devolver Item</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl>
+              <FormLabel>Observações (opcional)</FormLabel>
+              <Textarea value={returnNotes} onChange={e => setReturnNotes(e.target.value)} placeholder="Descreva o motivo ou detalhes da devolução..." />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleReturnItem} isLoading={isReturning}>Confirmar Devolução</Button>
+            <Button variant="ghost" onClick={() => setReturnModalOpen(false)}>Cancelar</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Card>
   );
 } 

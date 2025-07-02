@@ -100,6 +100,7 @@ interface AllocationRequest {
     return_date: string;
     requester_delivery_confirmation: boolean;
     manager_delivery_confirmation: boolean;
+    manager_return_confirmation: boolean;
 }
 
 interface InventoryTransaction {
@@ -715,6 +716,43 @@ export default function AdminSupplyRequestsPage() {
         }
     };
 
+    const handleAllocationManagerReturnConfirmation = async (allocation: any) => {
+        try {
+            const token = localStorage.getItem('@ti-assistant:token');
+            if (!token) {
+                router.push('/login');
+                return;
+            }
+            const response = await fetch(`/api/inventory-allocations/${allocation.id}/manager-return-confirmation`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Erro ao confirmar devolução');
+            }
+            toast({
+                title: 'Sucesso',
+                description: 'Devolução confirmada com sucesso',
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+            fetchAllocationRequests();
+        } catch (error) {
+            toast({
+                title: 'Erro',
+                description: error instanceof Error ? error.message : 'Erro ao confirmar devolução',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
     const exportToPDF = () => {
         if (filteredRequests.length === 0) {
             toast({
@@ -973,6 +1011,7 @@ export default function AdminSupplyRequestsPage() {
                 onAllocationApprove={handleAllocationStatusUpdate}
                 onAllocationReject={handleAllocationStatusUpdate}
                 onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
+                onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
                                 isMobile={true}
@@ -1068,6 +1107,7 @@ export default function AdminSupplyRequestsPage() {
                                 onAllocationApprove={handleAllocationStatusUpdate}
                                 onAllocationReject={handleAllocationStatusUpdate}
                                 onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
+                                onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
                             />
