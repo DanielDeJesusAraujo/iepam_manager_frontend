@@ -166,26 +166,27 @@ export default function StatisticsPage() {
                 <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={4}>
                     {/* Gráfico de Ordens de Serviço por Mês */}
                     <Box
-                        p={isMobile ? 4 : 6}
                         shadow="base"
                         rounded="lg"
                         bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                         backdropFilter="blur(12px)"
                         border="1px solid"
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        p={isMobile ? 4 : 6}
                         transition="all 0.3s ease"
                         _hover={{
                             bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
                             transform: 'translateY(-2px)',
-                            shadow: 'lg'
+                            shadow: 'lg',
+                            cursor: 'pointer'
                         }}
                     >
-                        <Text fontSize={isMobile ? "sm" : "md"} fontWeight="bold" mb={4} color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                        <Heading size={isMobile ? "sm" : "md"} mb={4} color={colorMode === 'dark' ? 'white' : 'gray.800'}>
                             Ordens de Serviço por Mês
-                        </Text>
+                        </Heading>
                         <Box height="300px">
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={data.serviceOrdersByMonth}>
+                                <LineChart data={data.serviceOrdersByMonth} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke={colorMode === 'dark' ? 'gray.600' : 'gray.200'} />
                                     <XAxis
                                         dataKey="month"
@@ -193,6 +194,12 @@ export default function StatisticsPage() {
                                     />
                                     <YAxis
                                         stroke={colorMode === 'dark' ? 'gray.400' : 'gray.600'}
+                                        label={{
+                                            value: 'Quantidade',
+                                            angle: -90,
+                                            position: 'insideLeft',
+                                            style: { textAnchor: 'middle' }
+                                        }}
                                     />
                                     <Tooltip
                                         contentStyle={{
@@ -200,6 +207,7 @@ export default function StatisticsPage() {
                                             border: `1px solid ${colorMode === 'dark' ? 'gray.700' : 'gray.200'}`,
                                             color: colorMode === 'dark' ? 'white' : 'gray.800'
                                         }}
+                                        labelFormatter={(value) => value}
                                     />
                                     <Line
                                         type="monotone"
