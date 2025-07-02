@@ -139,8 +139,8 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
             <Heading size={isMobile ? 'sm' : 'md'} noOfLines={2} wordBreak="break-word">{item.name}</Heading>
             <Text color="gray.500" fontSize={isMobile ? 'sm' : 'md'} noOfLines={3} wordBreak="break-word">{item.description}</Text>
             <Flex gap={2} align="center" flexWrap="wrap">
-              <Badge colorScheme="blue" fontSize={isMobile ? 'xs' : 'md'}>{item.category?.label}</Badge>
-              {item.subcategory && <Badge colorScheme="green" fontSize={isMobile ? 'xs' : 'md'}>{item.subcategory.label}</Badge>}
+              <Badge colorScheme="blue" fontSize={isMobile ? 'xs' : 'md'} hidden={isMobile}>{item.category?.label}</Badge>
+              {item.subcategory && <Badge colorScheme="green" fontSize={isMobile ? 'xs' : 'md'} hidden={isMobile}>{item.subcategory.label}</Badge>}
             </Flex>
             <Badge colorScheme={item.status === 'STANDBY' ? 'purple' : 'orange'} fontSize={isMobile ? 'xs' : 'md'}>
               {item.status === 'STANDBY' ? 'Disponível' : 'Em Uso'}

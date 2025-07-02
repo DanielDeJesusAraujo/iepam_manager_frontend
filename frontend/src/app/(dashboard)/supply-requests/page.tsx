@@ -611,7 +611,7 @@ export default function SupplyRequestsPage() {
                       <Image src="/placeholder.png" alt={supply.name} borderRadius="md" height="200px" objectFit="cover" />
                           <Heading size="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>{supply.name}</Heading>
                       <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>{supply.description}</Text>
-                        <HStack justify="space-between" hidden={true}>
+                        <HStack justify="space-between" hidden={isMobile}>
                           <Badge colorScheme="blue">{supply.category.label}</Badge>
                         </HStack>
                       <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Quantidade disponível: {supply.quantity}</Text>
@@ -664,7 +664,7 @@ export default function SupplyRequestsPage() {
                       <Image src={item.image_url || "/placeholder.png"} alt={item.name} borderRadius="md" height="200px" width="100%" objectFit="cover" />
                           <Heading size="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>{item.name}</Heading>
                       <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2}>{item.description}</Text>
-                        <HStack justify="space-between">
+                        <HStack hidden={isMobile} justify="space-between">
                           <Badge colorScheme="blue">{item.category.label}</Badge>
                         </HStack>
                       <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Status: {item.status === 'STANDBY' ? 'Disponível' : 'Em Uso'}</Text>

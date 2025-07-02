@@ -133,7 +133,7 @@ export function MyAllocationsPage() {
     try {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) {
-        router.push('/login');
+        router.push('/');
         return;
       }
 
