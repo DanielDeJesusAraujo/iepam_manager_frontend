@@ -60,6 +60,7 @@ interface AllocationRequest {
     return_date: string;
     requester_delivery_confirmation: boolean;
     manager_delivery_confirmation: boolean;
+    manager_return_confirmation: boolean;
 }
 
 interface AllocationsTabProps {
@@ -82,6 +83,7 @@ interface AllocationsTabProps {
     onAllocationApprove: (id: string, status: 'APPROVED' | 'REJECTED') => void;
     onAllocationReject: (id: string, status: 'APPROVED' | 'REJECTED') => void;
     onAllocationConfirmDelivery: (request: any, confirmation: boolean) => void;
+    onAllocationManagerReturnConfirmation: (request: AllocationRequest) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
     isMobile?: boolean;
@@ -107,6 +109,7 @@ export function AllocationsTab({
     onAllocationApprove,
     onAllocationReject,
     onAllocationConfirmDelivery,
+    onAllocationManagerReturnConfirmation,
     onExportPDF,
     onClearFilters,
     isMobile = false,
@@ -264,6 +267,25 @@ export function AllocationsTab({
                                     )}
                                     {request.status === 'APPROVED' && !request.manager_delivery_confirmation && (
                                         <Button size="sm" colorScheme="blue" w="full" onClick={() => onAllocationConfirmDelivery(request, true)}>Confirmar Entrega</Button>
+                                    )}
+                                    {request.status === 'RETURNED' && !request.manager_return_confirmation && (
+                                        <Button
+                                            size="sm"
+                                            colorScheme="purple"
+                                            leftIcon={<CheckCircle size={14} />}
+                                            onClick={() => onAllocationManagerReturnConfirmation(request)}
+                                            minW="140px"
+                                            h="32px"
+                                            fontSize="xs"
+                                            fontWeight="medium"
+                                            _hover={{
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: 'md',
+                                            }}
+                                            transition="all 0.2s ease"
+                                        >
+                                            Confirmar Devolução
+                                        </Button>
                                     )}
                                 </VStack>
                             </Box>
@@ -601,6 +623,25 @@ export function AllocationsTab({
                                                     transition="all 0.2s ease"
                                                 >
                                                     Confirmar Entrega
+                                                </Button>
+                                            )}
+                                            {request.status === 'RETURNED' && !request.manager_return_confirmation && (
+                                                <Button
+                                                    size="sm"
+                                                    colorScheme="purple"
+                                                    leftIcon={<CheckCircle size={14} />}
+                                                    onClick={() => onAllocationManagerReturnConfirmation(request)}
+                                                    minW="140px"
+                                                    h="32px"
+                                                    fontSize="xs"
+                                                    fontWeight="medium"
+                                                    _hover={{
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: 'md',
+                                                    }}
+                                                    transition="all 0.2s ease"
+                                                >
+                                                    Confirmar Devolução
                                                 </Button>
                                             )}
                                         </HStack>
