@@ -32,10 +32,21 @@ interface Location {
     id: string
     name: string
     description: string
+    location?: {
+        id: string
+        name: string
+    }
+    location_id?: string
+}
+
+interface Branch {
+    id: string
+    name: string
 }
 
 export default function LocationSettings() {
     const [locations, setLocations] = useState<Location[]>([])
+    const [branches, setBranches] = useState<Branch[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [editingLocation, setEditingLocation] = useState<Location | null>(null)
     const toast = useToast()
@@ -43,11 +54,13 @@ export default function LocationSettings() {
 
     const [locationFormData, setLocationFormData] = useState({
         name: '',
-        description: ''
+        description: '',
+        location_id: ''
     })
 
     useEffect(() => {
         fetchLocations()
+        fetchBranches()
     }, [])
 
     const fetchLocations = async () => {
@@ -68,6 +81,30 @@ export default function LocationSettings() {
             toast({
                 title: 'Erro',
                 description: 'Não foi possível carregar os locais.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            })
+        }
+    }
+
+    const fetchBranches = async () => {
+        try {
+            const token = localStorage.getItem('@ti-assistant:token')
+            if (!token) {
+                throw new Error('Token não encontrado')
+            }
+            const response = await fetch('/api/locations', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            })
+            const data = await response.json()
+            setBranches(data)
+        } catch (error) {
+            toast({
+                title: 'Erro',
+                description: 'Não foi possível carregar as localizações.',
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -192,7 +229,8 @@ export default function LocationSettings() {
         setEditingLocation(location)
         setLocationFormData({
             name: location.name,
-            description: location.description
+            description: location.description,
+            location_id: location.location?.id || ''
         })
         onLocationModalOpen()
     }
@@ -201,7 +239,8 @@ export default function LocationSettings() {
         setEditingLocation(null)
         setLocationFormData({
             name: '',
-            description: ''
+            description: '',
+            location_id: ''
         })
         onLocationModalClose()
     }
@@ -220,6 +259,7 @@ export default function LocationSettings() {
                     <Tr>
                         <Th>Nome</Th>
                         <Th>Descrição</Th>
+                        <Th>Localização</Th>
                         <Th width="100px">Ações</Th>
                     </Tr>
                 </Thead>
@@ -228,6 +268,7 @@ export default function LocationSettings() {
                         <Tr key={location.id}>
                             <Td>{location.name}</Td>
                             <Td>{location.description}</Td>
+                            <Td>{location.location?.name || '-'}</Td>
                             <Td>
                                 <HStack spacing={2}>
                                     <IconButton
@@ -275,6 +316,19 @@ export default function LocationSettings() {
                                         onChange={(e) => setLocationFormData({ ...locationFormData, description: e.target.value })}
                                         placeholder="Descrição do local"
                                     />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormLabel>Localização</FormLabel>
+                                    <select
+                                        value={locationFormData.location_id}
+                                        onChange={e => setLocationFormData({ ...locationFormData, location_id: e.target.value })}
+                                        style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #CBD5E0' }}
+                                    >
+                                        <option value="">Selecione a localização</option>
+                                        {branches.map(branch => (
+                                            <option key={branch.id} value={branch.id}>{branch.name}</option>
+                                        ))}
+                                    </select>
                                 </FormControl>
                             </VStack>
                         </ModalBody>
