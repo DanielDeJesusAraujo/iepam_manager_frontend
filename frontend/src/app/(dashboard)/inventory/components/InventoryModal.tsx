@@ -42,6 +42,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
         serial_number: '',
         finality: '',
         acquisition_price: '',
+        freight: '',
         acquisition_date: '',
         location_id: '',
         locale_id: '',
@@ -75,6 +76,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     serial_number: initialData.serial_number || '',
                     finality: initialData.finality || '',
                     acquisition_price: initialData.acquisition_price ? String(initialData.acquisition_price) : '',
+                    freight: initialData.freight !== undefined ? String(initialData.freight) : '',
                     acquisition_date: initialData.acquisition_date ? initialData.acquisition_date.slice(0, 10) : '',
                     location_id: initialData.location?.id || '',
                     locale_id: initialData.locale?.id || '',
@@ -99,6 +101,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     serial_number: '',
                     finality: '',
                     acquisition_price: '',
+                    freight: '',
                     acquisition_date: '',
                     location_id: '',
                     locale_id: '',
@@ -212,6 +215,12 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                 newErrors.acquisition_price = 'Preço de aquisição deve ser um valor válido maior que zero'
             }
         }
+        if (formData.freight) {
+            const freightValue = parseFloat(formData.freight);
+            if (isNaN(freightValue) || freightValue < 0) {
+                newErrors.freight = 'Frete deve ser um valor numérico maior ou igual a zero';
+            }
+        }
         if (!formData.acquisition_date) newErrors.acquisition_date = 'Data de aquisição é obrigatória'
         if (!formData.location_id) newErrors.location_id = 'Localização é obrigatória'
         if (!formData.category_id) newErrors.category_id = 'Categoria é obrigatória'
@@ -240,12 +249,13 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                 ...formData,
                 image_url: imageUrl,
                 acquisition_price: parseFloat(formData.acquisition_price),
-            acquisition_date: new Date(formData.acquisition_date).toISOString(),
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
+                freight: formData.freight ? parseFloat(formData.freight) : 0,
+                acquisition_date: new Date(formData.acquisition_date).toISOString(),
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
         } catch (error) {
             toast({
                 title: 'Erro ao fazer upload da imagem',
@@ -363,6 +373,42 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                         </Box>
                                     )}
                                     <FormErrorMessage>{errors.acquisition_price}</FormErrorMessage>
+                                </FormControl>
+                                <FormControl isInvalid={!!errors.freight}>
+                                    <FormLabel>Frete</FormLabel>
+                                    <Input
+                                        value={formData.freight}
+                                        onChange={(e) => {
+                                            const inputValue = e.target.value;
+                                            // Permite apenas números, vírgulas e pontos
+                                            const cleanValue = inputValue.replace(/[^\d,.-]/g, '');
+                                            if (cleanValue === '') {
+                                                setFormData({ ...formData, freight: '' });
+                                                return;
+                                            }
+                                            const normalizedValue = cleanValue.replace(',', '.');
+                                            const parts = normalizedValue.split('.');
+                                            const finalValue = parts.length > 2 
+                                                ? parts[0] + '.' + parts.slice(1).join('')
+                                                : normalizedValue;
+                                            setFormData({ ...formData, freight: finalValue });
+                                        }}
+                                        placeholder="0,00"
+                                        onBlur={() => {
+                                            if (formData.freight && formData.freight !== '') {
+                                                const numValue = parseFloat(formData.freight);
+                                                if (!isNaN(numValue)) {
+                                                    setFormData({ ...formData, freight: numValue.toString() });
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    {formData.freight && (
+                                        <Box mt={1} fontSize="sm" color="gray.500">
+                                            Valor: {formatCurrency(formData.freight)}
+                                        </Box>
+                                    )}
+                                    <FormErrorMessage>{errors.freight}</FormErrorMessage>
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.acquisition_date} isRequired>
                                     <FormLabel>Data de Aquisição</FormLabel>
