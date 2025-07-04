@@ -110,7 +110,7 @@ export const MobileView = ({ items, onDelete, onEdit }: ItemViewsProps) => {
 
                         <HStack spacing={4}>
                             <Box flex={1}>
-                                <Text fontWeight="bold" fontSize="xs" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Localização</Text>
+                                <Text fontWeight="bold" fontSize="xs" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Polo</Text>
                                 <Text fontSize="sm" noOfLines={1} color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{item.location.name}</Text>
                             </Box>
                             <Box flex={1}>
@@ -122,6 +122,11 @@ export const MobileView = ({ items, onDelete, onEdit }: ItemViewsProps) => {
                         <Box>
                             <Text fontWeight="bold" fontSize="xs" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Preço de Aquisição</Text>
                             <Text fontSize="sm" noOfLines={1} color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{formatCurrency(item.acquisition_price)}</Text>
+                        </Box>
+
+                        <Box>
+                            <Text fontWeight="bold" fontSize="xs" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Valor Depreciado</Text>
+                            <Text fontSize="sm" noOfLines={1} color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{formatCurrency(item.depreciated_value)}</Text>
                         </Box>
 
                         <Box>
@@ -157,9 +162,10 @@ export const DesktopView = ({ items, onDelete, onEdit }: ItemViewsProps) => {
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Modelo</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Número de Série</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
-                        <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Localização</Th>
+                        <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Polo</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ambiente</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Preço de Aquisição</Th>
+                        <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Valor Depreciado</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Categoria</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Subcategoria</Th>
                         <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Ações</Th>
@@ -191,6 +197,7 @@ export const DesktopView = ({ items, onDelete, onEdit }: ItemViewsProps) => {
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.location.name}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.locale?.name || '-'}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{formatCurrency(item.acquisition_price)}</Td>
+                            <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.residual_value === 0 ? '-' : formatCurrency(item.depreciated_value)}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.category.label}</Td>
                             <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{item.subcategory.label}</Td>
                             <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>

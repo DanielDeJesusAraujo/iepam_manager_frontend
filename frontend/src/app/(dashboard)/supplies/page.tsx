@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useState } from 'react';
 import {
     Box,
@@ -263,7 +264,7 @@ export default function SuppliesPage() {
     }
 
     return (
-        <Container maxW="100%" py={4} px={isMobile ? 2 : 8} h="calc(100vh - 64px)" overflow="hidden">
+        <>
             <Tabs variant="enclosed" colorScheme="blue">
                 <TabList>
                     <Tab>Lista de Suprimentos</Tab>
@@ -277,18 +278,18 @@ export default function SuppliesPage() {
                 align="stretch"
                 bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
                 backdropFilter="blur(12px)"
-                p={isMobile ? 3 : 6}
+                p={isMobile ? 0 : 3}
                 borderRadius="lg"
                 boxShadow="sm"
                 borderWidth="1px"
                 borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                h="full"
+                
                 overflow="hidden"
             >
                 {!isMobile && (
-                    <Flex justify="space-between" align="center" mb={6}>
+                    <Flex justify="space-between" align="center" mb={3}>
                         <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Gerenciamento de Suprimentos</Heading>
-                        <HStack spacing={4}>
+                        <HStack spacing={2}>
                             <Button
                                 colorScheme="orange"
                                 onClick={handleExportBelowMinimum}
@@ -319,7 +320,7 @@ export default function SuppliesPage() {
                     </Flex>
                 )}
 
-                <HStack spacing={4} wrap="wrap">
+                <HStack spacing={2} wrap="wrap">
                     <InputGroup maxW="400px">
                         <InputLeftElement pointerEvents="none">
                             <FiSearch color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
@@ -475,6 +476,6 @@ export default function SuppliesPage() {
                 categories={categories}
                 initialData={selectedSupply || undefined}
             />
-        </Container>
+        </>
     );
 } 

@@ -21,6 +21,7 @@ import {
     Box,
     Image,
     ButtonGroup,
+    Checkbox,
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { uploadImage, handleImageChange } from '@/utils/imageUtils'
@@ -52,6 +53,8 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
         description: '',
         status: 'STANDBY',
         image_url: '',
+        residual_value: '',
+        service_life: '',
     })
 
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -63,6 +66,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
     const [locales, setLocales] = useState<{ id: string; name: string }[]>([])
     const [errors, setErrors] = useState<Record<string, string>>({})
     const toast = useToast()
+    const [isDepreciable, setIsDepreciable] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -86,6 +90,8 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     description: initialData.description || '',
                     status: initialData.status || 'STANDBY',
                     image_url: initialData.image_url || '',
+                    residual_value: initialData.residual_value !== undefined ? String(initialData.residual_value) : '',
+                    service_life: initialData.service_life !== undefined ? String(initialData.service_life) : '',
                 });
                 console.log('DADOS DO formData:', formData)
                 
@@ -93,6 +99,9 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                 if (initialData.category?.id) {
                     loadSubcategoriesForCategory(initialData.category.id);
                 }
+                setIsDepreciable(
+                    initialData.residual_value !== undefined && initialData.residual_value !== null && Number(initialData.residual_value) > 0
+                );
             } else {
                 setFormData({
                     item: '',
@@ -111,7 +120,10 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     description: '',
                     status: 'STANDBY',
                     image_url: '',
+                    residual_value: '',
+                    service_life: '',
                 });
+                setIsDepreciable(false);
             }
         }
     }, [isOpen, isEdit, initialData]);
@@ -245,7 +257,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
             }
 
             const token = localStorage.getItem('@ti-assistant:token')
-            onSubmit({
+            const dataToSend: any = {
                 ...formData,
                 image_url: imageUrl,
                 acquisition_price: parseFloat(formData.acquisition_price),
@@ -255,7 +267,15 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
-            })
+            };
+            if (isDepreciable) {
+                dataToSend.residual_value = formData.residual_value ? parseFloat(formData.residual_value) : 0;
+                dataToSend.service_life = formData.service_life ? parseInt(formData.service_life) : 1;
+            } else {
+                delete dataToSend.residual_value;
+                delete dataToSend.service_life;
+            }
+            onSubmit(dataToSend)
         } catch (error) {
             toast({
                 title: 'Erro ao fazer upload da imagem',
@@ -270,7 +290,14 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
             <ModalOverlay />
-            <ModalContent>
+            <ModalContent
+                maxW={{ base: '95vw', md: '900px' }}
+                aspectRatio={{ base: undefined, md: '16/9' }}
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+            >
                 <ModalHeader>{isEdit ? 'Editar Item' : 'Novo Item'}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody pb={6}>
@@ -422,7 +449,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                             </Stack>
                             <Stack spacing={4}>
                                 <FormControl isInvalid={!!errors.location_id} isRequired>
-                                    <FormLabel>Localização</FormLabel>
+                                    <FormLabel>Polo</FormLabel>
                                     <Select
                                         value={formData.location_id}
                                         onChange={(e) => setFormData({ ...formData, location_id: e.target.value })}
@@ -535,6 +562,38 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                 </FormControl>
                             </Stack>
                         </SimpleGrid>
+                        <Box mt={4} mb={2}>
+                            <Checkbox
+                                isChecked={isDepreciable}
+                                onChange={(e) => setIsDepreciable(e.target.checked)}
+                            >
+                                É depreciável?
+                            </Checkbox>
+                        </Box>
+                        {isDepreciable && (
+                            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={4}>
+                                <FormControl>
+                                    <FormLabel>Valor Residual</FormLabel>
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        value={formData.residual_value}
+                                        onChange={(e) => setFormData({ ...formData, residual_value: e.target.value })}
+                                        placeholder="0"
+                                    />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Vida Útil (anos)</FormLabel>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        value={formData.service_life}
+                                        onChange={(e) => setFormData({ ...formData, service_life: e.target.value })}
+                                        placeholder="1"
+                                    />
+                                </FormControl>
+                            </SimpleGrid>
+                        )}
                         <ButtonGroup w="full" mt={8} display="flex" justifyContent="flex-end">
                             <Button variant="outline" onClick={onClose} mr={2}>
                                 Cancelar
