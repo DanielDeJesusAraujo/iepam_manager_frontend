@@ -19,12 +19,16 @@ import {
   MenuItem,
   Collapse,
   useColorMode,
+  Input,
+  InputGroup,
+  InputLeftElement,
 } from '@chakra-ui/react'
-import { Menu as MenuIcon, X, Home, Printer, Server, Wrench, Box as BoxIcon, Settings, LogOut, Bell, Calendar, BarChart, Package, ShoppingCart, ArrowLeft, Timer, FileText, ChevronDown, ChevronRight } from 'lucide-react'
+import { Menu as MenuIcon, X, Home, Printer, Server, Wrench, Box as BoxIcon, Settings, LogOut, Bell, Calendar, BarChart, Package, ShoppingCart, ArrowLeft, Timer, FileText, ChevronDown, ChevronRight, SearchIcon } from 'lucide-react'
 import NextLink from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { FiHome, FiMessageSquare, FiFileText, FiShoppingCart, FiPackage, FiUsers } from 'react-icons/fi'
+import { useUser, useFilters } from '@/contexts/GlobalContext'
 
 interface SidebarProps {
   onClose: () => void
@@ -39,22 +43,12 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const activeBgColor = useColorModeValue('blue.50', 'blue.900')
   const activeColor = useColorModeValue('blue.600', 'blue.200')
-  const [user, setUser] = useState<any>({})
-  const [userRole, setUserRole] = useState<string | null>(null)
+  const { user, isAuthenticated } = useUser()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const { colorMode } = useColorMode()
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('@ti-assistant:user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-      setUserRole(JSON.parse(storedUser).role)
-    }
-  }, [])
-
   const handleLogout = () => {
-    localStorage.removeItem('@ti-assistant:token')
-    localStorage.removeItem('@ti-assistant:user')
+    // O logout será gerenciado pelo contexto global
     router.push('/')
   }
 
@@ -214,22 +208,20 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
 const MobileNav = ({ onOpen }: { onOpen: () => void }) => {
   const router = useRouter()
   const pathname = usePathname() || ''
-  const [user, setUser] = useState<any>({})
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('@ti-assistant:user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
-  }, [])
+  const { user } = useUser()
+  const { searchQuery, setSearchQuery } = useFilters()
+  const { colorMode } = useColorMode()
 
   const handleHistoryClick = () => {
-    if (['ADMIN', 'MANAGER', 'ORGANIZER'].includes(user.role)) {
+    if (['ADMIN', 'MANAGER', 'ORGANIZER'].includes(user?.role || '')) {
       router.push('/supply-requests/history')
     } else {
       router.push('/supply-requests/my-requests')
     }
   }
+
+  // Mostrar campo de busca apenas na página de supply-requests
+  const showSearch = pathname === '/supply-requests'
 
   return (
     <Box
@@ -243,20 +235,37 @@ const MobileNav = ({ onOpen }: { onOpen: () => void }) => {
       borderColor={useColorModeValue('gray.200', 'gray.700')}
       p={2}
     >
-      <HStack justify="space-between">
-        <HStack spacing={2}>
-          <IconButton
-            aria-label="Abrir menu"
-            icon={<MenuIcon size={20} />}
-            variant="ghost"
-            onClick={onOpen}
-            sx={{
-              '& svg': {
-                stroke: 'currentColor',
-              }
-            }}
-          />
-        </HStack>
+      <HStack justify="space-between" w="full" spacing={2}>
+        <IconButton
+          aria-label="Abrir menu"
+          icon={<MenuIcon size={20} />}
+          variant="ghost"
+          onClick={onOpen}
+          flexShrink={0}
+          sx={{
+            '& svg': {
+              stroke: 'currentColor',
+            }
+          }}
+        />
+        
+        {showSearch && (
+          <InputGroup size="sm" flex="1">
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon size={16} color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+            </InputLeftElement>
+            <Input
+              placeholder="Buscar suprimentos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
+              backdropFilter="blur(12px)"
+              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+              _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+              _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
+            />
+          </InputGroup>
+        )}
       </HStack>
     </Box>
   )
@@ -267,7 +276,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
   const isMobile = useBreakpointValue({ base: true, md: false })
 
   return (
-    <Box minH="100vh">
+    <Box minH="100vh" w="full" overflow="hidden">
       {isMobile && <MobileNav onOpen={onOpen} />}
 
       {isMobile ? (
@@ -297,9 +306,9 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
       )}
 
       <Box
-        ml={isMobile ? 0 : 250}
-        pt={isMobile ? 12 : 0}
-        p={4}
+        ml={isMobile ? 0 : 250} // 250px é a largura do sidebar
+        pt={isMobile ? 12 : 0} // 12px é a altura do header do sidebar
+        p={0} // 4px é o padding do conteúdo
       >
         {children}
       </Box>

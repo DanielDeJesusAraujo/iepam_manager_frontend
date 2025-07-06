@@ -35,7 +35,7 @@ import {
   FormControl,
   FormLabel
 } from '@chakra-ui/react';
-import { SearchIcon } from '@chakra-ui/icons';
+import { SearchIcon } from 'lucide-react';
 import { CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -211,7 +211,7 @@ export function MyAllocationsPage() {
         <Flex gap={4} mb={6} justify="space-between">
           <InputGroup>
             <InputLeftElement pointerEvents="none">
-              <SearchIcon color="gray.400" />
+              <SearchIcon size={16} color={useColorModeValue('gray.400', 'gray.300')} />
             </InputLeftElement>
             <Input
               placeholder="Buscar por item ou destino..."

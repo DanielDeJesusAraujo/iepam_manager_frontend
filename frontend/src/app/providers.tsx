@@ -1,9 +1,9 @@
 'use client'
 
-import { CacheProvider } from '@chakra-ui/next-js'
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { SessionProvider } from 'next-auth/react'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { GlobalProvider } from '@/contexts/GlobalContext'
 
 const theme = extendTheme({
   config: {
@@ -63,11 +63,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <AuthProvider>
-        <CacheProvider>
+        <GlobalProvider>
           <ChakraProvider theme={theme}>
             {children}
           </ChakraProvider>
-        </CacheProvider>
+        </GlobalProvider>
       </AuthProvider>
     </SessionProvider>
   )

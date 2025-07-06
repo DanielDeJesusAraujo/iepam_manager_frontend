@@ -37,7 +37,6 @@ import { ArrowLeft, ShoppingCart, CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { useToast } from '@chakra-ui/react';
-import { MobileSupplyDetails } from './components/MobileSupplyDetails';
 import { DeliveryDetailsModal } from '../components/DeliveryDetailsModal';
 
 interface Supply {
@@ -361,16 +360,6 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
         }
     };
 
-    if (isMobile) {
-        return (
-            <MobileSupplyDetails
-                supply={supply}
-                loading={loading}
-                onAddToCart={addToCart}
-            />
-        );
-    }
-
     if (loading) {
         return (
             <Box p={4}>
@@ -386,42 +375,42 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
     }
 
     return (
-        <Container maxW="container.xl" py={8}>
-            <VStack spacing={8} align="stretch">
+        <>
+            <VStack spacing={isMobile ? 6 : 8} align="stretch" marginTop={isMobile ? "4vh" : "0"}>
                 <HStack>
                     <IconButton
                         aria-label="Voltar"
                         icon={<ArrowLeft />}
-                        variant="ghost"
+                        variant={isMobile ? "solid" : "ghost"}
                         onClick={() => router.back()}
                     />
-                    <Heading size="xl">Detalhes do Suprimento</Heading>
+                    <Heading size={isMobile ? "lg" : "xl"}>Detalhes do Suprimento</Heading>
                 </HStack>
 
-                <Flex gap={8}>
+                <Flex gap={isMobile ? 6 : 8} direction={isMobile ? "column" : "row"}>
                     <Box flex="1">
                         <Image
                             src={supply.image_url || '/placeholder.png'}
                             alt={supply.name}
-                            borderRadius="xl"
-                            height="500px"
+                            borderRadius={isMobile ? "lg" : "xl"}
+                            height={isMobile ? "250px" : "500px"}
                             objectFit="cover"
                             width="100%"
                         />
                     </Box>
 
-                    <VStack flex="1" align="stretch" spacing={8}>
+                    <VStack flex="1" align="stretch" spacing={isMobile ? 4 : 8}>
                         <Box>
-                            <Heading size="2xl" mb={4}>{supply.name}</Heading>
-                            <Text color="gray.500" fontSize="xl">{supply.description}</Text>
+                            <Heading size={isMobile ? "lg" : "2xl"} mb={isMobile ? 2 : 4}>{supply.name}</Heading>
+                            <Text color="gray.500" fontSize={isMobile ? "md" : "xl"}>{supply.description}</Text>
                         </Box>
 
-                        <HStack spacing={3}>
-                            <Badge colorScheme="blue" fontSize="lg" px={4} py={2}>
+                        <HStack spacing={isMobile ? 2 : 3}>
+                            <Badge colorScheme="blue" fontSize={isMobile ? "sm" : "lg"} px={isMobile ? 2 : 4} py={isMobile ? 1 : 2}>
                                 {supply.category.label}
                             </Badge>
                             {supply.subcategory && (
-                                <Badge colorScheme="green" fontSize="lg" px={4} py={2}>
+                                <Badge colorScheme="green" fontSize={isMobile ? "sm" : "lg"} px={isMobile ? 2 : 4} py={isMobile ? 1 : 2}>
                                     {supply.subcategory.label}
                                 </Badge>
                             )}
@@ -429,20 +418,20 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
 
                         <Divider />
 
-                        <VStack align="stretch" spacing={6}>
+                        <VStack align="stretch" spacing={isMobile ? 4 : 6}>
                             <HStack justify="space-between" align="center">
-                                <Text fontSize="xl" fontWeight="medium">Quantidade Disponível:</Text>
-                                <Text fontSize="xl">{supply.quantity}</Text>
+                                <Text fontSize={isMobile ? "md" : "xl"} fontWeight="medium">Quantidade Disponível:</Text>
+                                <Text fontSize={isMobile ? "md" : "xl"}>{supply.quantity}</Text>
                             </HStack>
 
                             <Box>
-                                <Text fontSize="xl" fontWeight="medium" mb={3}>Quantidade Desejada:</Text>
+                                <Text fontSize={isMobile ? "md" : "xl"} fontWeight="medium" mb={isMobile ? 2 : 3}>Quantidade Desejada:</Text>
                                 <NumberInput
                                     value={quantity}
                                     onChange={handleQuantityChange}
                                     min={1}
                                     max={supply.quantity}
-                                    size="lg"
+                                    size={isMobile ? "md" : "lg"}
                                 >
                                     <NumberInputField />
                                     <NumberInputStepper>
@@ -453,29 +442,31 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                             </Box>
                         </VStack>
 
-                        <HStack spacing={4}>
+                        <HStack spacing={isMobile ? 3 : 4}>
                             <Button
                                 colorScheme="blue"
-                                leftIcon={<ShoppingCart size={24} />}
+                                leftIcon={<ShoppingCart size={isMobile ? 18 : 24} />}
                                 onClick={() => addToCart(supply, quantity)}
                                 isDisabled={supply.quantity <= 0}
-                                size="lg"
-                                height="70px"
-                                fontSize="xl"
+                                size={isMobile ? "xs" : "lg"}
+                                height={isMobile ? "50px" : "70px"}
+                                fontSize={isMobile ? "xs" : "xl"}
                                 flex="1"
+                                p={isMobile ? 1 : undefined}
                             >
-                                Adicionar ao Carrinho
+                                {isMobile ? "Adicionar ao Carrinho" : "Adicionar ao Carrinho"}
                             </Button>
                             <Button
                                 colorScheme="green"
                                 onClick={onOpen}
                                 isDisabled={supply.quantity <= 0}
-                                size="lg"
-                                height="70px"
-                                fontSize="xl"
+                                size={isMobile ? "xs" : "lg"}
+                                height={isMobile ? "50px" : "70px"}
+                                fontSize={isMobile ? "xs" : "xl"}
                                 flex="1"
+                                p={isMobile ? 1 : undefined}
                             >
-                                Realizar Pedido
+                                {isMobile ? "Realizar Pedido" : "Realizar Pedido"}
                             </Button>
                         </HStack>
                     </VStack>
@@ -494,6 +485,6 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                     setLocaleId={setLocaleId}
                 />
             </VStack>
-        </Container>
+        </>
     );
 } 

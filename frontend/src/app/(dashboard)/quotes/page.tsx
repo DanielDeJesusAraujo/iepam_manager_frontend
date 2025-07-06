@@ -23,21 +23,16 @@ import {
   DrawerBody,
   DrawerCloseButton,
   useDisclosure,
-  Text,
-  Badge,
-  Card,
-  CardBody,
-  Image,
   Divider,
   Select,
+  useMediaQuery,
+  Heading,
 } from '@chakra-ui/react';
 import { QuoteList } from './components/QuoteList';
 import { CreateQuoteButton } from './components/CreateQuoteButton';
 import { SmartQuotesTable } from './components/SmartQuotesTable';
-import { PageHeader } from '@/components/PageHeader';
 import { useState, useEffect } from 'react';
 import { FiPlus, FiFilter, FiSearch, FiChevronRight } from 'react-icons/fi';
-import { MobileQuotes } from './components/MobileQuotes';
 
 interface Quote {
   id: string;
@@ -59,7 +54,7 @@ interface Quote {
 
 export default function QuotesPage() {
   const { colorMode } = useColorMode();
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isMobile] = useMediaQuery('(max-width: 768px)');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -175,85 +170,100 @@ export default function QuotesPage() {
     }).format(value);
   };
 
-  if (isMobile) {
-    return <MobileQuotes quotes={quotes} onStatusChange={handleStatusChange} />;
-  }
-
   return (
     <Box w="full" h="full">
       <VStack
         spacing={4}
         align="stretch"
-        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+        bg={useColorModeValue('white', 'gray.700')}
         backdropFilter="blur(12px)"
-        p={6}
+        p={{ base: 2, md: 6 }}
         borderRadius="lg"
         boxShadow="sm"
         borderWidth="1px"
-        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+        borderColor={useColorModeValue('gray.200', 'gray.600')}
         h="full"
       >
-        <PageHeader
-          title="Cotações"
-          description="Gerencie as cotações de produtos e serviços"
-        />
+        {!isMobile && (
+          <>
+            <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
+              <Heading size={{ base: 'md', md: 'lg' }} color={useColorModeValue('gray.800', 'white')}>Cotações</Heading>
+            </Flex>
+            <Divider />
+          </>
+        )}
 
-        <Box
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-          backdropFilter="blur(12px)"
-          borderRadius="lg"
-          borderWidth="1px"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        >
-          <Tabs 
-            variant="enclosed"
-            colorScheme={colorMode === 'dark' ? 'blue' : 'blue'}
-          >
+        <Box position="sticky" top="7vh" zIndex={21} bg={useColorModeValue('white', 'gray.700')} borderRadius="lg">
+          <Tabs variant="enclosed" size={{ base: 'sm', md: 'md' }}>
             <TabList 
-              borderBottom="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+              overflowX="auto" 
+              css={{
+                '&::-webkit-scrollbar': { display: 'none' },
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
+              bg={useColorModeValue('gray.50', 'gray.600')}
+              borderRadius="lg"
+              p={1}
+              gap={1}
             >
               <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                whiteSpace="nowrap"
+                fontSize={{ base: 'xs', md: 'sm' }}
+                fontWeight="medium"
+                minH={{ base: '8', md: '10' }}
+                px={{ base: 2, md: 4 }}
+                py={{ base: 2, md: 3 }}
+                borderRadius="md"
+                _selected={{
+                  bg: useColorModeValue('white', 'gray.700'),
+                  color: useColorModeValue('blue.600', 'blue.200'),
+                  boxShadow: 'sm',
+                  borderColor: useColorModeValue('blue.200', 'blue.600')
                 }}
                 _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
+                  bg: useColorModeValue('gray.100', 'gray.500')
                 }}
               >
                 Todas as Cotações
               </Tab>
               <Tab 
-                _selected={{ 
-                  color: colorMode === 'dark' ? 'white' : 'blue.500',
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.2)' : 'blue.50',
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                  borderBottomColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                whiteSpace="nowrap"
+                fontSize={{ base: 'xs', md: 'sm' }}
+                fontWeight="medium"
+                minH={{ base: '8', md: '10' }}
+                px={{ base: 2, md: 4 }}
+                py={{ base: 2, md: 3 }}
+                borderRadius="md"
+                _selected={{
+                  bg: useColorModeValue('white', 'gray.700'),
+                  color: useColorModeValue('blue.600', 'blue.200'),
+                  boxShadow: 'sm',
+                  borderColor: useColorModeValue('blue.200', 'blue.600')
                 }}
                 _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.1)' : 'blue.50',
+                  bg: useColorModeValue('gray.100', 'gray.500')
                 }}
               >
                 Cotações Inteligentes
               </Tab>
             </TabList>
-
-            <TabPanels>
-              <TabPanel>
-                <VStack spacing={4} align="stretch">
-                  <Box display="flex" justifyContent="flex-end">
-                    <CreateQuoteButton />
-                  </Box>
-                  <QuoteList quotes={quotes} onStatusChange={handleStatusChange} />
-                </VStack>
-              </TabPanel>
-              <TabPanel>
-                <SmartQuotesTable />
-              </TabPanel>
-            </TabPanels>
+            
+            <Box mt={4} flex="1" overflowY="auto">
+              <TabPanels>
+                <TabPanel p={{ base: 2, md: 4 }}>
+                  <VStack spacing={4} align="stretch">
+                    <Box display="flex" justifyContent="flex-end">
+                      <CreateQuoteButton />
+                    </Box>
+                    <QuoteList quotes={quotes} onStatusChange={handleStatusChange} />
+                  </VStack>
+                </TabPanel>
+                <TabPanel p={{ base: 2, md: 4 }}>
+                  <SmartQuotesTable />
+                </TabPanel>
+              </TabPanels>
+            </Box>
           </Tabs>
         </Box>
       </VStack>
