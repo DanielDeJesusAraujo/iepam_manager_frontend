@@ -214,6 +214,18 @@ function globalReducer(state: GlobalState, action: GlobalAction): GlobalState {
 const GlobalContext = createContext<{
   state: GlobalState;
   dispatch: React.Dispatch<GlobalAction>;
+  // Funções auxiliares
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (itemId: string) => void;
+  updateCartItem: (itemId: string, quantity: number) => void;
+  clearCart: () => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void;
+  removeNotification: (notificationId: string) => void;
+  setActiveTab: (tabIndex: number) => void;
+  setSearchQuery: (query: string) => void;
+  setStatusFilter: (filter: string) => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+  handleLogout: () => void;
 } | undefined>(undefined);
 
 // Provider
