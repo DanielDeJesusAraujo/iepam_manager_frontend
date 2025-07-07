@@ -43,9 +43,14 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [isMobile] = useMediaQuery('(max-width: 768px)');
+  // Cores
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const cardBg = useColorModeValue('gray.50', 'gray.700');
+  const headingColor = useColorModeValue('gray.800', 'white');
+  const subHeadingColor = useColorModeValue('gray.600', 'gray.300');
+  const buttonHoverBg = useColorModeValue('gray.100', 'gray.700');
+  const mainBg = useColorModeValue('gray.50', 'gray.900');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isAllocating, setIsAllocating] = useState(false);
 
@@ -126,29 +131,29 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
   };
 
   return (
-    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={isMobile ? "7vh" : 6}>
+    <Box minH="100vh" bg={mainBg} py={isMobile ? "7vh" : 6}>
       <Container maxW="container.xl">
         <VStack spacing={6} align="stretch">
           {/* Header */}
           <Flex justify="space-between" align="center">
             <HStack spacing={4}>
-          <IconButton
-            aria-label="Voltar"
+              <IconButton
+                aria-label="Voltar"
                 icon={<ArrowLeft size={24} />}
-            variant="ghost"
-            onClick={() => router.back()}
+                variant="ghost"
+                onClick={() => router.back()}
                 size="lg"
-                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
-          />
+                _hover={{ bg: buttonHoverBg }}
+              />
               <VStack align="start" spacing={1}>
-                <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                <Heading size="lg" color={headingColor}>
                   Detalhes do Item
                 </Heading>
                 <Text color="gray.500" fontSize="sm">
                   Informações completas do item do inventário
                 </Text>
               </VStack>
-        </HStack>
+            </HStack>
           </Flex>
 
           {/* Main Content */}
@@ -157,9 +162,9 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
             <GridItem>
               <Card bg={bgColor} borderWidth="1px" borderColor={borderColor} overflow="hidden">
                 <CardBody p={0}>
-          <Image
-            src={item.image_url || '/placeholder.png'}
-            alt={item.name}
+                  <Image
+                    src={item.image_url || '/placeholder.png'}
+                    alt={item.name}
                     width="100%"
                     height="500px"
                     objectFit="contain"
@@ -176,10 +181,10 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                 <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
                   <CardBody>
                     <VStack spacing={4} align="stretch">
-                      <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                      <Heading size="lg" color={headingColor}>
                         {item.name}
                       </Heading>
-                      <Text color="gray.600" fontSize="md" lineHeight="1.6">
+                      <Text color={subHeadingColor} fontSize="md" lineHeight="1.6">
                         {item.description}
                       </Text>
                       <HStack spacing={3}>
@@ -194,7 +199,7 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                         </Badge>
                         <Badge colorScheme="blue" size="lg" px={4} py={2} borderRadius="full">
                           {item.category?.label}
-            </Badge>
+                        </Badge>
                       </HStack>
                     </VStack>
                   </CardBody>
@@ -204,7 +209,7 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                 <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
                   <CardBody>
                     <VStack spacing={4} align="stretch">
-                      <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                      <Heading size="md" color={headingColor}>
                         Informações Técnicas
                       </Heading>
                       <Grid templateColumns="1fr 1fr" gap={4}>
@@ -245,7 +250,7 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                 <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
                   <CardBody>
                     <VStack spacing={4} align="stretch">
-                      <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                      <Heading size="md" color={headingColor}>
                         Informações Financeiras
                       </Heading>
                       <Grid templateColumns="1fr 1fr" gap={4}>
@@ -287,12 +292,12 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                   _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
                   transition="all 0.2s"
                 >
-                Alocar Item
-              </Button>
+                  Alocar Item
+                </Button>
               </VStack>
             </GridItem>
           </Grid>
-          </VStack>
+        </VStack>
 
         <InventoryAllocationModal
           isOpen={isOpen}

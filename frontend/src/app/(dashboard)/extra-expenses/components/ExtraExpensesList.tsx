@@ -44,10 +44,12 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  useColorMode,
 } from '@chakra-ui/react';
 import { SearchIcon, EditIcon, DeleteIcon, ViewIcon, AddIcon } from '@chakra-ui/icons';
 import { ExtraExpense } from '../interfaces/IExtraExpense';
 import { exportToPDF } from '@/utils/exportToPDF';
+import type { ExtraExpenseCategory } from '../../settings/interfaces/IExtraExpenseCategory';
 
 interface ExtraExpensesListProps {
   onEditExpense: (expense: ExtraExpense) => void;
@@ -56,20 +58,23 @@ interface ExtraExpensesListProps {
 }
 
 export default function ExtraExpensesList({ onEditExpense, isFormOpen, onOpenForm }: ExtraExpensesListProps) {
+  const { colorMode } = useColorMode();
+  const [isMobile] = useMediaQuery('(max-width: 768px)');
+  const headingColor = useColorModeValue('gray.800', 'white');
+  
   const [expenses, setExpenses] = useState<ExtraExpense[]>([]);
-  const [filteredExpenses, setFilteredExpenses] = useState<ExtraExpense[]>([]);
+  const [categories, setCategories] = useState<ExtraExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [categories, setCategories] = useState<any[]>([]);
-  const [selectedExpense, setSelectedExpense] = useState<ExtraExpense | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [minAmount, setMinAmount] = useState<number | undefined>(undefined);
-  const [maxAmount, setMaxAmount] = useState<number | undefined>(undefined);
+  const [minAmount, setMinAmount] = useState<number | undefined>();
+  const [maxAmount, setMaxAmount] = useState<number | undefined>();
+  const [filteredExpenses, setFilteredExpenses] = useState<ExtraExpense[]>([]);
+  const [selectedExpense, setSelectedExpense] = useState<ExtraExpense | null>(null);
   const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure();
   const toast = useToast();
-  const [isMobile] = useMediaQuery('(max-width: 768px)');
   const bgColor = useColorModeValue('white', 'gray.700');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
@@ -305,7 +310,7 @@ export default function ExtraExpensesList({ onEditExpense, isFormOpen, onOpenFor
   return (
     <VStack spacing={4} align="stretch" w="full" h="full">
       <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align="center" gap={4}>
-        <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+        <Heading size="md" color={headingColor}>
           Lista de Gastos Extras ({filteredExpenses.length})
         </Heading>
         <Button

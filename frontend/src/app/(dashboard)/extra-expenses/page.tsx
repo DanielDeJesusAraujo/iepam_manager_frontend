@@ -29,6 +29,16 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
   const [hasFetched, setHasFetched] = useState(() => tabLabels.map(() => false));
   const [isMobile] = useMediaQuery('(max-width: 768px)');
 
+  // Declarar todas as cores no topo
+  const bgColor = useColorModeValue('white', 'gray.700');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const headingColor = useColorModeValue('gray.800', 'white');
+  const tabListBg = useColorModeValue('gray.50', 'gray.600');
+  const tabSelectedBg = useColorModeValue('white', 'gray.700');
+  const tabSelectedColor = useColorModeValue('blue.600', 'blue.200');
+  const tabSelectedBorder = useColorModeValue('blue.200', 'blue.600');
+  const tabHoverBg = useColorModeValue('gray.100', 'gray.500');
+
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
     if (saved) setActiveTab(Number(saved));
@@ -46,25 +56,25 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
       <VStack
         spacing={4}
         align="stretch"
-        bg={useColorModeValue('white', 'gray.700')}
+        bg={bgColor}
         backdropFilter="blur(12px)"
         p={{ base: 2, md: 6 }}
         borderRadius="lg"
         boxShadow="sm"
         borderWidth="1px"
-        borderColor={useColorModeValue('gray.200', 'gray.600')}
+        borderColor={borderColor}
         h="full"
         w="full"
       >
         {!isMobile && (
           <>
             <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
-              <Heading size={{ base: 'md', md: 'lg' }} color={useColorModeValue('gray.800', 'white')}>Gastos Extras</Heading>
+              <Heading size={{ base: 'md', md: 'lg' }} color={headingColor}>Gastos Extras</Heading>
             </Flex>
             <Divider />
           </>
         )}
-        <Box marginBottom="20px" position="sticky" top="7vh" zIndex={21} bg={useColorModeValue('white', 'gray.700')} borderRadius="lg">
+        <Box marginBottom="20px" position="sticky" top="7vh" zIndex={21} bg={bgColor} borderRadius="lg">
           <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size={{ base: 'sm', md: 'md' }}>
             <TabList 
               overflowX="auto" 
@@ -73,7 +83,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none'
               }}
-              bg={useColorModeValue('gray.50', 'gray.600')}
+              bg={tabListBg}
               borderRadius="lg"
               p={1}
               gap={1}
@@ -89,13 +99,13 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                   py={{ base: 2, md: 3 }}
                   borderRadius="md"
                   _selected={{
-                    bg: useColorModeValue('white', 'gray.700'),
-                    color: useColorModeValue('blue.600', 'blue.200'),
+                    bg: tabSelectedBg,
+                    color: tabSelectedColor,
                     boxShadow: 'sm',
-                    borderColor: useColorModeValue('blue.200', 'blue.600')
+                    borderColor: tabSelectedBorder
                   }}
                   _hover={{
-                    bg: useColorModeValue('gray.100', 'gray.500')
+                    bg: tabHoverBg
                   }}
                 >
                   {label}

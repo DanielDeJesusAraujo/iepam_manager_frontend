@@ -294,7 +294,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                     Ex: 1.234,56
                                 </Box>
                                 <InputGroup>
-                                    <InputLeftAddon children="R$" />
+                                    <InputLeftAddon>R$</InputLeftAddon>
                                     <Input
                                         pl={10}
                                         value={formData.unit_price || ''}
@@ -316,7 +316,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                     Ex: 1.234,56
                                 </Box>
                                 <InputGroup>
-                                    <InputLeftAddon children="R$" />
+                                    <InputLeftAddon>R$</InputLeftAddon>
                                     <Input
                                         pl={10}
                                         value={formData.freight || ''}
