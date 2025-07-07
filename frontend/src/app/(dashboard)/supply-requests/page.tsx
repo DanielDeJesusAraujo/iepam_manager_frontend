@@ -65,7 +65,7 @@ import { Supply, SupplyRequest } from './types';
 import {
   fetchSupplies,
   fetchRequests,
-  handleRequesterConfirmation,
+  handleRequesterConfirmation as handleRequesterConfirmationOrig,
   submitRequest,
   filterSupplies,
   filterRequests,
@@ -618,6 +618,28 @@ export default function SupplyRequestsPage() {
   const fetchTabMyRequests = () => fetchTabData(2);
   const fetchTabMyAllocations = () => fetchTabData(3);
   const fetchTabCart = () => fetchTabData(4);
+
+  const handleRequesterConfirmation = async (requestId: string, confirmation: boolean, token: string, isCustom: boolean) => {
+    try {
+      await handleRequesterConfirmationOrig(requestId, confirmation, token, isCustom);
+      toast({
+        title: 'Sucesso',
+        description: 'Confirmação atualizada com sucesso',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      await loadInitialData(); // Atualiza o contexto após confirmação
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao atualizar confirmação',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
     return (
     <>

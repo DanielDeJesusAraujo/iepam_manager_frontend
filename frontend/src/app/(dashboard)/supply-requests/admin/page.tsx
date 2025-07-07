@@ -620,7 +620,6 @@ export default function AdminSupplyRequestsPage() {
     };
 
     const handleManagerDeliveryConfirmation = async (requestOrAllocation: any, confirmation: boolean) => {
-        console.log('handleManagerDeliveryConfirmation', requestOrAllocation, confirmation);
         try {
             const token = localStorage.getItem('@ti-assistant:token');
             if (!token) {
@@ -662,7 +661,11 @@ export default function AdminSupplyRequestsPage() {
                 isClosable: true,
             });
 
-            fetchAllocationRequests();
+            if (requestOrAllocation.inventory) {
+                fetchAllocationRequests();
+            } else {
+                fetchRequests();
+            }
         } catch (error) {
             console.error('Erro ao confirmar entrega:', error);
             toast({

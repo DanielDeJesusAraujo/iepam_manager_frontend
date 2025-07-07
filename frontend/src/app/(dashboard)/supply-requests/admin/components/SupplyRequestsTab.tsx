@@ -264,26 +264,26 @@ export function SupplyRequestsTab({
             <Flex gap={4} mb={4} flexWrap="wrap" align="end">
                 <FormControl maxW="320px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Buscar por suprimento ou usuário</FormLabel>
-                <InputGroup>
-                    <InputLeftElement pointerEvents="none">
-                        <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                    </InputLeftElement>
-                    <Input
+                    <InputGroup>
+                        <InputLeftElement pointerEvents="none">
+                            <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                        </InputLeftElement>
+                        <Input
                             placeholder="Digite para buscar..."
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                        _hover={{
-                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                        }}
-                        _focus={{
-                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                            boxShadow: 'none',
-                        }}
-                    />
-                </InputGroup>
+                            value={search}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                            backdropFilter="blur(12px)"
+                            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                            _hover={{
+                                borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                            }}
+                            _focus={{
+                                borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                                boxShadow: 'none',
+                            }}
+                        />
+                    </InputGroup>
                 </FormControl>
                 <FormControl maxW="130px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data Limite de Entrega (início)</FormLabel>
@@ -311,28 +311,28 @@ export function SupplyRequestsTab({
                 </FormControl>
                 <FormControl maxW="100px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
-                <Select
+                    <Select
                         placeholder="Todos"
-                    value={statusFilter}
-                    onChange={(e) => onStatusFilterChange(e.target.value)}
+                        value={statusFilter}
+                        onChange={(e) => onStatusFilterChange(e.target.value)}
                         size="sm"
-                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                    backdropFilter="blur(12px)"
-                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                    _hover={{
-                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                    }}
-                    _focus={{
-                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                        boxShadow: 'none',
-                    }}
-                >
-                    <option value="">Todos</option>
-                    <option value="PENDING">Pendente</option>
-                    <option value="APPROVED">Aprovado</option>
-                    <option value="REJECTED">Rejeitado</option>
-                    <option value="DELIVERED">Entregue</option>
-                </Select>
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+                        backdropFilter="blur(12px)"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        _hover={{
+                            borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                        }}
+                        _focus={{
+                            borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
+                            boxShadow: 'none',
+                        }}
+                    >
+                        <option value="">Todos</option>
+                        <option value="PENDING">Pendente</option>
+                        <option value="APPROVED">Aprovado</option>
+                        <option value="REJECTED">Rejeitado</option>
+                        <option value="DELIVERED">Entregue</option>
+                    </Select>
                 </FormControl>
                 <FormControl maxW="200px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filial</FormLabel>
@@ -389,7 +389,7 @@ export function SupplyRequestsTab({
                     size="sm"
                     onClick={onExportPDF}
                     colorScheme="blue"
-                    leftIcon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>}
+                    leftIcon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></svg>}
                     isDisabled={filtered.length === 0}
                     minW="140px"
                     h="36px"
@@ -408,7 +408,7 @@ export function SupplyRequestsTab({
                     onClick={onClearFilters}
                     colorScheme="gray"
                     variant="outline"
-                    leftIcon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-ccw" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>}
+                    leftIcon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-ccw" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>}
                     minW="140px"
                     h="36px"
                     fontSize="sm"
