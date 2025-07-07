@@ -2,7 +2,6 @@
 
 import Sidebar from '@/components/Sidebar';
 import { usePathname } from 'next/navigation';
-import { Box } from '@chakra-ui/react';
 
 export default function DashboardLayout({
   children,

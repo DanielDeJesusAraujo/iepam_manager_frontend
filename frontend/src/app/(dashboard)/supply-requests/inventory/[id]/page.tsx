@@ -24,9 +24,15 @@ import {
   ModalBody,
   ModalFooter,
   ModalCloseButton,
-  useDisclosure
+  useDisclosure,
+  Card,
+  CardBody,
+  Grid,
+  GridItem,
+  Divider,
+  Stack
 } from '@chakra-ui/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Tag, Hash, Building } from 'lucide-react';
 import { fetchInventoryItemById } from '@/utils/apiUtils';
 import { InventoryAllocationModal } from '@/components/InventoryAllocationModal';
 import { allocateInventoryItem } from '../../utils/requestUtils';
@@ -37,8 +43,9 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [isMobile] = useMediaQuery('(max-width: 768px)');
-  const bgColor = useColorModeValue('white', 'gray.700');
+  const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const cardBg = useColorModeValue('gray.50', 'gray.700');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isAllocating, setIsAllocating] = useState(false);
 
@@ -81,8 +88,11 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
 
   if (loading) {
     return (
-      <Flex justify="center" align="center" minH="200px">
-        <Spinner size="xl" />
+      <Flex justify="center" align="center" minH="400px">
+        <VStack spacing={4}>
+          <Spinner size="xl" color="blue.500" thickness="4px" />
+          <Text color="gray.500">Carregando detalhes do item...</Text>
+        </VStack>
       </Flex>
     );
   }
@@ -90,8 +100,12 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
   if (error) {
     return (
       <Container maxW="container.sm" py={8}>
-        <Text color="red.500">{error}</Text>
-        <Button mt={4} onClick={() => router.back()}>Voltar</Button>
+        <VStack spacing={4} textAlign="center">
+          <Text color="red.500" fontSize="lg">{error}</Text>
+          <Button onClick={() => router.back()} colorScheme="blue">
+            Voltar
+          </Button>
+        </VStack>
       </Container>
     );
   }
@@ -100,61 +114,186 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
     return null;
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   return (
-    <Container maxW={isMobile ? '100vw' : 'container.md'} py={isMobile ? 9 : 8} px={isMobile ? 0 : 6}>
-      <VStack spacing={isMobile ? 4 : 8} align="stretch">
-        <HStack spacing={isMobile ? 2 : 4} align="center">
+    <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={isMobile ? "7vh" : 6}>
+      <Container maxW="container.xl">
+        <VStack spacing={6} align="stretch">
+          {/* Header */}
+          <Flex justify="space-between" align="center">
+            <HStack spacing={4}>
           <IconButton
             aria-label="Voltar"
-            icon={<ArrowLeft size={isMobile ? 20 : 22} />}
+                icon={<ArrowLeft size={24} />}
             variant="ghost"
             onClick={() => router.back()}
-            size={isMobile ? 'md' : 'md'}
+                size="lg"
+                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
           />
-          <Heading size={isMobile ? 'md' : 'lg'}>Detalhes</Heading>
+              <VStack align="start" spacing={1}>
+                <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                  Detalhes do Item
+                </Heading>
+                <Text color="gray.500" fontSize="sm">
+                  Informações completas do item do inventário
+                </Text>
+              </VStack>
         </HStack>
-        <Flex
-          direction={isMobile ? 'column' : 'row'}
-          gap={isMobile ? 4 : 8}
-          align="flex-start"
-          bg={bgColor}
-          borderRadius="lg"
-          borderWidth="1px"
-          borderColor={borderColor}
-          p={isMobile ? 3 : 8}
-          boxShadow="sm"
-        >
+          </Flex>
+
+          {/* Main Content */}
+          <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={8}>
+            {/* Image Section */}
+            <GridItem>
+              <Card bg={bgColor} borderWidth="1px" borderColor={borderColor} overflow="hidden">
+                <CardBody p={0}>
           <Image
             src={item.image_url || '/placeholder.png'}
             alt={item.name}
-            borderRadius="md"
-            height={isMobile ? '80%' : '260px'}
-            width={isMobile ? '100%' : '260px'}
-            maxW={isMobile ? '100%' : '260px'}
-            objectFit="cover"
-            mb={isMobile ? 3 : 0}
-            alignSelf={isMobile ? 'center' : 'flex-start'}
-          />
-          <VStack spacing={isMobile ? 2 : 4} align="stretch" flex={1} maxW={isMobile ? '100%' : 'none'}>
-            <Heading size={isMobile ? 'sm' : 'md'} noOfLines={2} wordBreak="break-word">{item.name}</Heading>
-            <Text color="gray.500" fontSize={isMobile ? 'sm' : 'md'} noOfLines={3} wordBreak="break-word">{item.description}</Text>
-            <Flex gap={2} align="center" flexWrap="wrap">
-              <Badge colorScheme="blue" fontSize={isMobile ? 'xs' : 'md'}>{item.category?.label}</Badge>
-              {item.subcategory && <Badge colorScheme="green" fontSize={isMobile ? 'xs' : 'md'}>{item.subcategory.label}</Badge>}
-            </Flex>
-            <Badge colorScheme={item.status === 'STANDBY' ? 'purple' : 'orange'} fontSize={isMobile ? 'xs' : 'md'}>
-              {item.status === 'STANDBY' ? 'Disponível' : 'Em Uso'}
+                    width="100%"
+                    height="500px"
+                    objectFit="contain"
+                    fallbackSrc="/placeholder.png"
+                  />
+                </CardBody>
+              </Card>
+            </GridItem>
+
+            {/* Details Section */}
+            <GridItem>
+              <VStack spacing={6} align="stretch">
+                {/* Title and Status */}
+                <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+                  <CardBody>
+                    <VStack spacing={4} align="stretch">
+                      <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                        {item.name}
+                      </Heading>
+                      <Text color="gray.600" fontSize="md" lineHeight="1.6">
+                        {item.description}
+                      </Text>
+                      <HStack spacing={3}>
+                        <Badge 
+                          colorScheme="green" 
+                          size="lg"
+                          px={4}
+                          py={2}
+                          borderRadius="full"
+                        >
+                          Disponível
+                        </Badge>
+                        <Badge colorScheme="blue" size="lg" px={4} py={2} borderRadius="full">
+                          {item.category?.label}
             </Badge>
-            <Text fontSize={isMobile ? 'xs' : 'md'}><b>Modelo:</b> {item.model}</Text>
-            <Text fontSize={isMobile ? 'xs' : 'md'}><b>Nº Série:</b> {item.serial_number}</Text>
-            <Text fontSize={isMobile ? 'xs' : 'md'}><b>Localização:</b> {item.location?.label || '-'}</Text>
-            {item.status === 'STANDBY' && (
-              <Button colorScheme="purple" mt={isMobile ? 2 : 4} size={isMobile ? 'md' : 'lg'} onClick={onOpen}>
+                      </HStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                {/* Technical Details */}
+                <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+                  <CardBody>
+                    <VStack spacing={4} align="stretch">
+                      <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                        Informações Técnicas
+                      </Heading>
+                      <Grid templateColumns="1fr 1fr" gap={4}>
+                        <VStack align="start" spacing={2}>
+                          <HStack>
+                            <Tag size={16} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">Modelo</Text>
+                          </HStack>
+                          <Text fontWeight="medium">{item.model}</Text>
+                        </VStack>
+                        <VStack align="start" spacing={2}>
+                          <HStack>
+                            <Hash size={16} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">Nº Série</Text>
+                          </HStack>
+                          <Text fontWeight="medium" fontFamily="mono">{item.serial_number}</Text>
+                        </VStack>
+                        <VStack align="start" spacing={2}>
+                          <HStack>
+                            <Calendar size={16} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">Data de Aquisição</Text>
+                          </HStack>
+                          <Text fontWeight="medium">{formatDate(item.acquisition_date)}</Text>
+                        </VStack>
+                        <VStack align="start" spacing={2}>
+                          <HStack>
+                            <Building size={16} color="gray.500" />
+                            <Text fontSize="sm" color="gray.500">Localização</Text>
+                          </HStack>
+                          <Text fontWeight="medium">{item.location?.name || '-'}</Text>
+                        </VStack>
+                      </Grid>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                {/* Financial Details */}
+                <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+                  <CardBody>
+                    <VStack spacing={4} align="stretch">
+                      <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                        Informações Financeiras
+                      </Heading>
+                      <Grid templateColumns="1fr 1fr" gap={4}>
+                        <VStack align="start" spacing={2}>
+                          <Text fontSize="sm" color="gray.500">Valor de Aquisição</Text>
+                          <Text fontWeight="bold" color="green.600" fontSize="lg">
+                            {formatCurrency(item.acquisition_price)}
+                          </Text>
+                        </VStack>
+                        <VStack align="start" spacing={2}>
+                          <Text fontSize="sm" color="gray.500">Valor Residual</Text>
+                          <Text fontWeight="medium" color="blue.600">
+                            {formatCurrency(item.residual_value)}
+                          </Text>
+                        </VStack>
+                        <VStack align="start" spacing={2}>
+                          <Text fontSize="sm" color="gray.500">Vida Útil</Text>
+                          <Text fontWeight="medium">{item.service_life} anos</Text>
+                        </VStack>
+                        <VStack align="start" spacing={2}>
+                          <Text fontSize="sm" color="gray.500">Finalidade</Text>
+                          <Text fontWeight="medium" textTransform="capitalize">
+                            {item.finality?.toLowerCase().replace('_', ' ')}
+                          </Text>
+                        </VStack>
+                      </Grid>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                {/* Action Button */}
+                <Button
+                  colorScheme="blue"
+                  size="lg"
+                  height="60px"
+                  fontSize="lg"
+                  fontWeight="bold"
+                  onClick={onOpen}
+                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
+                  transition="all 0.2s"
+                >
                 Alocar Item
               </Button>
-            )}
+              </VStack>
+            </GridItem>
+          </Grid>
           </VStack>
-        </Flex>
+
         <InventoryAllocationModal
           isOpen={isOpen}
           onClose={onClose}
@@ -162,7 +301,7 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
           onSubmit={handleAllocationSubmit}
           isLoading={isAllocating}
         />
-      </VStack>
-    </Container>
+      </Container>
+    </Box>
   );
 } 

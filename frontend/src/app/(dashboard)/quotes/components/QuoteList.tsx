@@ -23,8 +23,18 @@ import {
   Center,
   VStack,
   Button,
+  useDisclosure,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  FormControl,
+  FormLabel,
+  useMediaQuery,
 } from '@chakra-ui/react';
-import { SearchIcon, Eye } from 'lucide-react';
+import { SearchIcon, Eye, Filter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -59,6 +69,8 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
   const toast = useToast();
   const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isMobile] = useMediaQuery('(max-width: 768px)');
+  const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
 
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
@@ -113,6 +125,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
 
   return (
     <Box>
+      {!isMobile ? (
       <VStack spacing={4} mb={6}>
         <HStack spacing={4} width="100%">
           <Select
@@ -161,6 +174,29 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
           </InputGroup>
         </HStack>
       </VStack>
+      ) : (
+        <VStack spacing={3} mb={6}>
+          <InputGroup size="md">
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon size={16} />
+            </InputLeftElement>
+            <Input
+              placeholder="Buscar por fornecedor ou produto"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </InputGroup>
+          <Button
+            leftIcon={<Filter size={16} />}
+            onClick={onFilterOpen}
+            variant="outline"
+            size="sm"
+            w="full"
+          >
+            Filtros
+          </Button>
+        </VStack>
+      )}
 
       <Box overflowX="auto">
         <Table variant="simple" size="sm">
@@ -239,6 +275,78 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
           </Tbody>
         </Table>
       </Box>
+
+      {/* Drawer de Filtros para Mobile */}
+      <Drawer isOpen={isFilterOpen} placement="right" onClose={onFilterClose} size="full">
+        <DrawerOverlay />
+        <DrawerContent bg={useColorModeValue('white', 'gray.800')} backdropFilter="blur(12px)">
+          <DrawerHeader borderBottomWidth="1px" color={useColorModeValue('gray.800', 'white')}>
+            <HStack justify="space-between" align="center">
+              <Text>Filtros Avançados</Text>
+              <Button
+                size="sm"
+                colorScheme="blue"
+                onClick={onFilterClose}
+              >
+                Filtrar
+              </Button>
+            </HStack>
+          </DrawerHeader>
+          <DrawerBody>
+            <VStack spacing={4} align="stretch">
+              <FormControl>
+                <FormLabel color={useColorModeValue('gray.800', 'white')}>Status</FormLabel>
+                <Select
+                  placeholder="Filtrar por status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  size="sm"
+                >
+                  <option value="">Todos</option>
+                  <option value="PENDING">Pendentes</option>
+                  <option value="APPROVED">Aprovadas</option>
+                  <option value="REJECTED">Rejeitadas</option>
+                  <option value="CANCELLED">Canceladas</option>
+                </Select>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel color={useColorModeValue('gray.800', 'white')}>Criador</FormLabel>
+                <Select
+                  placeholder="Filtrar por criador"
+                  value={creatorFilter}
+                  onChange={(e) => setCreatorFilter(e.target.value)}
+                  size="sm"
+                >
+                  <option value="">Todos</option>
+                  {quotes
+                    .filter((quote, index, self) => 
+                      index === self.findIndex(q => q.user.id === quote.user.id)
+                    )
+                    .map(quote => (
+                      <option key={quote.user.id} value={quote.user.id}>
+                        {quote.user.name}
+                      </option>
+                    ))
+                  }
+                </Select>
+              </FormControl>
+            </VStack>
+          </DrawerBody>
+          <DrawerFooter borderTopWidth="1px">
+            <Button variant="outline" mr={3} onClick={() => {
+              setStatusFilter('');
+              setCreatorFilter('');
+              onFilterClose();
+            }}>
+              Limpar Filtros
+            </Button>
+            <Button onClick={onFilterClose}>
+              Aplicar
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </Box>
   );
 } 

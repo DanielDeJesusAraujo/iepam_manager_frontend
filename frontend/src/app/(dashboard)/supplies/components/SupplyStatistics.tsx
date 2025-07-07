@@ -89,7 +89,7 @@ export function SupplyStatistics() {
   if (loading) return <Spinner size="lg" />;
 
   return (
-    <Container maxW="container.xl" py={8}>
+    <>
       <VStack spacing={8} align="stretch">
         <Heading size="lg">Estatísticas de Suprimentos</Heading>
         <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
@@ -133,6 +133,6 @@ export function SupplyStatistics() {
           </CardBody>
         </Card>
       </VStack>
-    </Container>
+    </>
   );
 } 

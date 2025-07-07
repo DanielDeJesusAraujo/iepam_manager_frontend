@@ -32,12 +32,17 @@ import {
     FormLabel,
     Input,
     useDisclosure,
+    Card,
+    CardBody,
+    Grid,
+    GridItem,
+    useMediaQuery,
+    Icon,
 } from '@chakra-ui/react';
-import { ArrowLeft, ShoppingCart, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Package, DollarSign, Tag, Hash, Calendar, Building } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { useToast } from '@chakra-ui/react';
-import { MobileSupplyDetails } from './components/MobileSupplyDetails';
 import { DeliveryDetailsModal } from '../components/DeliveryDetailsModal';
 
 interface Supply {
@@ -57,6 +62,23 @@ interface Supply {
     minimum_quantity: number;
     current_quantity: number;
     quantity: number;
+    unit_price?: number;
+    unit?: string | {
+        id: string;
+        name: string;
+        symbol: string;
+        description?: string;
+    };
+    supplier?: string | {
+        id: string;
+        name: string;
+        phone?: string;
+        email?: string;
+        address?: string;
+        cnpj?: string;
+        contact_person?: string;
+    };
+    freight?: number;
     image_url?: string;
 }
 
@@ -95,8 +117,8 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
     const [deliveryDeadline, setDeliveryDeadline] = useState('');
     const [destination, setDestination] = useState('');
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const isMobile = useBreakpointValue({ base: true, md: false });
-    const bgColor = useColorModeValue('white', 'gray.700');
+    const [isMobile] = useMediaQuery('(max-width: 768px)');
+    const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.600');
     const [request, setRequest] = useState<SupplyRequest | null>(null);
     const [user, setUser] = useState({ role: '' });
@@ -208,16 +230,6 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                 notes: `Pedido direto de ${supply?.name}`
             };
 
-            console.log('Enviando requisição de pedido:', {
-                url: '/api/supply-requests',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: requestBody
-            });
-
             const response = await fetch('/api/supply-requests', {
                 method: 'POST',
                 headers: {
@@ -229,7 +241,6 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Erro na requisição:', errorData);
                 throw new Error(errorData.message || 'Erro ao realizar pedido');
             }
 
@@ -361,22 +372,24 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
         }
     };
 
-    if (isMobile) {
-        return (
-            <MobileSupplyDetails
-                supply={supply}
-                loading={loading}
-                onAddToCart={addToCart}
-            />
-        );
-    }
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    };
 
     if (loading) {
         return (
-            <Box p={4}>
-                <Flex justify="center" align="center" minH="200px">
-                    <Spinner size="xl" />
-                </Flex>
+            <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={6}>
+                <Container maxW="container.xl">
+                    <Flex justify="center" align="center" minH="400px">
+                        <VStack spacing={4}>
+                            <Spinner size="xl" color="blue.500" thickness="4px" />
+                            <Text color="gray.500">Carregando detalhes do suprimento...</Text>
+                        </VStack>
+                    </Flex>
+                </Container>
             </Box>
         );
     }
@@ -386,114 +399,239 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
     }
 
     return (
-        <Container maxW="container.xl" py={8}>
-            <VStack spacing={8} align="stretch">
-                <HStack>
-                    <IconButton
-                        aria-label="Voltar"
-                        icon={<ArrowLeft />}
-                        variant="ghost"
-                        onClick={() => router.back()}
-                    />
-                    <Heading size="xl">Detalhes do Suprimento</Heading>
-                </HStack>
-
-                <Flex gap={8}>
-                    <Box flex="1">
-                        <Image
-                            src={supply.image_url || '/placeholder.png'}
-                            alt={supply.name}
-                            borderRadius="xl"
-                            height="500px"
-                            objectFit="cover"
-                            width="100%"
-                        />
-                    </Box>
-
-                    <VStack flex="1" align="stretch" spacing={8}>
-                        <Box>
-                            <Heading size="2xl" mb={4}>{supply.name}</Heading>
-                            <Text color="gray.500" fontSize="xl">{supply.description}</Text>
-                        </Box>
-
-                        <HStack spacing={3}>
-                            <Badge colorScheme="blue" fontSize="lg" px={4} py={2}>
-                                {supply.category.label}
-                            </Badge>
-                            {supply.subcategory && (
-                                <Badge colorScheme="green" fontSize="lg" px={4} py={2}>
-                                    {supply.subcategory.label}
-                                </Badge>
-                            )}
-                        </HStack>
-
-                        <Divider />
-
-                        <VStack align="stretch" spacing={6}>
-                            <HStack justify="space-between" align="center">
-                                <Text fontSize="xl" fontWeight="medium">Quantidade Disponível:</Text>
-                                <Text fontSize="xl">{supply.quantity}</Text>
-                            </HStack>
-
-                            <Box>
-                                <Text fontSize="xl" fontWeight="medium" mb={3}>Quantidade Desejada:</Text>
-                                <NumberInput
-                                    value={quantity}
-                                    onChange={handleQuantityChange}
-                                    min={1}
-                                    max={supply.quantity}
-                                    size="lg"
-                                >
-                                    <NumberInputField />
-                                    <NumberInputStepper>
-                                        <NumberIncrementStepper />
-                                        <NumberDecrementStepper />
-                                    </NumberInputStepper>
-                                </NumberInput>
-                            </Box>
-                        </VStack>
-
+        <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={isMobile ? "7vh" : 6}>
+            <Container maxW="container.xl">
+                <VStack spacing={6} align="stretch">
+                    {/* Header */}
+                    <Flex justify="space-between" align="center">
                         <HStack spacing={4}>
-                            <Button
-                                colorScheme="blue"
-                                leftIcon={<ShoppingCart size={24} />}
-                                onClick={() => addToCart(supply, quantity)}
-                                isDisabled={supply.quantity <= 0}
+                            <IconButton
+                                aria-label="Voltar"
+                                icon={<ArrowLeft size={24} />}
+                                variant="ghost"
+                                onClick={() => router.back()}
                                 size="lg"
-                                height="70px"
-                                fontSize="xl"
-                                flex="1"
-                            >
-                                Adicionar ao Carrinho
-                            </Button>
-                            <Button
-                                colorScheme="green"
-                                onClick={onOpen}
-                                isDisabled={supply.quantity <= 0}
-                                size="lg"
-                                height="70px"
-                                fontSize="xl"
-                                flex="1"
-                            >
-                                Realizar Pedido
-                            </Button>
+                                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
+                            />
+                            <VStack align="start" spacing={1}>
+                                <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                                    Detalhes do Suprimento
+                                </Heading>
+                                <Text color="gray.500" fontSize="sm">
+                                    Informações completas do item
+                                </Text>
+                            </VStack>
                         </HStack>
-                    </VStack>
-                </Flex>
+                    </Flex>
 
-                <DeliveryDetailsModal
-                    isOpen={isOpen}
-                    onClose={onClose}
-                    deliveryDeadline={deliveryDeadline}
-                    setDeliveryDeadline={setDeliveryDeadline}
-                    destination={destination}
-                    setDestination={setDestination}
-                    userLocales={userLocales}
-                    onSubmit={handleOrderSubmit}
-                    localeId={localeId}
-                    setLocaleId={setLocaleId}
-                />
-            </VStack>
-        </Container>
+                    {/* Main Content */}
+                    <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={8}>
+                        {/* Image Section */}
+                        <GridItem>
+                            <Card bg={bgColor} borderWidth="1px" borderColor={borderColor} overflow="hidden">
+                                <CardBody p={0}>
+                                    <Image
+                                        src={supply.image_url || '/placeholder.png'}
+                                        alt={supply.name}
+                                        width="100%"
+                                        height="500px"
+                                        objectFit="contain"
+                                        fallbackSrc="/placeholder.png"
+                                    />
+                                </CardBody>
+                            </Card>
+                        </GridItem>
+
+                        {/* Details Section */}
+                        <GridItem>
+                            <VStack spacing={6} align="stretch">
+                                {/* Title and Status */}
+                                <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+                                    <CardBody>
+                                        <VStack spacing={4} align="stretch">
+                                            <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                                                {supply.name}
+                                            </Heading>
+                                            <Text color="gray.600" fontSize="md" lineHeight="1.6">
+                                                {supply.description}
+                                            </Text>
+                                            <HStack spacing={3}>
+                                                <Badge 
+                                                    colorScheme="blue" 
+                                                    size="lg"
+                                                    px={4}
+                                                    py={2}
+                                                    borderRadius="full"
+                                                >
+                                                    {supply.category.label}
+                                                </Badge>
+                                                {supply.subcategory && (
+                                                    <Badge 
+                                                        colorScheme="green" 
+                                                        size="lg"
+                                                        px={4}
+                                                        py={2}
+                                                        borderRadius="full"
+                                                    >
+                                                        {supply.subcategory.label}
+                                                    </Badge>
+                                                )}
+                                                <Badge 
+                                                    colorScheme={supply.quantity > 0 ? 'green' : 'red'} 
+                                                    size="lg"
+                                                    px={4}
+                                                    py={2}
+                                                    borderRadius="full"
+                                                >
+                                                    {supply.quantity > 0 ? 'Disponível' : 'Indisponível'}
+                                                </Badge>
+                                            </HStack>
+                                        </VStack>
+                                    </CardBody>
+                                </Card>
+
+                                {/* Product Details */}
+                                <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+                                    <CardBody>
+                                        <VStack spacing={4} align="stretch">
+                                            <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                                                Informações do Produto
+                                            </Heading>
+                                            <Grid templateColumns="1fr 1fr" gap={4}>
+                                                <VStack align="start" spacing={2}>
+                                                    <HStack>
+                                                        <Package size={16} color="gray.500" />
+                                                        <Text fontSize="sm" color="gray.500">Quantidade Disponível</Text>
+                                                    </HStack>
+                                                    <Text fontWeight="bold" fontSize="lg">
+                                                        {supply.quantity} {typeof supply.unit === 'string' ? supply.unit : supply.unit?.symbol || 'un'}
+                                                    </Text>
+                                                </VStack>
+                                                <VStack align="start" spacing={2}>
+                                                    <HStack>
+                                                        <Tag size={16} color="gray.500" />
+                                                        <Text fontSize="sm" color="gray.500">Quantidade Mínima</Text>
+                                                    </HStack>
+                                                    <Text fontWeight="medium">
+                                                        {supply.minimum_quantity} {typeof supply.unit === 'string' ? supply.unit : supply.unit?.symbol || 'un'}
+                                                    </Text>
+                                                </VStack>
+                                                {supply.unit_price && (
+                                                    <VStack align="start" spacing={2}>
+                                                        <HStack>
+                                                            <DollarSign size={16} color="gray.500" />
+                                                            <Text fontSize="sm" color="gray.500">Preço Unitário</Text>
+                                                        </HStack>
+                                                        <Text fontWeight="bold" color="green.600" fontSize="lg">
+                                                            {formatCurrency(supply.unit_price)}
+                                                        </Text>
+                                                    </VStack>
+                                                )}
+                                                {supply.supplier && (
+                                                    <VStack align="start" spacing={2}>
+                                                        <HStack>
+                                                            <Building size={16} color="gray.500" />
+                                                            <Text fontSize="sm" color="gray.500">Fornecedor</Text>
+                                                        </HStack>
+                                                        <VStack align="start" spacing={1}>
+                                                            <Text fontWeight="medium">
+                                                                {typeof supply.supplier === 'string' 
+                                                                    ? supply.supplier 
+                                                                    : supply.supplier.name || 'N/A'
+                                                                }
+                                                            </Text>
+                                                            {typeof supply.supplier === 'object' && supply.supplier.contact_person && (
+                                                                <Text fontSize="xs" color="gray.500">
+                                                                    Contato: {supply.supplier.contact_person}
+                                                                </Text>
+                                                            )}
+                                                        </VStack>
+                                                    </VStack>
+                                                )}
+                                            </Grid>
+                                        </VStack>
+                                    </CardBody>
+                                </Card>
+
+                                {/* Order Section */}
+                                <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+                                    <CardBody>
+                                        <VStack spacing={4} align="stretch">
+                                            <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                                                Fazer Pedido
+                                            </Heading>
+                                            
+                                            <VStack spacing={3} align="stretch">
+                                                <HStack justify="space-between" align="center">
+                                                    <Text fontSize="sm" color="gray.500">Quantidade Desejada:</Text>
+                                                    <Text fontSize="sm" color="gray.500">Máx: {supply.quantity}</Text>
+                                                </HStack>
+                                                <NumberInput
+                                                    value={quantity}
+                                                    onChange={handleQuantityChange}
+                                                    min={1}
+                                                    max={supply.quantity}
+                                                    size="lg"
+                                                >
+                                                    <NumberInputField />
+                                                    <NumberInputStepper>
+                                                        <NumberIncrementStepper />
+                                                        <NumberDecrementStepper />
+                                                    </NumberInputStepper>
+                                                </NumberInput>
+                                            </VStack>
+
+                                            {/* Action Buttons */}
+                                            <VStack spacing={3}>
+                                                <Button 
+                                                    colorScheme="blue" 
+                                                    leftIcon={<ShoppingCart size={20} />} 
+                                                    onClick={() => addToCart(supply, quantity)}
+                                                    isDisabled={supply.quantity <= 0} 
+                                                    size="lg"
+                                                    height="50px"
+                                                    fontWeight="semibold"
+                                                    w="full"
+                                                    _hover={{ transform: 'translateY(-1px)', boxShadow: 'md' }}
+                                                    transition="all 0.2s ease"
+                                                >
+                                                    Adicionar ao Carrinho
+                                                </Button>
+                                                <Button
+                                                    colorScheme="green"
+                                                    onClick={onOpen}
+                                                    isDisabled={supply.quantity <= 0}
+                                                    size="lg"
+                                                    height="50px"
+                                                    fontWeight="semibold"
+                                                    w="full"
+                                                    _hover={{ transform: 'translateY(-1px)', boxShadow: 'md' }}
+                                                    transition="all 0.2s ease"
+                                                >
+                                                    Realizar Pedido Direto
+                                                </Button>
+                                            </VStack>
+                                        </VStack>
+                                    </CardBody>
+                                </Card>
+                            </VStack>
+                        </GridItem>
+                    </Grid>
+
+                    <DeliveryDetailsModal
+                        isOpen={isOpen}
+                        onClose={onClose}
+                        deliveryDeadline={deliveryDeadline}
+                        setDeliveryDeadline={setDeliveryDeadline}
+                        destination={destination}
+                        setDestination={setDestination}
+                        userLocales={userLocales}
+                        onSubmit={handleOrderSubmit}
+                        localeId={localeId}
+                        setLocaleId={setLocaleId}
+                    />
+                </VStack>
+            </Container>
+        </Box>
     );
 } 

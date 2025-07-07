@@ -1,31 +1,15 @@
 import { useEffect, useState } from 'react';
 import {
-  Box,
-  Card,
-  CardBody,
   VStack,
-  HStack,
-  Text,
-  Badge,
-  Button,
   Spinner,
   useToast,
   Image,
   Flex,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Textarea,
-  useDisclosure,
-  FormControl,
-  FormLabel
+  Text
 } from '@chakra-ui/react';
-import { CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ReturnItemModal } from '@/app/(dashboard)/supply-requests/components/ReturnItemModal';
+import { AllocationCard } from '@/app/(dashboard)/supply-requests/components/AllocationCard';
 
 interface AllocationRequest {
   id: string;
@@ -52,9 +36,7 @@ export function MobileMyAllocationsPage() {
   const toast = useToast();
   const router = useRouter();
   const [returnModalOpen, setReturnModalOpen] = useState(false);
-  const [returnNotes, setReturnNotes] = useState('');
-  const [returningId, setReturningId] = useState<string | null>(null);
-  const [isReturning, setIsReturning] = useState(false);
+  const [returningAllocation, setReturningAllocation] = useState<AllocationRequest | null>(null);
 
   useEffect(() => {
     fetchAllocations();
@@ -64,7 +46,7 @@ export function MobileMyAllocationsPage() {
     try {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) {
-        router.push('/login');
+        router.push('/');
         return;
       }
       const response = await fetch('/api/inventory-allocations', {
@@ -121,30 +103,24 @@ export function MobileMyAllocationsPage() {
     }
   };
 
-  const handleReturnItem = async () => {
-    if (!returningId) return;
-    setIsReturning(true);
+  const handleReturnItem = async (notes: string) => {
+    if (!returningAllocation) return;
     try {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) throw new Error('Token não encontrado');
-      const response = await fetch(`/api/inventory-allocations/${returningId}/return`, {
+      const response = await fetch(`/api/inventory-allocations/${returningAllocation.id}/return`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ return_notes: returnNotes })
+        body: JSON.stringify({ return_notes: notes })
       });
       if (!response.ok) throw new Error('Erro ao devolver item');
       toast({ title: 'Sucesso', description: 'Item devolvido com sucesso', status: 'success', duration: 3000, isClosable: true });
-      setReturnModalOpen(false);
-      setReturnNotes('');
-      setReturningId(null);
       fetchAllocations();
     } catch (error) {
-      toast({ title: 'Erro', description: error instanceof Error ? error.message : 'Erro ao devolver item', status: 'error', duration: 3000, isClosable: true });
-    } finally {
-      setIsReturning(false);
+      throw error;
     }
   };
 
@@ -177,77 +153,26 @@ export function MobileMyAllocationsPage() {
   return (
     <VStack spacing={4} align="stretch">
       {sortedAllocations.map((allocation) => (
-        <Card key={allocation.id} variant="outline">
-          <CardBody>
-            <VStack align="stretch" spacing={2}>
-              <HStack justify="space-between">
-                <Text fontWeight="bold">{allocation.inventory.name}</Text>
-                <Badge colorScheme={
-                  allocation.status === 'APPROVED' ? 'green'
-                  : allocation.status === 'REJECTED' ? 'red'
-                  : allocation.status === 'DELIVERED' ? 'purple'
-                  : allocation.status === 'RETURNED' ? 'blue'
-                  : 'yellow'
-                }>
-                  {allocation.status === 'PENDING' ? 'Pendente'
-                    : allocation.status === 'APPROVED' ? 'Aprovado'
-                    : allocation.status === 'REJECTED' ? 'Rejeitado'
-                    : allocation.status === 'DELIVERED' ? 'Entregue'
-                    : 'Devolvido'}
-                </Badge>
-              </HStack>
-              <Text fontSize="sm" color="gray.500">Modelo: {allocation.inventory.model}</Text>
-              <Text fontSize="sm" color="gray.500">Nº Série: {allocation.inventory.serial_number}</Text>
-              <Text fontSize="sm" color="gray.500">Destino: {allocation.destination_name || allocation.destination}</Text>
-              <Text fontSize="sm" color="gray.500">Retorno: {allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}</Text>
-              <HStack>
-                <Badge colorScheme={allocation.requester_delivery_confirmation ? 'green' : 'gray'}>
-                  Requerente: {allocation.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                </Badge>
-                <Badge colorScheme={allocation.manager_delivery_confirmation ? 'green' : 'gray'}>
-                  Gerente: {allocation.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
-                </Badge>
-              </HStack>
-              {allocation.status === 'APPROVED' && !allocation.requester_delivery_confirmation && (
-                <Button
-                  leftIcon={<CheckCircle />}
-                  colorScheme="blue"
-                  size="sm"
-                  onClick={() => handleConfirmDelivery(allocation.id)}
-                >
-                  Confirmar Recebimento
-                </Button>
-              )}
-              <Button
-                size="sm"
-                colorScheme="blue"
-                onClick={() => { setReturningId(allocation.id); setReturnModalOpen(true); }}
-                isDisabled={allocation.status !== 'DELIVERED'}
-                hidden={allocation.status !== 'DELIVERED'}
-              >
-                Devolver Item
-              </Button>
-            </VStack>
-          </CardBody>
-        </Card>
+        <AllocationCard
+          key={allocation.id}
+          allocation={allocation}
+          onConfirmDelivery={handleConfirmDelivery}
+          onReturnItem={(allocation) => {
+            setReturningAllocation(allocation);
+            setReturnModalOpen(true);
+          }}
+        />
       ))}
-      <Modal isOpen={returnModalOpen} onClose={() => setReturnModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Devolver Item</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl>
-              <FormLabel>Observações (opcional)</FormLabel>
-              <Textarea value={returnNotes} onChange={e => setReturnNotes(e.target.value)} placeholder="Descreva o motivo ou detalhes da devolução..." />
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleReturnItem} isLoading={isReturning}>Confirmar Devolução</Button>
-            <Button variant="ghost" onClick={() => setReturnModalOpen(false)}>Cancelar</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <ReturnItemModal
+        isOpen={returnModalOpen}
+        onClose={() => {
+          setReturnModalOpen(false);
+          setReturningAllocation(null);
+        }}
+        onConfirm={handleReturnItem}
+        title="Devolver Item"
+        itemName={returningAllocation ? `${returningAllocation.inventory.name} - ${returningAllocation.inventory.model}` : undefined}
+      />
     </VStack>
   );
 } 

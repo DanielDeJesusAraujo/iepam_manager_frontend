@@ -277,6 +277,39 @@ export default function InventoryPage() {
         onClose();
     };
 
+    const handleDepreciateAll = async () => {
+        try {
+            const token = localStorage.getItem('@ti-assistant:token');
+            const response = await fetch('/api/inventory', {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar depreciação dos itens');
+            }
+            const data = await response.json();
+            toast({
+                title: 'Depreciação atualizada',
+                description: `${data.updated} itens atualizados com sucesso!`,
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+            fetchItems();
+        } catch (error: any) {
+            toast({
+                title: 'Erro ao atualizar depreciação',
+                description: error.message || 'Não foi possível atualizar a depreciação dos itens.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
     const filteredItems = filterItems(items, searchTerm, selectedCategory, selectedSubcategory);
     const groupedItems = groupItems(filteredItems, groupBy);
 
@@ -354,6 +387,20 @@ export default function InventoryPage() {
                                         transition="all 0.3s ease"
                                     >
                                         Exportar PDF
+                                    </Button>
+                                    <Button
+                                        colorScheme="orange"
+                                        onClick={handleDepreciateAll}
+                                        size="sm"
+                                        w="100%"
+                                        bg={colorMode === 'dark' ? 'rgba(251, 140, 0, 0.8)' : undefined}
+                                        _hover={{
+                                            bg: colorMode === 'dark' ? 'rgba(251, 140, 0, 0.9)' : undefined,
+                                            transform: 'translateY(-1px)',
+                                        }}
+                                        transition="all 0.3s ease"
+                                    >
+                                        Atualizar Depreciação
                                     </Button>
                                 </VStack>
                             </>
@@ -447,6 +494,19 @@ export default function InventoryPage() {
                                     transition="all 0.3s ease"
                                 >
                                     Exportar PDF
+                                </Button>
+                                <Button
+                                    colorScheme="orange"
+                                    onClick={handleDepreciateAll}
+                                    size="md"
+                                    bg={colorMode === 'dark' ? 'rgba(251, 140, 0, 0.8)' : undefined}
+                                    _hover={{
+                                        bg: colorMode === 'dark' ? 'rgba(251, 140, 0, 0.9)' : undefined,
+                                        transform: 'translateY(-1px)',
+                                    }}
+                                    transition="all 0.3s ease"
+                                >
+                                    Atualizar Depreciação
                                 </Button>
                             </>
                         )}

@@ -61,4 +61,27 @@ export async function POST(request: Request) {
             { status: 500 }
         );
     }
+}
+
+export async function PATCH(request: Request) {
+    try {
+        const token = request.headers.get('authorization')?.split(' ')[1];
+        const response = await fetch(`${baseUrl}/inventory/depreciate-all`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('next: Erro ao atualizar depreciação dos itens');
+        }
+        const data = await response.json();
+        return NextResponse.json(data);
+    } catch (error) {
+        return NextResponse.json(
+            { message: 'next: Erro ao atualizar depreciação dos itens' },
+            { status: 500 }
+        );
+    }
 } 

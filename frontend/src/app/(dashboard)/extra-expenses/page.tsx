@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   VStack,
@@ -15,15 +15,17 @@ import {
   useMediaQuery,
   Divider,
   Flex,
+  Button,
+  useDisclosure,
 } from '@chakra-ui/react';
-import InventorySupplyCategories from './components/InventorySupplyCategories';
-import ExtraExpenseCategories from './components/ExtraExpenseCategories';
+import { AddIcon } from '@chakra-ui/icons';
+import ExtraExpensesList from './components/ExtraExpensesList';
+import ExtraExpensesForm from './components/ExtraExpensesForm';
 import { useTabs } from '@/contexts/GlobalContext';
 
 // Layout reutilizável para abas persistentes
-function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = 'persistentTabIndexCategories' }: { tabLabels: string[], children: React.ReactNode[], onTabChange?: (() => void)[], storageKey?: string }) {
+function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = 'persistentTabIndexExtraExpenses' }: { tabLabels: string[], children: React.ReactNode[], onTabChange?: (() => void)[], storageKey?: string }) {
   const { activeTab, setActiveTab } = useTabs();
-  const prevTab = useRef(0);
   const [hasFetched, setHasFetched] = useState(() => tabLabels.map(() => false));
   const [isMobile] = useMediaQuery('(max-width: 768px)');
 
@@ -33,18 +35,10 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
   }, [storageKey, setActiveTab]);
 
   useEffect(() => {
-    // Ao trocar de aba, resetar o status da aba anterior
-    setHasFetched(arr => arr.map((v, i) => i === prevTab.current ? false : v));
-    prevTab.current = activeTab;
-    // eslint-disable-next-line
-  }, [activeTab]);
-
-  useEffect(() => {
     if (!hasFetched[activeTab] && onTabChange && onTabChange[activeTab]) {
       onTabChange[activeTab]();
       setHasFetched(arr => arr.map((v, i) => i === activeTab ? true : v));
     }
-    // eslint-disable-next-line
   }, [activeTab, onTabChange, hasFetched]);
 
   return (
@@ -65,7 +59,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
         {!isMobile && (
           <>
             <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
-              <Heading size={{ base: 'md', md: 'lg' }} color={useColorModeValue('gray.800', 'white')}>Configurações de Categorias</Heading>
+              <Heading size={{ base: 'md', md: 'lg' }} color={useColorModeValue('gray.800', 'white')}>Gastos Extras</Heading>
             </Flex>
             <Divider />
           </>
@@ -122,26 +116,50 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
   );
 }
 
-export default function CategoriesPage() {
+export default function ExtraExpensesPage() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
+
   // Função genérica para buscar dados de cada aba
   const fetchTabData = async (tabIndex: number) => {
-    // Aqui você pode adicionar lógica específica para cada aba se necessário
     console.log(`Carregando dados da aba ${tabIndex}`);
   };
 
   // Funções específicas usando a função genérica
-  const fetchTabInventorySupply = () => fetchTabData(0);
-  const fetchTabExtraExpense = () => fetchTabData(1);
+  const fetchTabList = () => fetchTabData(0);
+  const fetchTabForm = () => fetchTabData(1);
+
+  const handleEditExpense = (expense: any) => {
+    setEditingExpense(expense);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setEditingExpense(null);
+    setIsFormOpen(false);
+  };
 
   return (
-    <PersistentTabsLayout
-      tabLabels={["Inventário e Suprimentos", "Gastos Extras"]}
-      onTabChange={[fetchTabInventorySupply, fetchTabExtraExpense]}
-    >
-      {[
-        <InventorySupplyCategories key="inventory-supply" />,
-        <ExtraExpenseCategories key="extra-expense" />
-      ]}
-    </PersistentTabsLayout>
+    <>
+      <PersistentTabsLayout
+        tabLabels={["Lista de Gastos"]}
+        onTabChange={[fetchTabList]}
+      >
+        {[
+          <ExtraExpensesList 
+            key="expenses-list" 
+            onEditExpense={handleEditExpense}
+            isFormOpen={isFormOpen}
+            onOpenForm={() => setIsFormOpen(true)}
+          />
+        ]}
+      </PersistentTabsLayout>
+
+      <ExtraExpensesForm 
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        editingExpense={editingExpense}
+      />
+    </>
   );
 } 
