@@ -18,6 +18,7 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  useColorMode,
   useColorModeValue,
   Spinner,
   Center,
@@ -62,15 +63,20 @@ interface QuoteListProps {
 }
 
 export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
-  const [loading, setLoading] = useState(true);
+  const { colorMode } = useColorMode();
+  const [isMobile] = useMediaQuery('(max-width: 768px)');
+  const drawerBg = useColorModeValue('white', 'gray.800');
+  const drawerHeaderColor = useColorModeValue('gray.800', 'white');
+  const formLabelColor = useColorModeValue('gray.800', 'white');
+  
+  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [creatorFilter, setCreatorFilter] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
+  const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const toast = useToast();
   const router = useRouter();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isMobile] = useMediaQuery('(max-width: 768px)');
-  const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
 
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
@@ -279,8 +285,8 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
       {/* Drawer de Filtros para Mobile */}
       <Drawer isOpen={isFilterOpen} placement="right" onClose={onFilterClose} size="full">
         <DrawerOverlay />
-        <DrawerContent bg={useColorModeValue('white', 'gray.800')} backdropFilter="blur(12px)">
-          <DrawerHeader borderBottomWidth="1px" color={useColorModeValue('gray.800', 'white')}>
+        <DrawerContent bg={drawerBg} backdropFilter="blur(12px)">
+          <DrawerHeader borderBottomWidth="1px" color={drawerHeaderColor}>
             <HStack justify="space-between" align="center">
               <Text>Filtros Avançados</Text>
               <Button
@@ -295,7 +301,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
           <DrawerBody>
             <VStack spacing={4} align="stretch">
               <FormControl>
-                <FormLabel color={useColorModeValue('gray.800', 'white')}>Status</FormLabel>
+                <FormLabel color={formLabelColor}>Status</FormLabel>
                 <Select
                   placeholder="Filtrar por status"
                   value={statusFilter}
@@ -311,7 +317,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
               </FormControl>
 
               <FormControl>
-                <FormLabel color={useColorModeValue('gray.800', 'white')}>Criador</FormLabel>
+                <FormLabel color={formLabelColor}>Criador</FormLabel>
                 <Select
                   placeholder="Filtrar por criador"
                   value={creatorFilter}

@@ -118,8 +118,12 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
     const [destination, setDestination] = useState('');
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [isMobile] = useMediaQuery('(max-width: 768px)');
+    // Cores
     const bgColor = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.600');
+    const headingColor = useColorModeValue('gray.800', 'white');
+    const subHeadingColor = useColorModeValue('gray.600', 'gray.300');
+    const buttonHoverBg = useColorModeValue('gray.100', 'gray.700');
     const [request, setRequest] = useState<SupplyRequest | null>(null);
     const [user, setUser] = useState({ role: '' });
     const [userLocales, setUserLocales] = useState<any[]>([]);
@@ -379,9 +383,12 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
         }).format(value);
     };
 
+    const loadingBg = useColorModeValue('gray.50', 'gray.900');
+    const mainBg = useColorModeValue('gray.50', 'gray.900');
+
     if (loading) {
         return (
-            <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={6}>
+            <Box minH="100vh" bg={loadingBg} py={6}>
                 <Container maxW="container.xl">
                     <Flex justify="center" align="center" minH="400px">
                         <VStack spacing={4}>
@@ -399,7 +406,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
     }
 
     return (
-        <Box minH="100vh" bg={useColorModeValue('gray.50', 'gray.900')} py={isMobile ? "7vh" : 6}>
+        <Box minH="100vh" bg={mainBg} py={isMobile ? "7vh" : 6}>
             <Container maxW="container.xl">
                 <VStack spacing={6} align="stretch">
                     {/* Header */}
@@ -411,10 +418,10 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                 variant="ghost"
                                 onClick={() => router.back()}
                                 size="lg"
-                                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
+                                _hover={{ bg: buttonHoverBg }}
                             />
                             <VStack align="start" spacing={1}>
-                                <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                                <Heading size="lg" color={headingColor}>
                                     Detalhes do Suprimento
                                 </Heading>
                                 <Text color="gray.500" fontSize="sm">
@@ -449,10 +456,10 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                 <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
                                     <CardBody>
                                         <VStack spacing={4} align="stretch">
-                                            <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>
+                                            <Heading size="lg" color={headingColor}>
                                                 {supply.name}
                                             </Heading>
-                                            <Text color="gray.600" fontSize="md" lineHeight="1.6">
+                                            <Text color={subHeadingColor} fontSize="md" lineHeight="1.6">
                                                 {supply.description}
                                             </Text>
                                             <HStack spacing={3}>
@@ -494,7 +501,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                 <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
                                     <CardBody>
                                         <VStack spacing={4} align="stretch">
-                                            <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                                            <Heading size="md" color={headingColor}>
                                                 Informações do Produto
                                             </Heading>
                                             <Grid templateColumns="1fr 1fr" gap={4}>
@@ -557,7 +564,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                 <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
                                     <CardBody>
                                         <VStack spacing={4} align="stretch">
-                                            <Heading size="md" color={useColorModeValue('gray.800', 'white')}>
+                                            <Heading size="md" color={headingColor}>
                                                 Fazer Pedido
                                             </Heading>
                                             

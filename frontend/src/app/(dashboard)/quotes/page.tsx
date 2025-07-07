@@ -62,6 +62,11 @@ export default function QuotesPage() {
   const toast = useToast();
   const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
 
+  // Cores
+  const bgColor = useColorModeValue('white', 'gray.700');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const headingColor = useColorModeValue('gray.800', 'white');
+
   const fetchQuotes = async () => {
     try {
       const response = await fetch('/api/quotes', {
@@ -175,19 +180,19 @@ export default function QuotesPage() {
       <VStack
         spacing={4}
         align="stretch"
-        bg={useColorModeValue('white', 'gray.700')}
+        bg={bgColor}
         backdropFilter="blur(12px)"
         p={{ base: 2, md: 6 }}
         borderRadius="lg"
         boxShadow="sm"
         borderWidth="1px"
-        borderColor={useColorModeValue('gray.200', 'gray.600')}
+        borderColor={borderColor}
         h="full"
       >
         {!isMobile && (
           <>
             <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
-              <Heading size={{ base: 'md', md: 'lg' }} color={useColorModeValue('gray.800', 'white')}>Cotações</Heading>
+              <Heading size={{ base: 'md', md: 'lg' }} color={headingColor}>Cotações</Heading>
             </Flex>
             <Divider />
           </>
