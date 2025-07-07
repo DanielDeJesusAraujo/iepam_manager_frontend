@@ -33,7 +33,12 @@ import {
   Textarea,
   useDisclosure,
   FormControl,
-  FormLabel
+  FormLabel,
+  VStack,
+  HStack,
+  useMediaQuery,
+  Divider,
+  useColorMode,
 } from '@chakra-ui/react';
 import { SearchIcon } from 'lucide-react';
 import { CheckCircle } from 'lucide-react';
@@ -73,6 +78,8 @@ export function MyAllocationsPage() {
   const [returnNotes, setReturnNotes] = useState('');
   const [returningId, setReturningId] = useState<string | null>(null);
   const [isReturning, setIsReturning] = useState(false);
+  const [isMobile] = useMediaQuery('(max-width: 768px)');
+  const { colorMode } = useColorMode();
 
   useEffect(() => {
     fetchAllocations();
@@ -206,17 +213,23 @@ export function MyAllocationsPage() {
   }
 
   return (
-    <Card bg={bgColor} borderColor={borderColor}>
+    <Card bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} backdropFilter="blur(12px)" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}>
       <CardBody>
-        <Flex gap={4} mb={6} justify="space-between">
+        {!isMobile && (
+        <Flex gap={4} mb={6} direction={{ base: 'column', md: 'row' }} justify={{ base: 'center', md: 'space-between' }}>
           <InputGroup>
             <InputLeftElement pointerEvents="none">
-              <SearchIcon size={16} color={useColorModeValue('gray.400', 'gray.300')} />
+              <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
             </InputLeftElement>
             <Input
               placeholder="Buscar por item ou destino..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
+              backdropFilter="blur(12px)"
+              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+              _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+              _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
             />
           </InputGroup>
           <Select
@@ -224,6 +237,11 @@ export function MyAllocationsPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             maxW="200px"
+            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
+            backdropFilter="blur(12px)"
+            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+            _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+            _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
           >
             <option value="">Todos</option>
             <option value="PENDING">Pendente</option>
@@ -233,6 +251,7 @@ export function MyAllocationsPage() {
             <option value="RETURNED">Devolvido</option>
           </Select>
         </Flex>
+        )}
 
         {filteredAllocations.length === 0 ? (
           <Flex direction="column" align="center" justify="center" py={8}>
@@ -242,34 +261,174 @@ export function MyAllocationsPage() {
               maxW="300px"
               mb={4}
             />
-            <Text color="gray.500" fontSize="lg">
+            <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} fontSize="lg">
               Nenhuma alocação encontrada
             </Text>
           </Flex>
+        ) : isMobile ? (
+          // Layout Mobile com Cards
+          <VStack spacing={4} align="stretch">
+            {filteredAllocations.map((allocation) => (
+              <Card 
+                key={allocation.id} 
+                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} 
+                backdropFilter="blur(12px)" 
+                borderWidth="1px" 
+                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                borderRadius={0}
+              >
+                <CardBody p={4}>
+                  <VStack align="stretch" spacing={3}>
+                    {/* Header com nome e status */}
+                    <HStack justify="space-between" align="start">
+                      <VStack align="start" spacing={1} flex="1">
+                        <Text fontWeight="bold" fontSize="md" color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                          {allocation.inventory.name}
+                        </Text>
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                          {allocation.inventory.model}
+                        </Text>
+                      </VStack>
+                      <Badge 
+                        colorScheme={
+                          allocation.status === 'APPROVED'
+                            ? 'green'
+                            : allocation.status === 'REJECTED'
+                              ? 'red'
+                              : allocation.status === 'DELIVERED'
+                                ? 'purple'
+                                : allocation.status === 'RETURNED'
+                                  ? 'blue'
+                                  : 'yellow'
+                        } 
+                        size="sm"
+                      >
+                        {allocation.status === 'PENDING'
+                          ? 'Pendente'
+                          : allocation.status === 'APPROVED'
+                            ? 'Aprovado'
+                            : allocation.status === 'REJECTED'
+                              ? 'Rejeitado'
+                              : allocation.status === 'DELIVERED'
+                                ? 'Entregue'
+                                : 'Devolvido'}
+                      </Badge>
+                    </HStack>
+
+                    <Divider />
+
+                    {/* Informações adicionais */}
+                    <VStack align="stretch" spacing={2}>
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Nº Série:</Text>
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'} fontFamily="mono">
+                          {allocation.inventory.serial_number}
+                        </Text>
+                      </HStack>
+                      
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Destino:</Text>
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                          {allocation.destination_name || allocation.destination}
+                        </Text>
+                      </HStack>
+                      
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Retorno:</Text>
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                          {allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
+                        </Text>
+                      </HStack>
+                      
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Requerente:</Text>
+                        <Badge colorScheme={allocation.requester_delivery_confirmation ? 'green' : 'gray'} size="xs">
+                          {allocation.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                        </Badge>
+                      </HStack>
+                      
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Gerente:</Text>
+                        <Badge colorScheme={allocation.manager_delivery_confirmation ? 'green' : 'gray'} size="xs">
+                          {allocation.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                        </Badge>
+                      </HStack>
+                    </VStack>
+
+                    {/* Botões de ação */}
+                    <VStack spacing={2}>
+                      {allocation.status === 'APPROVED' && !allocation.requester_delivery_confirmation && (
+                        <Button 
+                          size="sm" 
+                          colorScheme="blue" 
+                          leftIcon={<CheckCircle size={16} />} 
+                          onClick={() => handleConfirmDelivery(allocation.id)} 
+                          bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} 
+                          _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} 
+                          transition="all 0.3s ease"
+                          w="full"
+                        >
+                          Confirmar Recebimento
+                        </Button>
+                      )}
+                      
+                      {allocation.status === 'DELIVERED' && (
+                        <Button 
+                          size="sm" 
+                          colorScheme="blue" 
+                          onClick={() => { setReturningId(allocation.id); setReturnModalOpen(true); }} 
+                          bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} 
+                          _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} 
+                          transition="all 0.3s ease"
+                          w="full"
+                        >
+                          Devolver Item
+                        </Button>
+                      )}
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+            ))}
+          </VStack>
         ) : (
+          // Layout Desktop com Tabela
           <Box overflowX="auto">
-            <Table variant="simple">
+            <Table variant="simple" size={{ base: 'sm', md: 'md' }}>
               <Thead>
                 <Tr>
-                  <Th>Item</Th>
-                  <Th>Modelo</Th>
-                  <Th>Número de Série</Th>
-                  <Th>Destino</Th>
-                  <Th>Status</Th>
-                  <Th>Data de Retorno</Th>
-                  <Th>Confirmações</Th>
-                  <Th>Ações</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'}>Item</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', md: 'table-cell' }}>Modelo</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', lg: 'table-cell' }}>Nº Série</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'}>Destino</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', md: 'table-cell' }}>Data de Retorno</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', lg: 'table-cell' }}>Confirmações</Th>
+                  <Th color={colorMode === 'dark' ? 'white' : 'gray.800'}>Ações</Th>
                 </Tr>
               </Thead>
               <Tbody>
                 {filteredAllocations.map((allocation) => (
                   <Tr key={allocation.id}>
-                    <Td>{allocation.inventory.name}</Td>
-                    <Td>{allocation.inventory.model}</Td>
-                    <Td>{allocation.inventory.serial_number}</Td>
-                    <Td>
-                      <Text fontSize="sm" color="gray.500">
-                        Destino: {allocation.destination_name || allocation.destination}
+                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                      <VStack align="start" spacing={1}>
+                        <Text fontWeight="medium">{allocation.inventory.name}</Text>
+                        {isMobile && (
+                          <Text fontSize="xs" color="gray.500">
+                            {allocation.inventory.model}
+                          </Text>
+                        )}
+                      </VStack>
+                    </Td>
+                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', md: 'table-cell' }}>
+                      {allocation.inventory.model}
+                    </Td>
+                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', lg: 'table-cell' }} fontFamily="mono">
+                      {allocation.inventory.serial_number}
+                    </Td>
+                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'}>
+                      <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                        {allocation.destination_name || allocation.destination}
                       </Text>
                     </Td>
                     <Td>
@@ -285,6 +444,7 @@ export function MyAllocationsPage() {
                                   ? 'blue'
                                   : 'yellow'
                         }
+                        size={{ base: 'sm', md: 'md' }}
                       >
                         {allocation.status === 'PENDING'
                           ? 'Pendente'
@@ -297,39 +457,53 @@ export function MyAllocationsPage() {
                                 : 'Devolvido'}
                       </Badge>
                     </Td>
-                    <Td>{allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}</Td>
-                    <Td>
-                      <Flex direction="column" gap={2}>
+                    <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} display={{ base: 'none', md: 'table-cell' }}>
+                      {allocation.return_date ? new Date(allocation.return_date).toLocaleDateString('pt-BR') : 'Não definida'}
+                    </Td>
+                    <Td display={{ base: 'none', lg: 'table-cell' }}>
+                      <VStack spacing={2} align="start">
+                        <HStack>
+                          <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Requerente:</Text>
                         <Badge colorScheme={allocation.requester_delivery_confirmation ? 'green' : 'gray'}>
-                          Requerente: {allocation.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                            {allocation.requester_delivery_confirmation ? 'Confirmado' : 'Pendente'}
                         </Badge>
+                        </HStack>
+                        <HStack>
+                          <Text fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Gerente:</Text>
                         <Badge colorScheme={allocation.manager_delivery_confirmation ? 'green' : 'gray'}>
-                          Gerente: {allocation.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
+                            {allocation.manager_delivery_confirmation ? 'Confirmado' : 'Pendente'}
                         </Badge>
-                      </Flex>
+                        </HStack>
+                      </VStack>
                     </Td>
                     <Td>
+                      <VStack spacing={2} align="start">
                       {allocation.status === 'APPROVED' && !allocation.requester_delivery_confirmation && (
                         <Button
-                          size="sm"
+                            size={{ base: 'xs', md: 'sm' }}
                           colorScheme="blue"
-                          leftIcon={<CheckCircle />}
+                            leftIcon={<CheckCircle size={isMobile ? 14 : 16} />}
                           onClick={() => handleConfirmDelivery(allocation.id)}
+                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} 
+                            _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} 
+                            transition="all 0.3s ease"
                         >
-                          Confirmar Recebimento
+                            {isMobile ? 'Confirmar' : 'Confirmar Recebimento'}
                         </Button>
                       )}
                       {allocation.status === 'DELIVERED' && (
                         <Button
-                          size="sm"
+                            size={{ base: 'xs', md: 'sm' }}
                           colorScheme="blue"
                           onClick={() => { setReturningId(allocation.id); setReturnModalOpen(true); }}
-                          isDisabled={allocation.status !== 'DELIVERED'}
-                          hidden={allocation.status !== 'DELIVERED'}
+                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} 
+                            _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} 
+                            transition="all 0.3s ease"
                         >
-                          Devolver Item
+                            {isMobile ? 'Devolver' : 'Devolver Item'}
                         </Button>
                       )}
+                      </VStack>
                     </Td>
                   </Tr>
                 ))}

@@ -17,6 +17,70 @@ interface CartItem {
   supply: any;
 }
 
+interface Supply {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  category_id: string;
+  subcategory_id: string | null;
+  created_at: string;
+  updated_at: string;
+  minimum_quantity: number;
+  supplier_id: string;
+  image_url: string | null;
+  unit_id: string;
+  unit_price: number;
+  freight: number;
+  category: {
+    id: string;
+    value: string;
+    label: string;
+    created_at: string;
+    updated_at: string;
+  };
+  supplier: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string;
+    address: string;
+    cnpj: string;
+    contact_person: string;
+    created_at: string;
+  };
+  unit: {
+    id: string;
+    name: string;
+    symbol: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  description: string;
+  model: string;
+  serial_number: string;
+  status: string;
+  category: {
+    label: string;
+  };
+  image_url?: string;
+  acquisition_price?: number;
+  residual_value?: number;
+  service_life?: number;
+  finality?: string;
+  acquisition_date?: string;
+  location?: {
+    id: string;
+    name: string;
+  };
+}
+
 interface GlobalState {
   user: User | null;
   isAuthenticated: boolean;
@@ -28,6 +92,10 @@ interface GlobalState {
   activeTab: number;
   searchQuery: string;
   statusFilter: string;
+  supplies: Supply[];
+  suppliesLastFetched: number | null;
+  inventoryItems: InventoryItem[];
+  inventoryLastFetched: number | null;
 }
 
 interface Notification {
@@ -54,6 +122,8 @@ type GlobalAction =
   | { type: 'SET_ACTIVE_TAB'; payload: number }
   | { type: 'SET_SEARCH_QUERY'; payload: string }
   | { type: 'SET_STATUS_FILTER'; payload: string }
+  | { type: 'SET_SUPPLIES'; payload: Supply[] }
+  | { type: 'SET_INVENTORY_ITEMS'; payload: InventoryItem[] }
   | { type: 'INITIALIZE_FROM_STORAGE' };
 
 // Estado inicial
@@ -68,6 +138,10 @@ const initialState: GlobalState = {
   activeTab: 0,
   searchQuery: '',
   statusFilter: '',
+  supplies: [],
+  suppliesLastFetched: null,
+  inventoryItems: [],
+  inventoryLastFetched: null,
 };
 
 // Reducer
@@ -179,6 +253,20 @@ function globalReducer(state: GlobalState, action: GlobalAction): GlobalState {
         statusFilter: action.payload,
       };
 
+    case 'SET_SUPPLIES':
+      return {
+        ...state,
+        supplies: action.payload,
+        suppliesLastFetched: Date.now(),
+      };
+
+    case 'SET_INVENTORY_ITEMS':
+      return {
+        ...state,
+        inventoryItems: action.payload,
+        inventoryLastFetched: Date.now(),
+      };
+
     case 'INITIALIZE_FROM_STORAGE':
       try {
         const storedUser = localStorage.getItem('@ti-assistant:user');
@@ -186,15 +274,33 @@ function globalReducer(state: GlobalState, action: GlobalAction): GlobalState {
         const storedCart = localStorage.getItem('@ti-assistant:cart');
         const storedTheme = localStorage.getItem('@ti-assistant:theme') as 'light' | 'dark';
         const storedActiveTab = localStorage.getItem('@ti-assistant:activeTab');
+        const storedSupplies = localStorage.getItem('@ti-assistant:supplies');
+        const storedSuppliesLastFetched = localStorage.getItem('@ti-assistant:suppliesLastFetched');
+        const storedInventoryItems = localStorage.getItem('@ti-assistant:inventoryItems');
+        const storedInventoryLastFetched = localStorage.getItem('@ti-assistant:inventoryLastFetched');
+
+        let parsedCart = [];
+        if (storedCart) {
+          try {
+            parsedCart = JSON.parse(storedCart);
+          } catch (parseError) {
+            console.error('Erro ao fazer parse do carrinho:', parseError);
+            parsedCart = [];
+          }
+        }
 
         return {
           ...state,
           user: storedUser ? JSON.parse(storedUser) : null,
           isAuthenticated: !!storedToken,
           token: storedToken,
-          cart: storedCart ? JSON.parse(storedCart) : [],
+          cart: parsedCart,
           theme: storedTheme || 'light',
           activeTab: storedActiveTab ? parseInt(storedActiveTab) : 0,
+          supplies: storedSupplies ? JSON.parse(storedSupplies) : [],
+          suppliesLastFetched: storedSuppliesLastFetched ? parseInt(storedSuppliesLastFetched) : null,
+          inventoryItems: storedInventoryItems ? JSON.parse(storedInventoryItems) : [],
+          inventoryLastFetched: storedInventoryLastFetched ? parseInt(storedInventoryLastFetched) : null,
           loading: false,
         };
       } catch (error) {
@@ -225,6 +331,8 @@ const GlobalContext = createContext<{
   setSearchQuery: (query: string) => void;
   setStatusFilter: (filter: string) => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  setSupplies: (supplies: Supply[]) => void;
+  setInventoryItems: (inventoryItems: InventoryItem[]) => void;
   handleLogout: () => void;
 } | undefined>(undefined);
 
@@ -238,6 +346,7 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
 
   // Inicializar dados do localStorage
   useEffect(() => {
+    console.log('Inicializando dados do localStorage...');
     dispatch({ type: 'INITIALIZE_FROM_STORAGE' });
   }, []);
 
@@ -252,7 +361,12 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
   }, [state.user, state.token]);
 
   useEffect(() => {
-    localStorage.setItem('@ti-assistant:cart', JSON.stringify(state.cart));
+    try {
+      const cartString = JSON.stringify(state.cart);
+      localStorage.setItem('@ti-assistant:cart', cartString);
+    } catch (error) {
+      console.error('Erro ao salvar carrinho no localStorage:', error);
+    }
   }, [state.cart]);
 
   useEffect(() => {
@@ -263,11 +377,35 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
     localStorage.setItem('@ti-assistant:activeTab', state.activeTab.toString());
   }, [state.activeTab]);
 
+  useEffect(() => {
+    localStorage.setItem('@ti-assistant:supplies', JSON.stringify(state.supplies));
+  }, [state.supplies]);
+
+  useEffect(() => {
+    if (state.suppliesLastFetched) {
+      localStorage.setItem('@ti-assistant:suppliesLastFetched', state.suppliesLastFetched.toString());
+    }
+  }, [state.suppliesLastFetched]);
+
+  useEffect(() => {
+    localStorage.setItem('@ti-assistant:inventoryItems', JSON.stringify(state.inventoryItems));
+  }, [state.inventoryItems]);
+
+  useEffect(() => {
+    if (state.inventoryLastFetched) {
+      localStorage.setItem('@ti-assistant:inventoryLastFetched', state.inventoryLastFetched.toString());
+    }
+  }, [state.inventoryLastFetched]);
+
   // Limpar localStorage no logout
   const handleLogout = () => {
     localStorage.removeItem('@ti-assistant:user');
     localStorage.removeItem('@ti-assistant:token');
     localStorage.removeItem('@ti-assistant:cart');
+    localStorage.removeItem('@ti-assistant:supplies');
+    localStorage.removeItem('@ti-assistant:suppliesLastFetched');
+    localStorage.removeItem('@ti-assistant:inventoryItems');
+    localStorage.removeItem('@ti-assistant:inventoryLastFetched');
     dispatch({ type: 'LOGOUT' });
   };
 
@@ -312,6 +450,14 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
     dispatch({ type: 'SET_THEME', payload: theme });
   };
 
+  const setSupplies = (supplies: Supply[]) => {
+    dispatch({ type: 'SET_SUPPLIES', payload: supplies });
+  };
+
+  const setInventoryItems = (inventoryItems: InventoryItem[]) => {
+    dispatch({ type: 'SET_INVENTORY_ITEMS', payload: inventoryItems });
+  };
+
   const value = {
     state,
     dispatch,
@@ -326,6 +472,8 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
     setSearchQuery,
     setStatusFilter,
     setTheme,
+    setSupplies,
+    setInventoryItems,
     handleLogout,
   };
 
@@ -394,5 +542,23 @@ export function useFilters() {
     statusFilter: state.statusFilter,
     setSearchQuery,
     setStatusFilter,
+  };
+}
+
+export function useSupplies() {
+  const { state, setSupplies } = useGlobal();
+  return {
+    supplies: state.supplies,
+    suppliesLastFetched: state.suppliesLastFetched,
+    setSupplies,
+  };
+}
+
+export function useInventoryItems() {
+  const { state, setInventoryItems } = useGlobal();
+  return {
+    inventoryItems: state.inventoryItems,
+    inventoryLastFetched: state.inventoryLastFetched,
+    setInventoryItems,
   };
 } 

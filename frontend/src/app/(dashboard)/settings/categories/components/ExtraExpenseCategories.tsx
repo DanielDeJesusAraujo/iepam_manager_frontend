@@ -238,22 +238,18 @@ export default function ExtraExpenseCategories() {
                     <Table variant="simple">
                         <Thead>
                             <Tr>
-                                <Th>Valor</Th>
-                                <Th>Label</Th>
+                                <Th>Nome</Th>
                                 <Th>Descrição</Th>
                                 <Th>Ações</Th>
                             </Tr>
                         </Thead>
                         <Tbody>
-                            {categories.map((category) => (
+                            {categories.length > 0 && categories.map((category) => (
                                 <Tr key={category.id}>
                                     <Td>
-                                        <Text fontWeight="medium" fontSize="sm">
-                                            {category.value}
+                                        <Text fontWeight="medium">
+                                            {category.label}
                                         </Text>
-                                    </Td>
-                                    <Td>
-                                        <Text>{category.label}</Text>
                                     </Td>
                                     <Td>
                                         <Text fontSize="sm" color="gray.500" noOfLines={2}>
@@ -298,19 +294,19 @@ export default function ExtraExpenseCategories() {
                         <ModalBody>
                             <VStack spacing={4}>
                                 <FormControl isRequired>
-                                    <FormLabel>Valor (Código)</FormLabel>
-                                    <Input
-                                        value={categoryFormData.value}
-                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, value: e.target.value })}
-                                        placeholder="Ex: fuel, rental, cleaning"
-                                    />
-                                </FormControl>
-                                <FormControl isRequired>
-                                    <FormLabel>Label (Nome)</FormLabel>
+                                    <FormLabel>Nome</FormLabel>
                                     <Input
                                         value={categoryFormData.label}
                                         onChange={(e) => setCategoryFormData({ ...categoryFormData, label: e.target.value })}
                                         placeholder="Ex: Combustível, Aluguel, Limpeza"
+                                    />
+                                </FormControl>
+                                <FormControl isRequired>
+                                    <FormLabel>Código</FormLabel>
+                                    <Input
+                                        value={categoryFormData.value}
+                                        onChange={(e) => setCategoryFormData({ ...categoryFormData, value: e.target.value })}
+                                        placeholder="Ex: fuel, rental, cleaning"
                                     />
                                 </FormControl>
                                 <FormControl>

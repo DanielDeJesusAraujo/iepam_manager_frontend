@@ -16,6 +16,8 @@ import {
   InputGroup,
   InputLeftElement,
   Input,
+  Box,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { ShoppingCart, SearchIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -32,26 +34,30 @@ export function CatalogTab({ supplies, onAddToCart }: CatalogTabProps) {
   const { colorMode } = useColorMode();
   const [isMobile] = useMediaQuery('(max-width: 768px)');
   const { searchQuery, setSearchQuery } = useFilters();
+  
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   return (
     <>
       {!isMobile && (
-        <InputGroup mb={6}>
-          <InputLeftElement pointerEvents="none">
+      <InputGroup mb={6}>
+        <InputLeftElement pointerEvents="none">
             <SearchIcon size={20} color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-          </InputLeftElement>
-          <Input
-            placeholder="Buscar suprimentos..."
-            value={searchQuery}
+        </InputLeftElement>
+        <Input
+          placeholder="Buscar suprimentos..."
+          value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-            backdropFilter="blur(12px)"
-            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-            _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
-            _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
-          />
-        </InputGroup>
+          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
+          backdropFilter="blur(12px)"
+          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+          _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+          _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
+        />
+      </InputGroup>
       )}
+      
       <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={{ base: 0, md: 6 }}>
         {supplies.map((supply) => (
           <Card
@@ -67,13 +73,30 @@ export function CatalogTab({ supplies, onAddToCart }: CatalogTabProps) {
           >
             <CardBody p={{ base: 0, md: 4 }}>
               <VStack align="stretch" spacing={{ base: 2, md: 4 }} p={{ base: 2, md: 0 }}>
-                <Image src="/placeholder.png" alt={supply.name} borderRadius={{ base: 0, md: "md" }} height={{ base: '120px', md: '200px' }} objectFit="cover" />
-                <Heading size={{ base: 'sm', md: 'md' }} color={colorMode === 'dark' ? 'white' : 'gray.800'} noOfLines={1}>{supply.name}</Heading>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2} fontSize={{ base: 'xs', md: 'sm' }}>{supply.description}</Text>
+                <Image 
+                  src={supply.image_url || '/placeholder.png'} 
+                  alt={supply.name} 
+                  borderRadius={{ base: 0, md: "md" }} 
+                  height={{ base: '120px', md: '200px' }} 
+                  width="100%" 
+                  objectFit="contain"
+                  fallbackSrc="/placeholder.png"
+                />
+                <Heading size={{ base: 'sm', md: 'md' }} color={colorMode === 'dark' ? 'white' : 'gray.800'} noOfLines={1}>
+                  {supply.name}
+                </Heading>
+                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} noOfLines={2} fontSize={{ base: 'xs', md: 'sm' }}>
+                  {supply.description}
+                </Text>
                 <HStack hidden={isMobile} justify="space-between">
                   <Badge colorScheme="blue">{supply.category.label}</Badge>
                 </HStack>
-                <Text fontSize={{ base: 'xs', md: 'sm' }} color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>Qtd: {supply.quantity}</Text>
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color={colorMode === 'dark' ? 'gray.300' : 'gray.500'}>
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }).format(supply.unit_price)}
+                </Text>
                 <Button 
                   colorScheme="blue" 
                   leftIcon={<ShoppingCart size={isMobile ? 16 : 20} />} 

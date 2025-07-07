@@ -70,6 +70,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Package, label: 'Requisições', href: '/supply-requests/admin' }] : []),
     ...(user && ['EMPLOYEE', 'ORGANIZER'].includes(user.role) ? [{ icon: ShoppingCart, label: 'Requisições', href: '/supply-requests' }] : []),
     { icon: FileText, label: 'Cotações', href: '/quotes' },
+    ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Timer, label: 'Gastos Extras', href: '/extra-expenses' }] : []),
     ...(user && ['ADMIN', 'MANAGER', 'SUPPORT'].includes(user.role) ? [{ icon: Bell, label: 'Alertas', href: '/alerts' }] : []),
     { icon: Calendar, label: 'Eventos', href: '/events' },
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: BarChart, label: 'Estatísticas', href: '/statistics' }] : []),
@@ -236,18 +237,18 @@ const MobileNav = ({ onOpen }: { onOpen: () => void }) => {
       p={2}
     >
       <HStack justify="space-between" w="full" spacing={2}>
-        <IconButton
-          aria-label="Abrir menu"
-          icon={<MenuIcon size={20} />}
-          variant="ghost"
-          onClick={onOpen}
+          <IconButton
+            aria-label="Abrir menu"
+            icon={<MenuIcon size={20} />}
+            variant="ghost"
+            onClick={onOpen}
           flexShrink={0}
-          sx={{
-            '& svg': {
-              stroke: 'currentColor',
-            }
-          }}
-        />
+            sx={{
+              '& svg': {
+                stroke: 'currentColor',
+              }
+            }}
+          />
         
         {showSearch && (
           <InputGroup size="sm" flex="1">

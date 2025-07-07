@@ -80,7 +80,8 @@ import { CatalogTab } from './components/Tabs/CatalogTab';
 import { InventoryTab } from './components/Tabs/InventoryTab';
 import { MyRequestsTab } from './components/Tabs/MyRequestsTab';
 import { CartTab } from './components/Tabs/CartTab';
-import { useGlobal, useCart, useFilters, useTabs } from '@/contexts/GlobalContext';
+import { useGlobal, useCart, useFilters, useTabs, useSupplies, useInventoryItems } from '@/contexts/GlobalContext';
+import type { InventoryItem } from '@/contexts/GlobalContext';
 
 interface AllocationRequest {
   id: string;
@@ -207,7 +208,8 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
 
 export default function SupplyRequestsPage() {
   const [isMobile] = useMediaQuery('(max-width: 768px)');
-  const [supplies, setSupplies] = useState<Supply[]>([]);
+  const { supplies, suppliesLastFetched, setSupplies } = useSupplies();
+  const { inventoryItems, inventoryLastFetched, setInventoryItems } = useInventoryItems();
   const [categories, setCategories] = useState<{ id: string; label: string; }[]>([]);
   const { cart, addToCart, removeFromCart, updateCartItem, clearCart } = useCart();
   const { searchQuery, statusFilter, setSearchQuery, setStatusFilter } = useFilters();
@@ -226,9 +228,8 @@ export default function SupplyRequestsPage() {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const hoverBgColor = useColorModeValue('gray.50', 'gray.600');
   const [isCustomRequestModalOpen, setIsCustomRequestModalOpen] = useState(false);
-  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
-  const [filteredInventoryItems, setFilteredInventoryItems] = useState<any[]>([]);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [filteredInventoryItems, setFilteredInventoryItems] = useState<InventoryItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [isAllocationModalOpen, setIsAllocationModalOpen] = useState(false);
   const [allocationDeadline, setAllocationDeadline] = useState('');
   const [allocationDestination, setAllocationDestination] = useState('');
@@ -241,14 +242,24 @@ export default function SupplyRequestsPage() {
   const [localeId, setLocaleId] = useState('');
   const [loadingTabs, setLoadingTabs] = useState([true, true, true, true, true]);
 
+  // Verificar se precisa buscar suprimentos
+  const shouldFetchSupplies = () => {
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+    return !suppliesLastFetched || (Date.now() - suppliesLastFetched) > CACHE_DURATION;
+  };
+
+  // Verificar se precisa buscar inventário
+  const shouldFetchInventory = () => {
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+    return !inventoryLastFetched || (Date.now() - inventoryLastFetched) > CACHE_DURATION;
+  };
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
     if (!user || !['EMPLOYEE', 'ORGANIZER'].includes(user.role)) {
       router.push('/unauthorized');
       return;
     }
-
-    loadInitialData();
 
     // Transformar categorias em objetos
     const uniqueCategories = Array.from(new Set(supplies.map(s => s.category.label)));
@@ -271,7 +282,7 @@ export default function SupplyRequestsPage() {
       }
     };
     fetchUserLocales();
-  }, []);
+  }, [supplies]);
 
   const loadInitialData = async () => {
     try {
@@ -280,19 +291,35 @@ export default function SupplyRequestsPage() {
         throw new Error('Token não encontrado');
       }
 
-      const [suppliesData, requestsData, inventoryData, allocationsData] = await Promise.all([
-        fetchSupplies(token),
+      // Buscar suprimentos apenas se necessário
+      let suppliesData = supplies;
+      if (shouldFetchSupplies()) {
+        suppliesData = await fetchSupplies(token);
+        setSupplies(suppliesData);
+      }
+
+      // Buscar inventário apenas se necessário
+      let inventoryData = inventoryItems;
+      if (shouldFetchInventory()) {
+        inventoryData = await fetchAvailableInventory(token);
+        setInventoryItems(inventoryData);
+      }
+
+      const [requestsData, allocationsData] = await Promise.all([
         fetchRequests(token),
-        fetchAvailableInventory(token),
         fetchAllocations(token)
       ]);
 
-      setSupplies(suppliesData);
-      setFilteredSupplies(suppliesData);
+      setFilteredSupplies(filterSupplies(suppliesData, searchQuery));
+      setFilteredInventoryItems(
+        inventoryData.filter((item: InventoryItem) =>
+          (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+      );
       setRequests(requestsData);
       setFilteredRequests(requestsData);
-      setInventoryItems(inventoryData);
-      setFilteredInventoryItems(inventoryData);
       setAllocationRequests(allocationsData);
       setFilteredAllocationRequests(allocationsData);
     } catch (error) {
@@ -323,8 +350,7 @@ export default function SupplyRequestsPage() {
 
   useEffect(() => {
     setFilteredInventoryItems(
-      inventoryItems.filter(item =>
-        item.status === 'STANDBY' &&
+      inventoryItems.filter((item: InventoryItem) =>
         (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
           item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -460,7 +486,7 @@ export default function SupplyRequestsPage() {
     }
   };
 
-  const handleAllocateItem = (item: any) => {
+  const handleAllocateItem = (item: InventoryItem) => {
     setSelectedItem(item);
     setIsAllocationModalOpen(true);
   };
@@ -470,6 +496,8 @@ export default function SupplyRequestsPage() {
     try {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) throw new Error('Token não encontrado');
+      if (!selectedItem) throw new Error('Item não selecionado');
+      
       await allocateInventoryItem(
         selectedItem.id,
         data.return_date,
@@ -500,90 +528,196 @@ export default function SupplyRequestsPage() {
     setLoadingTabs(tabs => tabs.map((v, i) => i === tabIndex ? false : v));
   };
 
+  // Função específica para o catálogo que usa cache
+  const fetchTabCatalog = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? true : v));
+    
+    try {
+      const token = localStorage.getItem('@ti-assistant:token');
+      if (!token) {
+        throw new Error('Token não encontrado');
+      }
+
+      // Buscar suprimentos apenas se necessário
+      if (shouldFetchSupplies()) {
+        const suppliesData = await fetchSupplies(token);
+        setSupplies(suppliesData);
+        setFilteredSupplies(filterSupplies(suppliesData, searchQuery));
+      } else {
+        // Usar dados do cache
+        setFilteredSupplies(filterSupplies(supplies, searchQuery));
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao carregar suprimentos',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? false : v));
+    }
+  };
+
+  // Função específica para o inventário que usa cache
+  const fetchTabInventory = async () => {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? true : v));
+    
+    try {
+      const token = localStorage.getItem('@ti-assistant:token');
+      if (!token) {
+        throw new Error('Token não encontrado');
+      }
+
+      // Buscar inventário apenas se necessário
+      if (shouldFetchInventory()) {
+        const inventoryData = await fetchAvailableInventory(token);
+        setInventoryItems(inventoryData);
+        setFilteredInventoryItems(
+          inventoryData.filter((item: InventoryItem) =>
+            (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+        );
+      } else {
+        // Usar dados do cache
+        setFilteredInventoryItems(
+          inventoryItems.filter((item: InventoryItem) =>
+            (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+          )
+        );
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao carregar inventário',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+    setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? false : v));
+    }
+  };
+
   // Funções específicas usando a função genérica
-  const fetchTabCatalog = () => fetchTabData(0);
-  const fetchTabInventory = () => fetchTabData(1);
   const fetchTabMyRequests = () => fetchTabData(2);
   const fetchTabMyAllocations = () => fetchTabData(3);
   const fetchTabCart = () => fetchTabData(4);
 
     return (
+    <>
     <PersistentTabsLayout
-      tabLabels={["Catálogo", "Inventário", "Meus Pedidos", "Minhas Alocações", "Carrinho"]}
+        tabLabels={['Catálogo', 'Inventário', 'Minhas Requisições', 'Minhas Alocações', 'Carrinho']}
       onTabChange={[fetchTabCatalog, fetchTabInventory, fetchTabMyRequests, fetchTabMyAllocations, fetchTabCart]}
+        storageKey="persistentTabIndexColab"
     >
       {[
         loadingTabs[0] ? (
-          <Skeleton
-            key="skeleton-catalog"
-            height="400px"
-            width="100%"
-          >
-            <SkeletonText mt="4" noOfLines={8} spacing="4" />
-          </Skeleton>
-        ) : (
-          <CatalogTab
-            supplies={filteredSupplies}
-            onAddToCart={handleAddToCart}
-          />
+            <Skeleton
+              key="skeleton-catalog"
+              height="400px"
+              width="100%"
+            >
+              <SkeletonText mt="4" noOfLines={8} spacing="4" />
+            </Skeleton>
+          ) : (
+            <CatalogTab
+              supplies={filteredSupplies}
+              onAddToCart={handleAddToCart}
+            />
         ),
         loadingTabs[1] ? (
-          <Skeleton
-            key="skeleton-inventory"
-            height="400px"
-            width="100%"
-          >
-            <SkeletonText mt="4" noOfLines={8} spacing="4" />
-          </Skeleton>
-        ) : (
-          <InventoryTab
-            inventoryItems={filteredInventoryItems}
-            onAllocateItem={handleAllocateItem}
-          />
+            <Skeleton
+              key="skeleton-inventory"
+              height="400px"
+              width="100%"
+            >
+              <SkeletonText mt="4" noOfLines={8} spacing="4" />
+            </Skeleton>
+          ) : (
+            <InventoryTab
+              inventoryItems={filteredInventoryItems}
+              onAllocateItem={handleAllocateItem}
+            />
         ),
         loadingTabs[2] ? (
-          <Skeleton
-            key="skeleton-reqs"
-            height="400px"
-            width="100%"
-          >
-            <SkeletonText mt="4" noOfLines={8} spacing="4" />
-          </Skeleton>
-        ) : (
-          <MyRequestsTab
-            requests={filteredRequests}
-            onRequesterConfirmation={handleRequesterConfirmation}
-          />
+            <Skeleton
+              key="skeleton-reqs"
+              height="400px"
+              width="100%"
+            >
+              <SkeletonText mt="4" noOfLines={8} spacing="4" />
+            </Skeleton>
+          ) : (
+            <MyRequestsTab
+              requests={filteredRequests}
+              onRequesterConfirmation={handleRequesterConfirmation}
+            />
         ),
         loadingTabs[3] ? (
-          <Skeleton
-            key="skeleton-allocs"
-            height="400px"
-            width="100%"
-          >
-            <SkeletonText mt="4" noOfLines={8} spacing="4" />
-          </Skeleton>
+            <Skeleton
+              key="skeleton-allocs"
+              height="400px"
+              width="100%"
+            >
+              <SkeletonText mt="4" noOfLines={8} spacing="4" />
+            </Skeleton>
         ) : (
               <MyAllocationsPage />
         ),
         loadingTabs[4] ? (
-          <Skeleton
-            key="skeleton-cart"
-            height="400px"
-            width="100%"
-          >
-            <SkeletonText mt="4" noOfLines={8} spacing="4" />
-          </Skeleton>
-        ) : (
-          <CartTab
-            cart={cart}
-            onRemoveFromCart={handleRemoveFromCart}
-            onUpdateQuantity={handleUpdateQuantity}
-            onOpenModal={onOpen}
-            onContinueShopping={() => router.push('/supply-requests')}
-          />
+            <Skeleton
+              key="skeleton-cart"
+              height="400px"
+              width="100%"
+            >
+              <SkeletonText mt="4" noOfLines={8} spacing="4" />
+            </Skeleton>
+          ) : (
+            <CartTab
+              cart={cart}
+              onRemoveFromCart={handleRemoveFromCart}
+              onUpdateQuantity={handleUpdateQuantity}
+              onOpenModal={onOpen}
+              onContinueShopping={() => router.push('/supply-requests')}
+            />
         )
       ]}
     </PersistentTabsLayout>
+
+      {/* Modal de Alocação de Inventário */}
+      {selectedItem && (
+        <InventoryAllocationModal
+          isOpen={isAllocationModalOpen}
+          onClose={() => {
+            setIsAllocationModalOpen(false);
+            setSelectedItem(null);
+          }}
+          item={selectedItem}
+          onSubmit={handleAllocationSubmit}
+          isLoading={isAllocating}
+        />
+      )}
+
+      {/* Modal de Detalhes da Entrega */}
+      <DeliveryDetailsModal
+        isOpen={isOpen}
+        onClose={onClose}
+        deliveryDeadline={deliveryDeadline}
+        setDeliveryDeadline={setDeliveryDeadline}
+        destination={destination}
+        setDestination={setDestination}
+        userLocales={userLocales}
+        onSubmit={handleSubmitRequest}
+        isSubmitting={false}
+        localeId={localeId}
+        setLocaleId={setLocaleId}
+      />
+    </>
   );
 } 

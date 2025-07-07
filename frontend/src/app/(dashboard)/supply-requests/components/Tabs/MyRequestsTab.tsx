@@ -65,22 +65,22 @@ export function MyRequestsTab({
     <Card bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'} backdropFilter="blur(12px)" borderWidth="1px" borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}>
       <CardBody>
         {!isMobile && (
-          <Flex gap={4} mb={6} direction={{ base: 'column', md: 'row' }} justify={{ base: 'center', md: 'space-between' }}>
-            <InputGroup>
-              <InputLeftElement pointerEvents="none">
-                <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-              </InputLeftElement>
-              <Input
-                placeholder="Buscar por suprimento..."
-                value={searchQuery}
+        <Flex gap={4} mb={6} direction={{ base: 'column', md: 'row' }} justify={{ base: 'center', md: 'space-between' }}>
+          <InputGroup>
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+            </InputLeftElement>
+            <Input
+              placeholder="Buscar por suprimento..."
+              value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
-                backdropFilter="blur(12px)"
-                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
-                _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
-              />
-            </InputGroup>
+              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'gray.50'}
+              backdropFilter="blur(12px)"
+              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+              _hover={{ borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)' }}
+              _focus={{ borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500', boxShadow: 'none' }}
+            />
+          </InputGroup>
           <Select
             placeholder="Filtrar por status"
             value={statusFilter}

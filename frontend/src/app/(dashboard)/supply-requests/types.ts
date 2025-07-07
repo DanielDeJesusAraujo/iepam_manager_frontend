@@ -2,20 +2,42 @@ export interface Supply {
     id: string;
     name: string;
     description: string;
+    quantity: number;
+    category_id: string;
+    subcategory_id: string | null;
+    created_at: string;
+    updated_at: string;
+    minimum_quantity: number;
+    supplier_id: string;
+    image_url: string | null;
+    unit_id: string;
+    unit_price: number;
+    freight: number;
     category: {
         id: string;
         value: string;
         label: string;
+        created_at: string;
+        updated_at: string;
     };
-    subcategory?: {
+    supplier: {
         id: string;
-        value: string;
-        label: string;
+        name: string;
+        phone: string;
+        email: string;
+        address: string;
+        cnpj: string;
+        contact_person: string;
+        created_at: string;
     };
-    minimum_quantity: number;
-    current_quantity: number;
-    quantity: number;
-    image_url?: string;
+    unit: {
+        id: string;
+        name: string;
+        symbol: string;
+        description: string;
+        created_at: string;
+        updated_at: string;
+    };
 }
 
 export interface SupplyRequest {

@@ -126,54 +126,54 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
   return (
     <Box>
       {!isMobile ? (
-        <VStack spacing={4} mb={6}>
-          <HStack spacing={4} width="100%">
-            <Select
-              placeholder="Filtrar por status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              maxW="200px"
-              size="sm"
-            >
-              <option value="">Todos</option>
-              <option value="PENDING">Pendentes</option>
-              <option value="APPROVED">Aprovadas</option>
-              <option value="REJECTED">Rejeitadas</option>
-              <option value="CANCELLED">Canceladas</option>
-            </Select>
+      <VStack spacing={4} mb={6}>
+        <HStack spacing={4} width="100%">
+          <Select
+            placeholder="Filtrar por status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            maxW="200px"
+            size="sm"
+          >
+            <option value="">Todos</option>
+            <option value="PENDING">Pendentes</option>
+            <option value="APPROVED">Aprovadas</option>
+            <option value="REJECTED">Rejeitadas</option>
+            <option value="CANCELLED">Canceladas</option>
+          </Select>
 
-            <Select
-              placeholder="Filtrar por criador"
-              value={creatorFilter}
-              onChange={(e) => setCreatorFilter(e.target.value)}
-              maxW="200px"
-              size="sm"
-            >
-              <option value="">Todos</option>
-              {quotes
-                .filter((quote, index, self) => 
-                  index === self.findIndex(q => q.user.id === quote.user.id)
-                )
-                .map(quote => (
-                  <option key={quote.user.id} value={quote.user.id}>
-                    {quote.user.name}
-                  </option>
-                ))
-              }
-            </Select>
+          <Select
+            placeholder="Filtrar por criador"
+            value={creatorFilter}
+            onChange={(e) => setCreatorFilter(e.target.value)}
+            maxW="200px"
+            size="sm"
+          >
+            <option value="">Todos</option>
+            {quotes
+              .filter((quote, index, self) => 
+                index === self.findIndex(q => q.user.id === quote.user.id)
+              )
+              .map(quote => (
+                <option key={quote.user.id} value={quote.user.id}>
+                  {quote.user.name}
+                </option>
+              ))
+            }
+          </Select>
 
-            <InputGroup maxW="300px" size="sm">
-              <InputLeftElement pointerEvents="none">
-                <SearchIcon size={16} />
-              </InputLeftElement>
-              <Input
-                placeholder="Buscar por fornecedor ou produto"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </InputGroup>
-          </HStack>
-        </VStack>
+          <InputGroup maxW="300px" size="sm">
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon size={16} />
+            </InputLeftElement>
+            <Input
+              placeholder="Buscar por fornecedor ou produto"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </InputGroup>
+        </HStack>
+      </VStack>
       ) : (
         <VStack spacing={3} mb={6}>
           <InputGroup size="md">

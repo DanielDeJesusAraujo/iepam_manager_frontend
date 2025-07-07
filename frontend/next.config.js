@@ -18,7 +18,7 @@ const nextConfig = {
         emotion: true,
     },
     env: {
-        NEXT_PUBLIC_IMAGES_API_KEY: process.env.NEXT_PUBLIC_IMAGES_API_KEY,
+        IMGBB_IMAGES_API_KEY: process.env.IMGBB_IMAGES_API_KEY,
     },
     experimental: {
         outputFileTracingRoot: undefined,
