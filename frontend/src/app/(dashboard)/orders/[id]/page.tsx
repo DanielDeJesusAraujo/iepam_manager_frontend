@@ -358,17 +358,6 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
               }}
               transition="all 0.3s ease"
             />
-            <IconButton
-              aria-label="Excluir OS"
-              icon={<DeleteIcon />}
-              colorScheme="red"
-              bg={colorMode === 'dark' ? 'rgba(245, 101, 101, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(245, 101, 101, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            />
           </HStack>
         </Flex>
 

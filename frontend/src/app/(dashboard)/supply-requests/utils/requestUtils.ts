@@ -52,25 +52,31 @@ export const fetchRequests = async (token: string) => {
 };
 
 export const handleRequesterConfirmation = async (requestId: string, confirmation: boolean, token: string, isCustom: boolean) => {
-    const endpoint = isCustom
-        ? `/api/custom-supply-requests/${requestId}/requester-confirmation`
-        : `/api/supply-requests/${requestId}/requester-confirmation`;
+    try {
+        const endpoint = isCustom
+            ? `/api/custom-supply-requests/${requestId}/requester-confirmation`
+            : `/api/supply-requests/${requestId}/requester-confirmation`;
 
-    const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ confirmation })
-    });
+        const response = await fetch(endpoint, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ confirmation })
+        });
 
-    if (!response.ok) {
+        if (!response.ok) {
+            throw new Error('Erro ao atualizar confirmação');
+        }
         const data = await response.json();
-        throw new Error(data.message || 'Erro ao atualizar confirmação');
+        console.log(data);
+        console.log(`Requisição ${data.id} atualizada com sucesso`);
+        return data;
+    } catch (error) {
+        console.error(`Erro ao atualizar confirmação da requisição ${requestId}:`, error);
+        throw error;
     }
-
-    return response.json();
 };
 
 export const submitRequest = async (cart: { supply: Supply; quantity: number }[], deliveryDeadline: string, destination: string, token: string, localeId?: string) => {
@@ -145,28 +151,28 @@ export const filterRequests = (requests: SupplyRequest[], search: string, status
 };
 
 export const allocateInventoryItem = async (
-  itemId: string,
-  return_date: string,
-  destination: string,
-  notes: string,
-  token: string
+    itemId: string,
+    return_date: string,
+    destination: string,
+    notes: string,
+    token: string
 ) => {
-  const response = await fetch('/api/inventory-allocations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      inventory_id: itemId,
-      return_date,
-      destination,
-      notes,
-    }),
-  });
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Erro ao criar alocação');
-  }
-  return response.json();
+    const response = await fetch('/api/inventory-allocations', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            inventory_id: itemId,
+            return_date,
+            destination,
+            notes,
+        }),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao criar alocação');
+    }
+    return response.json();
 }; 
