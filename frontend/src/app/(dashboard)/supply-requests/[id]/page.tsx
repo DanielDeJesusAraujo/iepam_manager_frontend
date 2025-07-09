@@ -395,7 +395,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                             <Spinner size="xl" color="blue.500" thickness="4px" />
                             <Text color="gray.500">Carregando detalhes do suprimento...</Text>
                         </VStack>
-                    </Flex>
+                </Flex>
                 </Container>
             </Box>
         );
@@ -412,14 +412,14 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                     {/* Header */}
                     <Flex justify="space-between" align="center">
                         <HStack spacing={4}>
-                            <IconButton
-                                aria-label="Voltar"
+                    <IconButton
+                        aria-label="Voltar"
                                 icon={<ArrowLeft size={24} />}
-                                variant="ghost"
-                                onClick={() => router.back()}
+                        variant="ghost"
+                        onClick={() => router.back()}
                                 size="lg"
                                 _hover={{ bg: buttonHoverBg }}
-                            />
+                    />
                             <VStack align="start" spacing={1}>
                                 <Heading size="lg" color={headingColor}>
                                     Detalhes do Suprimento
@@ -428,7 +428,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                     Informações completas do item
                                 </Text>
                             </VStack>
-                        </HStack>
+                </HStack>
                     </Flex>
 
                     {/* Main Content */}
@@ -437,14 +437,14 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                         <GridItem>
                             <Card bg={bgColor} borderWidth="1px" borderColor={borderColor} overflow="hidden">
                                 <CardBody p={0}>
-                                    <Image
-                                        src={supply.image_url || '/placeholder.png'}
-                                        alt={supply.name}
+                        <Image
+                            src={supply.image_url || '/placeholder.png'}
+                            alt={supply.name}
                                         width="100%"
-                                        height="500px"
+                            height="500px"
                                         objectFit="contain"
                                         fallbackSrc="/placeholder.png"
-                                    />
+                        />
                                 </CardBody>
                             </Card>
                         </GridItem>
@@ -462,7 +462,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                             <Text color={subHeadingColor} fontSize="md" lineHeight="1.6">
                                                 {supply.description}
                                             </Text>
-                                            <HStack spacing={3}>
+                        <HStack spacing={3}>
                                                 <Badge 
                                                     colorScheme="blue" 
                                                     size="lg"
@@ -470,9 +470,9 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                                     py={2}
                                                     borderRadius="full"
                                                 >
-                                                    {supply.category.label}
-                                                </Badge>
-                                                {supply.subcategory && (
+                                {supply.category.label}
+                            </Badge>
+                            {supply.subcategory && (
                                                     <Badge 
                                                         colorScheme="green" 
                                                         size="lg"
@@ -480,9 +480,9 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                                         py={2}
                                                         borderRadius="full"
                                                     >
-                                                        {supply.subcategory.label}
-                                                    </Badge>
-                                                )}
+                                    {supply.subcategory.label}
+                                </Badge>
+                            )}
                                                 <Badge 
                                                     colorScheme={supply.quantity > 0 ? 'green' : 'red'} 
                                                     size="lg"
@@ -539,7 +539,7 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                                         <HStack>
                                                             <Building size={16} color="gray.500" />
                                                             <Text fontSize="sm" color="gray.500">Fornecedor</Text>
-                                                        </HStack>
+                        </HStack>
                                                         <VStack align="start" spacing={1}>
                                                             <Text fontWeight="medium">
                                                                 {typeof supply.supplier === 'string' 
@@ -569,76 +569,76 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                                             </Heading>
                                             
                                             <VStack spacing={3} align="stretch">
-                                                <HStack justify="space-between" align="center">
+                            <HStack justify="space-between" align="center">
                                                     <Text fontSize="sm" color="gray.500">Quantidade Desejada:</Text>
                                                     <Text fontSize="sm" color="gray.500">Máx: {supply.quantity}</Text>
-                                                </HStack>
-                                                <NumberInput
-                                                    value={quantity}
-                                                    onChange={handleQuantityChange}
-                                                    min={1}
-                                                    max={supply.quantity}
-                                                    size="lg"
-                                                >
-                                                    <NumberInputField />
-                                                    <NumberInputStepper>
-                                                        <NumberIncrementStepper />
-                                                        <NumberDecrementStepper />
-                                                    </NumberInputStepper>
-                                                </NumberInput>
-                                            </VStack>
+                            </HStack>
+                                <NumberInput
+                                    value={quantity}
+                                    onChange={handleQuantityChange}
+                                    min={1}
+                                    max={supply.quantity}
+                                    size="lg"
+                                >
+                                    <NumberInputField />
+                                    <NumberInputStepper>
+                                        <NumberIncrementStepper />
+                                        <NumberDecrementStepper />
+                                    </NumberInputStepper>
+                                </NumberInput>
+                        </VStack>
 
                                             {/* Action Buttons */}
                                             <VStack spacing={3}>
-                                                <Button 
-                                                    colorScheme="blue" 
+                            <Button
+                                colorScheme="blue"
                                                     leftIcon={<ShoppingCart size={20} />} 
-                                                    onClick={() => addToCart(supply, quantity)}
-                                                    isDisabled={supply.quantity <= 0} 
-                                                    size="lg"
+                                onClick={() => addToCart(supply, quantity)}
+                                isDisabled={supply.quantity <= 0}
+                                size="lg"
                                                     height="50px"
                                                     fontWeight="semibold"
                                                     w="full"
                                                     _hover={{ transform: 'translateY(-1px)', boxShadow: 'md' }}
                                                     transition="all 0.2s ease"
-                                                >
-                                                    Adicionar ao Carrinho
-                                                </Button>
-                                                <Button
-                                                    colorScheme="green"
-                                                    onClick={onOpen}
-                                                    isDisabled={supply.quantity <= 0}
-                                                    size="lg"
+                            >
+                                Adicionar ao Carrinho
+                            </Button>
+                            <Button
+                                colorScheme="green"
+                                onClick={onOpen}
+                                isDisabled={supply.quantity <= 0}
+                                size="lg"
                                                     height="50px"
                                                     fontWeight="semibold"
                                                     w="full"
                                                     _hover={{ transform: 'translateY(-1px)', boxShadow: 'md' }}
                                                     transition="all 0.2s ease"
-                                                >
+                            >
                                                     Realizar Pedido Direto
-                                                </Button>
+                            </Button>
                                             </VStack>
                                         </VStack>
                                     </CardBody>
                                 </Card>
-                            </VStack>
+                    </VStack>
                         </GridItem>
                     </Grid>
 
-                    <DeliveryDetailsModal
-                        isOpen={isOpen}
-                        onClose={onClose}
-                        deliveryDeadline={deliveryDeadline}
-                        setDeliveryDeadline={setDeliveryDeadline}
-                        destination={destination}
-                        setDestination={setDestination}
-                        userLocales={userLocales}
-                        onSubmit={handleOrderSubmit}
-                        localeId={localeId}
-                        setLocaleId={setLocaleId}
-                    />
-                </VStack>
-            </Container>
+                <DeliveryDetailsModal
+                    isOpen={isOpen}
+                    onClose={onClose}
+                    deliveryDeadline={deliveryDeadline}
+                    setDeliveryDeadline={setDeliveryDeadline}
+                    destination={destination}
+                    setDestination={setDestination}
+                    userLocales={userLocales}
+                    onSubmit={handleOrderSubmit}
+                    localeId={localeId}
+                    setLocaleId={setLocaleId}
+                />
+            </VStack>
+        </Container>
         </Box>
     );
 } 

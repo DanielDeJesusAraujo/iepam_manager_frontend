@@ -657,7 +657,7 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-          ) : (
+        ) : (
             <CatalogTab
               supplies={filteredSupplies}
               onAddToCart={handleAddToCart}
@@ -671,7 +671,7 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-          ) : (
+        ) : (
             <InventoryTab
               inventoryItems={filteredInventoryItems}
               onAllocateItem={handleAllocateItem}

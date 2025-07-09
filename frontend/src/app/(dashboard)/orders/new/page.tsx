@@ -18,8 +18,16 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Textarea
+  Textarea,
+  Flex,
+  HStack,
+  Divider,
+  Alert,
+  AlertIcon,
+  InputGroup,
+  InputLeftElement
 } from '@chakra-ui/react'
+import { ArrowLeft } from 'lucide-react'
 
 interface FormData {
   order_number: string
@@ -50,6 +58,7 @@ export default function NewOrderPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const toast = useToast()
+  const [formError, setFormError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -62,6 +71,7 @@ export default function NewOrderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
     setLoading(true)
     try {
       const token = localStorage.getItem('@ti-assistant:token')
@@ -107,6 +117,7 @@ export default function NewOrderPage() {
       })
       router.push('/orders')
     } catch (err: any) {
+      setFormError(err.message || 'Erro ao criar ordem de serviço')
       toast({
         title: 'Erro',
         description: err.message || 'Erro ao criar ordem de serviço',
@@ -120,129 +131,174 @@ export default function NewOrderPage() {
   }
 
   return (
-    <Box maxW="2xl" mx="auto" mt={10} p={8} borderWidth={1} borderRadius="lg" boxShadow="md">
-      <Heading size="lg" mb={6}>Nova Ordem de Serviço</Heading>
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
-          <FormControl>
-            <FormLabel>Número da OS (opcional)</FormLabel>
-            <Input
-              name="order_number"
-              value={formData.order_number}
-              onChange={handleChange}
-              placeholder="Deixe em branco para gerar automaticamente"
-            />
-            <Text fontSize="sm" color="gray.500" mt={1}>
-              Se não preenchido, será gerado automaticamente no formato OS20241201123456
-            </Text>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Nome do Cliente</FormLabel>
-            <Input
-              name="client_name"
-              value={formData.client_name}
-              onChange={handleChange}
-              placeholder="Digite o nome do cliente"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Descrição do Equipamento</FormLabel>
-            <Input
-              name="equipment_description"
-              value={formData.equipment_description}
-              onChange={handleChange}
-              placeholder="Digite a descrição do equipamento"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Modelo do Equipamento</FormLabel>
-            <Input
-              name="model"
-              value={formData.model}
-              onChange={handleChange}
-              placeholder="Digite o modelo do equipamento"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Número de Série</FormLabel>
-            <Input
-              name="serial_number"
-              value={formData.serial_number}
-              onChange={handleChange}
-              placeholder="Digite o número de série"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Problema Reportado</FormLabel>
-            <Textarea
-              name="problem_reported"
-              value={formData.problem_reported}
-              onChange={handleChange}
-              placeholder="Descreva o problema reportado"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Tipo de Serviço</FormLabel>
-            <Select
-              name="service_type"
-              value={formData.service_type}
-              onChange={handleChange}
-              placeholder="Selecione o tipo de serviço"
-            >
-              <option value="manutencao">Manutenção</option>
-              <option value="reparo">Reparo</option>
-              <option value="instalacao">Instalação</option>
-              <option value="configuracao">Configuração</option>
-            </Select>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Acessórios</FormLabel>
-            <Input
-              name="accessories"
-              value={formData.accessories}
-              onChange={handleChange}
-              placeholder="Digite os acessórios"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Observações</FormLabel>
-            <Textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Digite as observações"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Valor Total</FormLabel>
-            <NumberInput
-              value={formData.total_price}
-              onChange={handlePriceChange}
-              min={0}
-              precision={2}
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-          </FormControl>
-
-          <Button type="submit" colorScheme="blue" isLoading={loading} w="full">
-            Criar Ordem de Serviço
+    <Flex minH="100vh" align="center" justify="center" bgGradient="linear(to-br, gray.50, gray.100)">
+      <Box maxW="3xl" w="full" mx="auto" my={10} p={[4, 8]} borderWidth={1} borderRadius="2xl" boxShadow="2xl" bg="white">
+        <HStack mb={6} spacing={4} align="center">
+          <Button
+            leftIcon={<ArrowLeft size={18} />}
+            variant="ghost"
+            onClick={() => router.back()}
+            aria-label="Voltar"
+          >
+            Voltar
           </Button>
-        </VStack>
-      </form>
-    </Box>
+          <Heading size="lg" color="blue.700">Nova Ordem de Serviço</Heading>
+        </HStack>
+        {formError && (
+          <Alert status="error" mb={4} borderRadius="md">
+            <AlertIcon />
+            {formError}
+          </Alert>
+        )}
+        <form onSubmit={handleSubmit} autoComplete="off">
+          <VStack spacing={6} align="stretch">
+            <Box>
+              <Heading size="sm" color="gray.600" mb={2}>Dados do Cliente</Heading>
+              <Divider mb={4} />
+              <FormControl>
+                <FormLabel>Número da OS (opcional)</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none" color="gray.400" children="#" />
+                  <Input
+                    name="order_number"
+                    value={formData.order_number}
+                    onChange={handleChange}
+                    placeholder="Deixe em branco para gerar automaticamente"
+                    autoFocus
+                  />
+                </InputGroup>
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  Se não preenchido, será gerado automaticamente no formato OS20241201123456
+                </Text>
+              </FormControl>
+              <FormControl mt={4}>
+                <FormLabel>Nome do Cliente</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none" color="gray.400" children={<span>👤</span>} />
+                  <Input
+                    name="client_name"
+                    value={formData.client_name}
+                    onChange={handleChange}
+                    placeholder="Digite o nome do cliente"
+                  />
+                </InputGroup>
+              </FormControl>
+            </Box>
+            <Box>
+              <Heading size="sm" color="gray.600" mb={2}>Equipamento</Heading>
+              <Divider mb={4} />
+              <FormControl>
+                <FormLabel>Descrição do Equipamento</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none" color="gray.400" children={<span>💻</span>} />
+                  <Input
+                    name="equipment_description"
+                    value={formData.equipment_description}
+                    onChange={handleChange}
+                    placeholder="Digite a descrição do equipamento"
+                  />
+                </InputGroup>
+              </FormControl>
+              <FormControl mt={4}>
+                <FormLabel>Modelo do Equipamento</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none" color="gray.400" children={<span>🏷️</span>} />
+                  <Input
+                    name="model"
+                    value={formData.model}
+                    onChange={handleChange}
+                    placeholder="Digite o modelo do equipamento"
+                  />
+                </InputGroup>
+              </FormControl>
+              <FormControl mt={4} isRequired>
+                <FormLabel>Número de Série</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none" color="gray.400" children={<span>🔢</span>} />
+                  <Input
+                    name="serial_number"
+                    value={formData.serial_number}
+                    onChange={handleChange}
+                    placeholder="Digite o número de série"
+                  />
+                </InputGroup>
+              </FormControl>
+            </Box>
+            <Box>
+              <Heading size="sm" color="gray.600" mb={2}>Serviço</Heading>
+              <Divider mb={4} />
+              <FormControl isRequired>
+                <FormLabel>Problema Reportado</FormLabel>
+                <Textarea
+                  name="problem_reported"
+                  value={formData.problem_reported}
+                  onChange={handleChange}
+                  placeholder="Descreva o problema reportado"
+                />
+              </FormControl>
+              <FormControl mt={4} isRequired>
+                <FormLabel>Tipo de Serviço</FormLabel>
+                <Select
+                  name="service_type"
+                  value={formData.service_type}
+                  onChange={handleChange}
+                  placeholder="Selecione o tipo de serviço"
+                >
+                  <option value="manutencao">Manutenção</option>
+                  <option value="reparo">Reparo</option>
+                  <option value="instalacao">Instalação</option>
+                  <option value="configuracao">Configuração</option>
+                </Select>
+              </FormControl>
+              <FormControl mt={4}>
+                <FormLabel>Acessórios</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none" color="gray.400" children={<span>🧰</span>} />
+                  <Input
+                    name="accessories"
+                    value={formData.accessories}
+                    onChange={handleChange}
+                    placeholder="Digite os acessórios"
+                  />
+                </InputGroup>
+              </FormControl>
+              <FormControl mt={4}>
+                <FormLabel>Observações</FormLabel>
+                <Textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  placeholder="Digite as observações"
+                />
+              </FormControl>
+              <FormControl mt={4}>
+                <FormLabel>Valor Total</FormLabel>
+                <NumberInput
+                  value={formData.total_price}
+                  onChange={handlePriceChange}
+                  min={0}
+                  precision={2}
+                >
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </FormControl>
+            </Box>
+            <Divider />
+            <Flex justify="flex-end" gap={4}>
+              <Button variant="ghost" onClick={() => router.back()} aria-label="Cancelar">
+                Cancelar
+              </Button>
+              <Button type="submit" colorScheme="blue" isLoading={loading} aria-label="Criar OS">
+                Criar Ordem de Serviço
+              </Button>
+            </Flex>
+          </VStack>
+        </form>
+      </Box>
+    </Flex>
   )
 } 
