@@ -7,7 +7,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE' | 'ORGANIZER' | 'SUPPORT';
+  role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE' | 'ORGANIZER' | 'SUPPORT' | 'TECHNICIAN';
   branch_id?: string;
 }
 

@@ -23,7 +23,7 @@ import {
   InputGroup,
   InputLeftElement,
 } from '@chakra-ui/react'
-import { Menu as MenuIcon, X, Home, Printer, Server, Wrench, Box as BoxIcon, Settings, LogOut, Bell, Calendar, BarChart, Package, ShoppingCart, ArrowLeft, Timer, FileText, ChevronDown, ChevronRight, SearchIcon } from 'lucide-react'
+import { Menu as MenuIcon, X, Home, Printer, Server, Wrench, Box as BoxIcon, Settings, LogOut, Bell, Calendar, BarChart, Package, ShoppingCart, ArrowLeft, Timer, FileText, ChevronDown, ChevronRight, SearchIcon, ListTodo } from 'lucide-react'
 import NextLink from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
@@ -65,10 +65,13 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   const menuItems = [
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Home, label: 'Dashboard', href: '/dashboard' }] : []),
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Wrench, label: 'OS Externas', href: '/orders' }] : []),
+    ...(user && user.role === 'TECHNICIAN' ? [{ icon: Wrench, label: 'OS Internas', href: '/internal-service-orders' }] : []),
+    ...(user && user.role === 'TECHNICIAN' ? [{ icon: Settings, label: 'Agendamentos', href: '/maintenance-schedules' }] : []),
+    ...(user && user.role === 'TECHNICIAN' ? [{ icon: ListTodo, label: 'Tarefas', href: '/tasks' }] : []),
     ...(user && user.role === 'MANAGER' ? [{ icon: Package, label: 'Inventário', href: '/inventory' }] : []),
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Package, label: 'Suprimentos', href: '/supplies' }] : []),
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Package, label: 'Requisições', href: '/supply-requests/admin' }] : []),
-    ...(user && ['EMPLOYEE', 'ORGANIZER'].includes(user.role) ? [{ icon: ShoppingCart, label: 'Requisições', href: '/supply-requests' }] : []),
+    ...(user && ['EMPLOYEE', 'ORGANIZER', 'TECHNICIAN'].includes(user.role) ? [{ icon: ShoppingCart, label: 'Requisições', href: '/supply-requests' }] : []),
     { icon: FileText, label: 'Cotações', href: '/quotes' },
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Timer, label: 'Gastos Extras', href: '/extra-expenses' }] : []),
     ...(user && ['ADMIN', 'MANAGER', 'SUPPORT'].includes(user.role) ? [{ icon: Bell, label: 'Alertas', href: '/alerts' }] : []),

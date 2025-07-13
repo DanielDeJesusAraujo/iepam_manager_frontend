@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Table,
@@ -21,7 +22,18 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  IconButton,
+  Tooltip,
+  Image,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
 } from '@chakra-ui/react';
+import { FiEye, FiFileText } from 'react-icons/fi';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -29,9 +41,21 @@ export function SupplyBatchList() {
   const [batches, setBatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState('');
+  const [selectedInvoiceUrl, setSelectedInvoiceUrl] = useState<string>('');
+  const { isOpen: isInvoiceOpen, onOpen: onInvoiceOpen, onClose: onInvoiceClose } = useDisclosure();
   const toast = useToast();
+  const router = useRouter();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+
+  const handleViewInvoice = (invoiceUrl: string) => {
+    setSelectedInvoiceUrl(invoiceUrl);
+    onInvoiceOpen();
+  };
+
+  const handleViewDetails = (batchId: string) => {
+    router.push(`/supplies/batches/${batchId}`);
+  };
 
   useEffect(() => {
     async function fetchBatches() {
@@ -127,6 +151,7 @@ export function SupplyBatchList() {
                     <Th>Data Entrada</Th>
                     <Th>Validade</Th>
                     <Th>Observações</Th>
+                    <Th>Ações</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -139,6 +164,32 @@ export function SupplyBatchList() {
                       <Td>{b.purchased_at?.slice(0, 10)}</Td>
                       <Td>{b.expires_at ? b.expires_at.slice(0, 10) : '-'}</Td>
                       <Td>{b.notes || '-'}</Td>
+                      <Td>
+                        <HStack spacing={2}>
+                          <Tooltip label="Ver Detalhes">
+                            <IconButton
+                              aria-label="Ver Detalhes"
+                              icon={<FiEye />}
+                              size="sm"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={() => handleViewDetails(b.id)}
+                            />
+                          </Tooltip>
+                          {b.invoice_url && (
+                            <Tooltip label="Visualizar Nota Fiscal">
+                              <IconButton
+                                aria-label="Visualizar Nota Fiscal"
+                                icon={<FiFileText />}
+                                size="sm"
+                                variant="ghost"
+                                colorScheme="green"
+                                onClick={() => handleViewInvoice(b.invoice_url)}
+                              />
+                            </Tooltip>
+                          )}
+                        </HStack>
+                      </Td>
                     </Tr>
                   ))}
                 </Tbody>
@@ -147,6 +198,26 @@ export function SupplyBatchList() {
           </CardBody>
         </Card>
       </VStack>
+
+      {/* Modal para visualizar Nota Fiscal */}
+      <Modal isOpen={isInvoiceOpen} onClose={onInvoiceClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Nota Fiscal</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {selectedInvoiceUrl && (
+              <Image
+                src={selectedInvoiceUrl}
+                alt="Nota Fiscal"
+                maxH="70vh"
+                objectFit="contain"
+                mx="auto"
+              />
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 } 

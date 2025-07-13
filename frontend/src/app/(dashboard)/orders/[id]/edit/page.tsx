@@ -214,7 +214,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                             <FormControl isRequired>
                                 <FormLabel>Número da OS</FormLabel>
                                 <InputGroup>
-                                    <InputLeftElement pointerEvents="none" color="gray.400" children="#" />
+                                    <InputLeftElement pointerEvents="none" color="gray.400">
+                                        #
+                                    </InputLeftElement>
                                     <Input
                                         name="order_number"
                                         value={order.order_number}
@@ -227,7 +229,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                             <FormControl mt={4} isRequired>
                                 <FormLabel>Cliente</FormLabel>
                                 <InputGroup>
-                                    <InputLeftElement pointerEvents="none" color="gray.400" children={<span>👤</span>} />
+                                    <InputLeftElement pointerEvents="none" color="gray.400">
+                                        <span>👤</span>
+                                    </InputLeftElement>
                                     <Input
                                         name="client_name"
                                         value={order.client_name}
@@ -243,7 +247,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                             <FormControl isRequired>
                                 <FormLabel>Equipamento</FormLabel>
                                 <InputGroup>
-                                    <InputLeftElement pointerEvents="none" color="gray.400" children={<span>💻</span>} />
+                                    <InputLeftElement pointerEvents="none" color="gray.400">
+                                        <span>💻</span>
+                                    </InputLeftElement>
                                     <Input
                                         name="equipment_description"
                                         value={order.equipment_description}
@@ -255,7 +261,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                             <FormControl mt={4} isRequired>
                                 <FormLabel>Modelo</FormLabel>
                                 <InputGroup>
-                                    <InputLeftElement pointerEvents="none" color="gray.400" children={<span>🏷️</span>} />
+                                    <InputLeftElement pointerEvents="none" color="gray.400">
+                                        <span>🏷️</span>
+                                    </InputLeftElement>
                                     <Input
                                         name="model"
                                         value={order.model}
@@ -267,7 +275,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                             <FormControl mt={4} isRequired>
                                 <FormLabel>Número de Série</FormLabel>
                                 <InputGroup>
-                                    <InputLeftElement pointerEvents="none" color="gray.400" children={<span>🔢</span>} />
+                                    <InputLeftElement pointerEvents="none" color="gray.400">
+                                        <span>🔢</span>
+                                    </InputLeftElement>
                                     <Input
                                         name="serial_number"
                                         value={order.serial_number}
@@ -341,7 +351,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                             <FormControl mt={4}>
                                 <FormLabel>Acessórios</FormLabel>
                                 <InputGroup>
-                                    <InputLeftElement pointerEvents="none" color="gray.400" children={<span>🧰</span>} />
+                                    <InputLeftElement pointerEvents="none" color="gray.400">
+                                        <span>🧰</span>
+                                    </InputLeftElement>
                                     <Input
                                         name="accessories"
                                         value={order.accessories || ''}

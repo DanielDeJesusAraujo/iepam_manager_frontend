@@ -1,9 +1,49 @@
 'use client';
 
 import { useEffect, useState } from 'react'
-import { Box, SimpleGrid, Stat, StatLabel, StatNumber, StatHelpText, StatArrow, useToast, Heading, VStack, HStack, Text, Badge, useBreakpointValue, Icon, Flex, useColorMode, Spinner } from '@chakra-ui/react'
+import {
+  Box,
+  SimpleGrid,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  StatArrow,
+  useToast,
+  Heading,
+  VStack,
+  HStack,
+  Text,
+  Badge,
+  useBreakpointValue,
+  Icon,
+  Flex,
+  useColorMode,
+  Spinner,
+  Container,
+  useColorModeValue,
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+} from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
-import { Wrench, Box as BoxIcon } from 'lucide-react'
+import {
+  Wrench,
+  Box as BoxIcon,
+  TrendingUp,
+  AlertTriangle,
+  Users,
+  FileText,
+  ShoppingCart,
+  Activity,
+  BarChart3,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Settings,
+  Plus
+} from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 interface DashboardStats {
@@ -50,11 +90,27 @@ export default function DashboardPage() {
 
   const isMobile = useBreakpointValue({ base: true, md: false })
 
+  // Cores responsivas
+  const bgGradient = useColorModeValue(
+    'linear(to-br, blue.50, purple.50, pink.50)',
+    'linear(to-br, gray.900, blue.900, purple.900)'
+  );
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const cardBorder = useColorModeValue('gray.200', 'gray.700');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const textSecondary = useColorModeValue('gray.600', 'gray.300');
+  const iconColor = useColorModeValue('blue.500', 'blue.300');
+  const successColor = useColorModeValue('green.500', 'green.300');
+  const warningColor = useColorModeValue('yellow.500', 'yellow.300');
+  const dangerColor = useColorModeValue('red.500', 'red.300');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+
   useEffect(() => {
-        const token = localStorage.getItem('@ti-assistant:token')
-        if (!token) {
-          router.push('/')
-          return
+    const token = localStorage.getItem('@ti-assistant:token')
+    if (!token) {
+      router.push('/')
+      return
     }
 
     fetchDashboardData()
@@ -66,40 +122,43 @@ export default function DashboardPage() {
       const token = localStorage.getItem('@ti-assistant:token')
       if (!token) {
         throw new Error('Token não encontrado')
+      }
+
+      const response = await fetch('/api/dashboard', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
+      })
 
-        const response = await fetch('/api/dashboard', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-
-        if (!response.ok) {
+      if (!response.ok) {
         const data = await response.json()
         throw new Error(data.message || 'Erro ao carregar dados do dashboard')
-        }
-
-        const data = await response.json()
-        setStats(data.stats)
-        setRecentAlerts(data.recentAlerts)
-        setRecentServiceOrders(data.recentServiceOrders)
-      } catch (error) {
-        toast({
-          title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao carregar dados do dashboard',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        })
-      } finally {
-        setLoading(false)
       }
+
+      const data = await response.json()
+      setStats(data.stats)
+      setRecentAlerts(data.recentAlerts)
+      setRecentServiceOrders(data.recentServiceOrders)
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao carregar dados do dashboard',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+    } finally {
+      setLoading(false)
     }
+  }
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" h="100vh">
-        <Spinner size="xl" />
+      <Box minH="100vh" bgGradient={bgGradient} display="flex" justifyContent="center" alignItems="center">
+        <VStack spacing={4}>
+          <Spinner size="xl" color={iconColor} thickness="4px" />
+          <Text color={textSecondary} fontSize="lg">Carregando dashboard...</Text>
+        </VStack>
       </Box>
     )
   }
@@ -109,274 +168,399 @@ export default function DashboardPage() {
   }
 
   return (
-    <Box p={isMobile ? 4 : 8}>
-      <VStack spacing={isMobile ? 4 : 8} align="stretch">
-        <Heading size={isMobile ? "md" : "lg"}>Dashboard</Heading>
+    <>
+      <VStack spacing={6} align="stretch" bgGradient={bgGradient} minH="100vh" p={4}>
+        {/* Header */}
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
+          <CardBody p={6}>
+            <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+              <Box>
+                <HStack spacing={3} mb={2}>
+                  <Box p={3} borderRadius="full" bgGradient="linear(to-r, blue.500, purple.500)" color="white">
+                    <BarChart3 size={24} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Heading size="lg" color={textColor} fontWeight="bold">
+                      Dashboard
+                    </Heading>
+                    <Text color={textSecondary} fontSize="md">
+                      Visão geral do sistema de gestão
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
+              
+            </Flex>
+          </CardBody>
+        </Card>
 
         {/* Grupo 1: Operações */}
         <Box>
-          <Heading size="sm" mb={4} color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>Operações</Heading>
+          <Heading size="md" mb={4} color={textColor} fontWeight="bold">
+            <HStack spacing={2}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, orange.500, red.500)" color="white">
+                <Activity size={20} />
+              </Box>
+              Operações
+            </HStack>
+          </Heading>
           <SimpleGrid columns={{ base: 1, sm: 2, md: 2, lg: 2 }} spacing={4}>
-            <Stat
-              px={4}
-              py={5}
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/orders')}
             >
-              <HStack spacing={2} mb={2}>
-                <Icon as={Wrench} boxSize={5} color="orange.500" sx={{ '& svg': { stroke: 'currentColor' } }} />
-                <StatLabel fontSize={isMobile ? "sm" : "md"}>Ordens de Serviço</StatLabel>
-              </HStack>
-              <StatNumber fontSize={isMobile ? "xl" : "2xl"}>{stats.totalServiceOrders}</StatNumber>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"}>
-                <StatArrow type={stats.openServiceOrders > 0 ? 'increase' : 'decrease'} />
-                {stats.openServiceOrders} em aberto
-              </StatHelpText>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"} mt={1}>
-                Valor Total: R$ {stats.totalServiceOrdersValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </StatHelpText>
-            </Stat>
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={3} borderRadius="full" bgGradient="linear(to-r, orange.500, red.500)" color="white">
+                    <Wrench size={24} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Ordens de Serviço</Text>
+                    <Text fontSize="sm" color={textSecondary}>Gestão de serviços</Text>
+                  </VStack>
+                </HStack>
+                <Stat>
+                  <StatNumber fontSize="3xl" fontWeight="bold" color={textColor}>{stats.totalServiceOrders}</StatNumber>
+                  <StatHelpText fontSize="sm" color={textSecondary}>
+                    <StatArrow type={stats.openServiceOrders > 0 ? 'increase' : 'decrease'} />
+                    {stats.openServiceOrders} em aberto
+                  </StatHelpText>
+                  <StatHelpText fontSize="sm" color={textSecondary} mt={1}>
+                    Valor Total: R$ {stats.totalServiceOrdersValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </StatHelpText>
+                </Stat>
+              </CardBody>
+            </Card>
 
-            <Stat
-              px={4}
-              py={5}
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/inventory')}
             >
-              <HStack spacing={2} mb={2}>
-                <Icon as={BoxIcon} boxSize={5} color="purple.500" sx={{ '& svg': { stroke: 'currentColor' } }} />
-                <StatLabel fontSize={isMobile ? "sm" : "md"}>Inventário</StatLabel>
-              </HStack>
-              <StatNumber fontSize={isMobile ? "xl" : "2xl"}>{stats.totalInventory}</StatNumber>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"}>
-                <StatArrow type="increase" />
-                Itens cadastrados
-              </StatHelpText>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"} mt={1}>
-                Valor Total: R$ {stats.totalInventoryValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </StatHelpText>
-            </Stat>
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={3} borderRadius="full" bgGradient="linear(to-r, purple.500, pink.500)" color="white">
+                    <BoxIcon size={24} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Inventário</Text>
+                    <Text fontSize="sm" color={textSecondary}>Gestão de equipamentos</Text>
+                  </VStack>
+                </HStack>
+                <Stat>
+                  <StatNumber fontSize="3xl" fontWeight="bold" color={textColor}>{stats.totalInventory}</StatNumber>
+                  <StatHelpText fontSize="sm" color={textSecondary}>
+                    <StatArrow type="increase" />
+                    Itens cadastrados
+                  </StatHelpText>
+                  <StatHelpText fontSize="sm" color={textSecondary} mt={1}>
+                    Valor Total: R$ {stats.totalInventoryValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </StatHelpText>
+                </Stat>
+              </CardBody>
+            </Card>
           </SimpleGrid>
         </Box>
 
         {/* Grupo 2: Suprimentos */}
         <Box>
-          <Heading size="sm" mb={4} color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>Suprimentos</Heading>
+          <Heading size="md" mb={4} color={textColor} fontWeight="bold">
+            <HStack spacing={2}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, blue.500, teal.500)" color="white">
+                <ShoppingCart size={20} />
+              </Box>
+              Suprimentos
+            </HStack>
+          </Heading>
           <SimpleGrid columns={{ base: 1, sm: 2, md: 2, lg: 3 }} spacing={4}>
-            <Stat
-              px={4}
-              py={5}
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/suppliers')}
             >
-              <HStack spacing={2} mb={2}>
-                <Icon as={BoxIcon} boxSize={5} color="blue.500" sx={{ '& svg': { stroke: 'currentColor' } }} />
-                <StatLabel fontSize={isMobile ? "sm" : "md"}>Fornecedores</StatLabel>
-              </HStack>
-              <StatNumber fontSize={isMobile ? "xl" : "2xl"}>{stats.totalSuppliers}</StatNumber>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"}>
-                <StatArrow type="increase" />
-                Total de fornecedores
-              </StatHelpText>
-            </Stat>
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={3} borderRadius="full" bgGradient="linear(to-r, blue.500, cyan.500)" color="white">
+                    <Users size={24} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Fornecedores</Text>
+                    <Text fontSize="sm" color={textSecondary}>Parceiros comerciais</Text>
+                  </VStack>
+                </HStack>
+                <Stat>
+                  <StatNumber fontSize="3xl" fontWeight="bold" color={textColor}>{stats.totalSuppliers}</StatNumber>
+                  <StatHelpText fontSize="sm" color={textSecondary}>
+                    <StatArrow type="increase" />
+                    Total de fornecedores
+                  </StatHelpText>
+                </Stat>
+              </CardBody>
+            </Card>
 
-            <Stat
-              px={4}
-              py={5}
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/quotes')}
             >
-              <HStack spacing={2} mb={2}>
-                <Icon as={BoxIcon} boxSize={5} color="purple.500" sx={{ '& svg': { stroke: 'currentColor' } }} />
-                <StatLabel fontSize={isMobile ? "sm" : "md"}>Cotações</StatLabel>
-              </HStack>
-              <StatNumber fontSize={isMobile ? "xl" : "2xl"}>{stats.totalQuotes}</StatNumber>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"}>
-                <StatArrow type={stats.pendingQuotes > 0 ? 'increase' : 'decrease'} />
-                {stats.pendingQuotes} pendentes
-              </StatHelpText>
-            </Stat>
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={3} borderRadius="full" bgGradient="linear(to-r, purple.500, violet.500)" color="white">
+                    <FileText size={24} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Cotações</Text>
+                    <Text fontSize="sm" color={textSecondary}>Propostas comerciais</Text>
+                  </VStack>
+                </HStack>
+                <Stat>
+                  <StatNumber fontSize="3xl" fontWeight="bold" color={textColor}>{stats.totalQuotes}</StatNumber>
+                  <StatHelpText fontSize="sm" color={textSecondary}>
+                    <StatArrow type={stats.pendingQuotes > 0 ? 'increase' : 'decrease'} />
+                    {stats.pendingQuotes} pendentes
+                  </StatHelpText>
+                </Stat>
+              </CardBody>
+            </Card>
 
-            <Stat
-              px={4}
-              py={5}
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/supply-requests/admin')}
             >
-              <HStack spacing={2} mb={2}>
-                <Icon as={BoxIcon} boxSize={5} color="teal.500" sx={{ '& svg': { stroke: 'currentColor' } }} />
-                <StatLabel fontSize={isMobile ? "sm" : "md"}>Requisições</StatLabel>
-              </HStack>
-              <StatNumber fontSize={isMobile ? "xl" : "2xl"}>{stats.totalSupplyRequests}</StatNumber>
-              <StatHelpText fontSize={isMobile ? "xs" : "sm"}>
-                <StatArrow type={stats.pendingSupplyRequests > 0 ? 'increase' : 'decrease'} />
-                {stats.pendingSupplyRequests} pendentes
-              </StatHelpText>
-            </Stat>
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={3} borderRadius="full" bgGradient="linear(to-r, teal.500, green.500)" color="white">
+                    <ShoppingCart size={24} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Requisições</Text>
+                    <Text fontSize="sm" color={textSecondary}>Pedidos de suprimentos</Text>
+                  </VStack>
+                </HStack>
+                <Stat>
+                  <StatNumber fontSize="3xl" fontWeight="bold" color={textColor}>{stats.totalSupplyRequests}</StatNumber>
+                  <StatHelpText fontSize="sm" color={textSecondary}>
+                    <StatArrow type={stats.pendingSupplyRequests > 0 ? 'increase' : 'decrease'} />
+                    {stats.pendingSupplyRequests} pendentes
+                  </StatHelpText>
+                </Stat>
+              </CardBody>
+            </Card>
           </SimpleGrid>
         </Box>
 
         {/* Grupo 3: Monitoramento */}
         <Box>
-          <Heading size="sm" mb={4} color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>Monitoramento</Heading>
+          <Heading size="md" mb={4} color={textColor} fontWeight="bold">
+            <HStack spacing={2}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, green.500, emerald.500)" color="white">
+                <TrendingUp size={20} />
+              </Box>
+              Monitoramento
+            </HStack>
+          </Heading>
           <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={4}>
             {/* Gráfico de Linha - Tendências de Consumo */}
-            <Box
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              p={isMobile ? 4 : 6}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/statistics')}
             >
-              <Heading size={isMobile ? "sm" : "md"} mb={4}>Tendências de Consumo</Heading>
-              <Box height="300px">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={stats.consumptionTrends}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke={colorMode === 'dark' ? 'gray.600' : 'gray.200'} />
-                    <XAxis
-                      dataKey="date"
-                      stroke={colorMode === 'dark' ? 'gray.400' : 'gray.600'}
-                      tickFormatter={(value) => {
-                        const [year, month] = value.split('-');
-                        return `${month}/${year}`;
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={2} borderRadius="full" bgGradient="linear(to-r, blue.500, purple.500)" color="white">
+                    <TrendingUp size={20} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Tendências de Consumo</Text>
+                    <Text fontSize="sm" color={textSecondary}>Análise de dados</Text>
+                  </VStack>
+                </HStack>
+                <Box height="280px">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={stats.consumptionTrends}
+                      margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
                       }}
-                    />
-                    <YAxis
-                      stroke={colorMode === 'dark' ? 'gray.400' : 'gray.600'}
-                      label={{ 
-                        value: 'Quantidade', 
-                        angle: -90, 
-                        position: 'insideLeft',
-                        style: { textAnchor: 'middle' }
-                      }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: colorMode === 'dark' ? 'gray.800' : 'white',
-                        border: `1px solid ${colorMode === 'dark' ? 'gray.700' : 'gray.200'}`,
-                        color: colorMode === 'dark' ? 'white' : 'gray.800'
-                      }}
-                      labelFormatter={(value) => {
-                        const [year, month] = value.split('-');
-                        return `${month}/${year}`;
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="quantity"
-                      name="Consumo"
-                      stroke="#8884d8"
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Box>
-            </Box>
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke={colorMode === 'dark' ? 'gray.600' : 'gray.200'} />
+                      <XAxis
+                        dataKey="date"
+                        stroke={colorMode === 'dark' ? 'gray.400' : 'gray.600'}
+                        tickFormatter={(value) => {
+                          const [year, month] = value.split('-');
+                          return `${month}/${year}`;
+                        }}
+                      />
+                      <YAxis
+                        stroke={colorMode === 'dark' ? 'gray.400' : 'gray.600'}
+                        label={{
+                          value: 'Quantidade',
+                          angle: -90,
+                          position: 'insideLeft',
+                          style: { textAnchor: 'middle' }
+                        }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: colorMode === 'dark' ? 'gray.800' : 'white',
+                          border: `1px solid ${colorMode === 'dark' ? 'gray.700' : 'gray.200'}`,
+                          color: colorMode === 'dark' ? 'white' : 'gray.800'
+                        }}
+                        labelFormatter={(value) => {
+                          const [year, month] = value.split('-');
+                          return `${month}/${year}`;
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="quantity"
+                        name="Consumo"
+                        stroke="#8884d8"
+                        activeDot={{ r: 8 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Box>
+              </CardBody>
+            </Card>
 
             {/* Alertas Recentes */}
-            <Box
-              shadow="base"
-              rounded="lg"
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              backdropFilter="blur(12px)"
+            <Card
+              bg={cardBg}
               border="1px solid"
-              borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-              p={isMobile ? 4 : 6}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-2px)',
-                shadow: 'lg',
-                cursor: 'pointer'
-              }}
+              borderColor={cardBorder}
+              shadow="lg"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+              transition="all 0.3s"
+              cursor="pointer"
               onClick={() => router.push('/alerts')}
             >
-              <Heading size={isMobile ? "sm" : "md"} mb={4}>Alertas Recentes</Heading>
-              <VStack align="stretch" spacing={3}>
-                {recentAlerts.map((alert) => (
+              <CardBody p={5}>
+                <HStack spacing={3} mb={3}>
+                  <Box p={2} borderRadius="full" bgGradient="linear(to-r, red.500, orange.500)" color="white">
+                    <AlertTriangle size={20} />
+                  </Box>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="lg" fontWeight="bold" color={textColor}>Alertas Recentes</Text>
+                    <Text fontSize="sm" color={textSecondary}>Notificações importantes</Text>
+                  </VStack>
+                </HStack>
+                <VStack align="stretch" spacing={2}>
+                  {recentAlerts.map((alert) => (
+                    <Box
+                      key={alert.id}
+                      p={3}
+                      borderWidth={1}
+                      rounded="lg"
+                      bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'}
+                      backdropFilter="blur(8px)"
+                      borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                      transition="all 0.3s ease"
+                      _hover={{
+                        bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+                        transform: 'translateY(-1px)',
+                        shadow: 'md'
+                      }}
+                    >
+                      <HStack justify="space-between" mb={1}>
+                        <Text fontWeight="bold" fontSize="sm" color={textColor}>{alert.title}</Text>
+                        <Badge
+                          colorScheme={
+                            alert.danger_level === 'ALTO' ? 'red' :
+                              alert.danger_level === 'MEDIO' ? 'orange' : 'green'
+                          }
+                          fontSize="xs"
+                          variant="solid"
+                        >
+                          {alert.danger_level}
+                        </Badge>
+                      </HStack>
+                      <Text fontSize="sm" color={textSecondary} mb={1}>{alert.description}</Text>
+                      <Text fontSize="xs" color={textSecondary}>
+                        {new Date(alert.created_at).toLocaleDateString()}
+                      </Text>
+                    </Box>
+                  ))}
+                </VStack>
+              </CardBody>
+            </Card>
+          </SimpleGrid>
+        </Box>
+
+        {/* Grupo 4: Atividades Recentes */}
+        <Box>
+          <Heading size="md" mb={4} color={textColor} fontWeight="bold">
+            <HStack spacing={2}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, yellow.500, orange.500)" color="white">
+                <Clock size={20} />
+              </Box>
+              Atividades Recentes
+            </HStack>
+          </Heading>
+          <Card
+            bg={cardBg}
+            border="1px solid"
+            borderColor={cardBorder}
+            shadow="lg"
+            _hover={{ transform: 'translateY(-2px)', shadow: 'xl' }}
+            transition="all 0.3s"
+            cursor="pointer"
+            onClick={() => router.push('/orders')}
+          >
+            <CardBody p={5}>
+              <HStack spacing={3} mb={3}>
+                <Box p={2} borderRadius="full" bgGradient="linear(to-r, blue.500, cyan.500)" color="white">
+                  <FileText size={20} />
+                </Box>
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="lg" fontWeight="bold" color={textColor}>Ordens de Serviço Recentes</Text>
+                  <Text fontSize="sm" color={textSecondary}>Últimas atividades</Text>
+                </VStack>
+              </HStack>
+              <VStack align="stretch" spacing={2}>
+                {recentServiceOrders.map((order) => (
                   <Box
-                    key={alert.id}
+                    key={order.id}
                     p={3}
                     borderWidth={1}
-                    rounded="md"
+                    rounded="lg"
                     bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'}
                     backdropFilter="blur(8px)"
                     borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
@@ -387,95 +571,36 @@ export default function DashboardPage() {
                       shadow: 'md'
                     }}
                   >
-                    <HStack justify="space-between">
-                      <Text fontWeight="bold" fontSize={isMobile ? "sm" : "md"}>{alert.title}</Text>
+                    <HStack justify="space-between" mb={1}>
+                      <Text fontWeight="bold" fontSize="sm" color={textColor}>{order.order_number}</Text>
                       <Badge
                         colorScheme={
-                          alert.danger_level === 'ALTO' ? 'red' :
-                            alert.danger_level === 'MEDIO' ? 'orange' : 'green'
+                          order.status === 'ABERTO' ? 'red' :
+                            order.status === 'EM_ANDAMENTO' ? 'orange' : 'green'
                         }
-                        fontSize={isMobile ? "xs" : "sm"}
+                        fontSize="xs"
+                        variant="solid"
                       >
-                        {alert.danger_level}
+                        {order.status}
                       </Badge>
                     </HStack>
-                    <Text mt={2} fontSize={isMobile ? "xs" : "sm"}>{alert.description}</Text>
-                    <Text fontSize={isMobile ? "xs" : "sm"} color={colorMode === 'dark' ? 'gray.400' : 'gray.500'} mt={2}>
-                      {new Date(alert.created_at).toLocaleDateString()}
+                    <Text fontSize="sm" color={textSecondary} mb={1}>{order.equipment_description}</Text>
+                    <Text fontSize="xs" color={textSecondary} mb={1}>
+                      Cliente: {order.client_name}
+                    </Text>
+                    <Text fontSize="xs" color={textSecondary} mb={1}>
+                      Problema: {order.problem_reported}
+                    </Text>
+                    <Text fontSize="xs" color={textSecondary}>
+                      {new Date(order.created_at).toLocaleDateString()}
                     </Text>
                   </Box>
                 ))}
               </VStack>
-            </Box>
-          </SimpleGrid>
-        </Box>
-
-        {/* Grupo 4: Atividades Recentes */}
-        <Box>
-          <Heading size="sm" mb={4} color={colorMode === 'dark' ? 'gray.400' : 'gray.600'}>Atividades Recentes</Heading>
-          <Box
-            shadow="base"
-            rounded="lg"
-            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-            backdropFilter="blur(12px)"
-            border="1px solid"
-            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-            p={isMobile ? 4 : 6}
-            transition="all 0.3s ease"
-            _hover={{
-              bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-              transform: 'translateY(-2px)',
-              shadow: 'lg',
-              cursor: 'pointer'
-            }}
-            onClick={() => router.push('/orders')}
-          >
-            <Heading size={isMobile ? "sm" : "md"} mb={4}>Ordens de Serviço Recentes</Heading>
-            <VStack align="stretch" spacing={3}>
-              {recentServiceOrders.map((order) => (
-                <Box
-                  key={order.id}
-                  p={3}
-                  borderWidth={1}
-                  rounded="md"
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'}
-                  backdropFilter="blur(8px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  transition="all 0.3s ease"
-                  _hover={{
-                    bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.4)' : 'rgba(255, 255, 255, 0.4)',
-                    transform: 'translateY(-1px)',
-                    shadow: 'md'
-                  }}
-                >
-                  <HStack justify="space-between">
-                    <Text fontWeight="bold" fontSize={isMobile ? "sm" : "md"}>{order.order_number}</Text>
-                    <Badge
-                      colorScheme={
-                        order.status === 'ABERTO' ? 'red' :
-                          order.status === 'EM_ANDAMENTO' ? 'orange' : 'green'
-                      }
-                      fontSize={isMobile ? "xs" : "sm"}
-                    >
-                      {order.status}
-                    </Badge>
-                  </HStack>
-                  <Text mt={2} fontSize={isMobile ? "xs" : "sm"}>{order.equipment_description}</Text>
-                  <Text fontSize={isMobile ? "xs" : "sm"} color={colorMode === 'dark' ? 'gray.400' : 'gray.500'} mt={1}>
-                    Cliente: {order.client_name}
-                  </Text>
-                  <Text fontSize={isMobile ? "xs" : "sm"} color={colorMode === 'dark' ? 'gray.400' : 'gray.500'} mt={1}>
-                    Problema: {order.problem_reported}
-                  </Text>
-                  <Text fontSize={isMobile ? "xs" : "sm"} color={colorMode === 'dark' ? 'gray.400' : 'gray.500'} mt={2}>
-                    {new Date(order.created_at).toLocaleDateString()}
-                  </Text>
-                </Box>
-              ))}
-            </VStack>
-          </Box>
+            </CardBody>
+          </Card>
         </Box>
       </VStack>
-    </Box>
+    </>
   )
 } 
