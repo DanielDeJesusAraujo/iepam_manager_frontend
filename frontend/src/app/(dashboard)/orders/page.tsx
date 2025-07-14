@@ -45,10 +45,12 @@ import {
   Container,
   Divider,
   useColorMode,
+  useColorModeValue,
+  Center,
 } from '@chakra-ui/react'
 import NextLink from 'next/link'
 import { SearchIcon } from '@chakra-ui/icons'
-import { Filter } from 'lucide-react'
+import { Filter, FileText, Plus, Download, Search, Settings, Calendar, Clock, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Order, Filters } from './types'
 import { filterOrders, generateOrdersPDF } from './utils/ordersUtils'
 
@@ -69,6 +71,22 @@ export default function OrdersPage() {
   const isMobile = useBreakpointValue({ base: true, md: false })
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { colorMode } = useColorMode()
+
+  // Cores responsivas
+  const bgGradient = useColorModeValue(
+    'linear(to-br, blue.50, purple.50, pink.50)',
+    'linear(to-br, gray.900, blue.900, purple.900)'
+  );
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const cardBorder = useColorModeValue('gray.200', 'gray.700');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const textSecondary = useColorModeValue('gray.600', 'gray.300');
+  const iconColor = useColorModeValue('blue.500', 'blue.300');
+  const successColor = useColorModeValue('green.500', 'green.300');
+  const warningColor = useColorModeValue('yellow.500', 'yellow.300');
+  const dangerColor = useColorModeValue('red.500', 'red.300');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
@@ -144,42 +162,51 @@ export default function OrdersPage() {
           key={order.id}
           onClick={() => router.push(`/orders/${order.id}`)}
           cursor="pointer"
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-          backdropFilter="blur(12px)"
+          bg={cardBg}
           border="1px solid"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-          transition="all 0.3s ease"
+          borderColor={cardBorder}
+          shadow="lg"
           _hover={{
-            bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
             transform: 'translateY(-2px)',
-            shadow: 'lg'
+            shadow: 'xl',
+            borderColor: iconColor
           }}
+          transition="all 0.3s"
         >
-          <CardBody>
-            <Stack divider={<StackDivider borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'} />} spacing={4}>
+          <CardBody p={5}>
+            <Stack divider={<StackDivider borderColor={cardBorder} />} spacing={3}>
               <Box>
                 <Flex justify="space-between" align="center">
-                  <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>OS #{order.order_number}</Text>
-                  <Badge colorScheme={order.exit_date ? 'green' : 'yellow'}>
+                  <HStack spacing={2}>
+                    <Box p={2} borderRadius="full" bgGradient="linear(to-r, blue.500, purple.500)" color="white">
+                      <FileText size={16} />
+                    </Box>
+                    <Text fontWeight="bold" color={textColor}>OS #{order.order_number}</Text>
+                  </HStack>
+                  <Badge
+                    colorScheme={order.exit_date ? 'green' : 'yellow'}
+                    variant="solid"
+                    fontSize="xs"
+                  >
                     {order.exit_date ? 'Concluída' : 'Em andamento'}
                   </Badge>
                 </Flex>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Cliente</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.client_name}</Text>
+                <Text fontWeight="semibold" color={textColor} fontSize="sm">Cliente</Text>
+                <Text color={textSecondary} fontSize="sm">{order.client_name}</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Equipamento</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.model}</Text>
+                <Text fontWeight="semibold" color={textColor} fontSize="sm">Equipamento</Text>
+                <Text color={textSecondary} fontSize="sm">{order.model}</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data de Entrada</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{new Date(order.entry_date).toLocaleDateString()}</Text>
+                <Text fontWeight="semibold" color={textColor} fontSize="sm">Data de Entrada</Text>
+                <Text color={textSecondary} fontSize="sm">{new Date(order.entry_date).toLocaleDateString()}</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Valor Total</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>R$ {order.total_price.toFixed(2)}</Text>
+                <Text fontWeight="semibold" color={textColor} fontSize="sm">Valor Total</Text>
+                <Text color={textColor} fontSize="sm" fontWeight="bold">R$ {order.total_price.toFixed(2)}</Text>
               </Box>
             </Stack>
           </CardBody>
@@ -188,279 +215,266 @@ export default function OrdersPage() {
     </VStack>
   )
 
+  const tableHeaderBg = useColorModeValue('gray.50', 'gray.700');
+  const tableRowHoverBg = useColorModeValue('gray.50', 'gray.700');
+
   const renderDesktopView = () => (
-    <Box
-      bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-      p={6}
-      borderRadius="lg"
-      boxShadow="sm"
-      borderWidth="1px"
-      borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-      backdropFilter="blur(12px)"
+    <Card
+      bg={cardBg}
+      border="1px solid"
+      borderColor={cardBorder}
+      shadow="lg"
       overflowX="auto"
     >
-      <Table variant="simple" ref={tableRef}>
-        <Thead>
-          <Tr>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Nº OS</Th>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Cliente</Th>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Equipamento</Th>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Nº Série</Th>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Status</Th>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Data de Entrada</Th>
-            <Th color={colorMode === 'dark' ? 'gray.300' : 'gray.600'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.7)' : 'rgba(255, 255, 255, 0.7)'}>Valor Total</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {filteredOrders.map(order => (
-            <Tr
-              key={order.id}
-              cursor="pointer"
-              onClick={() => router.push(`/orders/${order.id}`)}
-              transition="all 0.3s ease"
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)',
-                transform: 'translateY(-1px)',
-              }}
-            >
-              <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{order.order_number}</Td>
-              <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{order.client_name}</Td>
-              <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{order.model}</Td>
-              <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{order.serial_number}</Td>
-              <Td bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>
-              <Badge colorScheme={order.exit_date ? 'green' : 'yellow'}>
-                {order.exit_date ? 'Concluída' : 'Em andamento'}
-              </Badge>
-            </Td>
-              <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>{new Date(order.entry_date).toLocaleDateString()}</Td>
-              <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>R$ {order.total_price.toFixed(2)}</Td>
-          </Tr>
-        ))}
-        </Tbody>
-      </Table>
-    </Box>
+      <CardBody p={0}>
+        <Table variant="simple" ref={tableRef}>
+          <Thead>
+            <Tr bg={tableHeaderBg}>
+              <Th color={textColor} fontWeight="bold">Nº OS</Th>
+              <Th color={textColor} fontWeight="bold">Cliente</Th>
+              <Th color={textColor} fontWeight="bold">Equipamento</Th>
+              <Th color={textColor} fontWeight="bold">Nº Série</Th>
+              <Th color={textColor} fontWeight="bold">Status</Th>
+              <Th color={textColor} fontWeight="bold">Data de Entrada</Th>
+              <Th color={textColor} fontWeight="bold">Valor Total</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {filteredOrders.map(order => (
+              <Tr
+                key={order.id}
+                cursor="pointer"
+                onClick={() => router.push(`/orders/${order.id}`)}
+                transition="all 0.3s"
+                _hover={{
+                  bg: tableRowHoverBg,
+                  transform: 'translateY(-1px)',
+                }}
+              >
+                <Td color={textColor} fontWeight="medium">{order.order_number}</Td>
+                <Td color={textColor}>{order.client_name}</Td>
+                <Td color={textColor}>{order.model}</Td>
+                <Td color={textSecondary} fontSize="sm">{order.serial_number}</Td>
+                <Td>
+                  <Badge
+                    colorScheme={order.exit_date ? 'green' : 'yellow'}
+                    variant="solid"
+                    fontSize="xs"
+                  >
+                    {order.exit_date ? 'Concluída' : 'Em andamento'}
+                  </Badge>
+                </Td>
+                <Td color={textSecondary} fontSize="sm">{new Date(order.entry_date).toLocaleDateString()}</Td>
+                <Td color={textColor} fontWeight="bold">R$ {order.total_price.toFixed(2)}</Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </CardBody>
+    </Card>
   )
 
-  if (error) {
+  if (loading) {
     return (
-      <Box
-        w="full"
-        h="full"
-        py={4}
-        px={isMobile ? 2 : 8}
-      >
-        <VStack
-          spacing={4}
-          align="stretch"
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-          backdropFilter="blur(12px)"
-          p={isMobile ? 3 : 6}
-          borderRadius="lg"
-          boxShadow="sm"
-          borderWidth="1px"
-          borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-          h="full"
-        >
-          <Flex
-            justify={isMobile ? "center" : "space-between"}
-            align="center"
-            mb={6}
-            mt={isMobile ? 12 : 0}
-          >
-            {!isMobile && (
-              <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Ordens de Serviço</Heading>
-            )}
-            <Button as={NextLink} href="/orders/new" colorScheme="blue">
-              Nova OS
-            </Button>
-          </Flex>
-          <Text color="red.500">{error}</Text>
+      <Box minH="100vh" bgGradient={bgGradient} display="flex" justifyContent="center" alignItems="center">
+        <VStack spacing={4}>
+          <Spinner size="xl" color={iconColor} thickness="4px" />
+          <Text color={textSecondary} fontSize="lg">Carregando ordens de serviço...</Text>
         </VStack>
       </Box>
     )
   }
 
-  return (
-    <Box
-      w="full"
-      h="full"
-      py={4}
-      px={isMobile ? 2 : 8}
-    >
-      <VStack
-        spacing={4}
-        align="stretch"
-        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-        backdropFilter="blur(12px)"
-        p={isMobile ? 3 : 6}
-        borderRadius="lg"
-        boxShadow="sm"
-        borderWidth="1px"
-        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        h="full"
-      >
-        <Flex
-          justify={isMobile ? "center" : "space-between"}
-          align="center"
-          mb={6}
-          mt={isMobile ? 12 : 0}
-        >
-          {!isMobile && (
-            <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Ordens de Serviço</Heading>
-          )}
-          <HStack
-            spacing={4}
-            w={isMobile ? "full" : "auto"}
-            maxW={isMobile ? "400px" : "none"}
-            justify={isMobile ? "center" : "flex-end"}
-          >
-            <Button
-              onClick={handleGeneratePDF}
-              colorScheme="green"
-              flex={isMobile ? "1" : "none"}
-              maxW={isMobile ? "200px" : "none"}
-              bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            >
-              Exportar PDF
-            </Button>
-            <Button
-              as={NextLink}
-              href="/orders/new"
-              colorScheme="blue"
-              flex={isMobile ? "1" : "none"}
-              maxW={isMobile ? "200px" : "none"}
-              bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            >
-              Nova OS
-            </Button>
-          </HStack>
-        </Flex>
+  if (error) {
+    return (
+      <>
+        <VStack spacing={6} align="stretch">
+          <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
+            <CardBody p={8} textAlign="center">
+              <VStack spacing={4}>
+                <Box p={4} borderRadius="full" bgGradient="linear(to-r, red.500, orange.500)" color="white">
+                  <AlertTriangle size={32} />
+                </Box>
+                <VStack spacing={2}>
+                  <Heading size="lg" color={textColor} fontWeight="bold">
+                    Erro ao Carregar
+                  </Heading>
+                  <Text color={textSecondary} fontSize="md">
+                    {error}
+                  </Text>
+                </VStack>
+                <Button
+                  colorScheme="blue"
+                  leftIcon={<FileText size={18} />}
+                  bgGradient="linear(to-r, blue.500, purple.500)"
+                  _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                  transition="all 0.3s"
+                  as={NextLink}
+                  href="/orders/new"
+                >
+                  Nova OS
+                </Button>
+              </VStack>
+            </CardBody>
+          </Card>
+        </VStack>
+      </>
+    )
+  }
 
-        {isMobile ? (
-          <>
-            <HStack mb={4}>
+  return (
+    <VStack spacing={6} align="stretch" bgGradient={bgGradient} p={isMobile ? 0 : 4} py={isMobile ? "7vh" : "0vh"}>
+      {/* Header */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
+        <CardBody p={6}>
+          <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+            <Box>
+              <HStack spacing={3} mb={2}>
+                <Box p={3} borderRadius="full" bgGradient="linear(to-r, blue.500, purple.500)" color="white">
+                  <FileText size={24} />
+                </Box>
+                <VStack align="start" spacing={1}>
+                  <Heading size="lg" color={textColor} fontWeight="bold">
+                    Ordens de Serviço
+                  </Heading>
+                  <Text color={textSecondary} fontSize="md">
+                    Gerencie as ordens de serviço do sistema
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+            <HStack spacing={3}>
+              <Button
+                onClick={handleGeneratePDF}
+                variant="outline"
+                leftIcon={<Download size={18} />}
+                colorScheme="green"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
+              >
+                Exportar PDF
+              </Button>
+              <Button
+                colorScheme="blue"
+                leftIcon={<Plus size={18} />}
+                bgGradient="linear(to-r, blue.500, purple.500)"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
+                as={NextLink}
+                href="/orders/new"
+              >
+                Nova OS
+              </Button>
+            </HStack>
+          </Flex>
+        </CardBody>
+      </Card>
+
+      {/* Filtros */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+        <CardBody p={6}>
+          {isMobile ? (
+            <>
+              <HStack mb={4}>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <Search size={18} color={textSecondary} />
+                  </InputLeftElement>
+                  <Input
+                    name="equipment"
+                    placeholder="Buscar equipamento"
+                    value={filters.equipment}
+                    onChange={handleFilterChange}
+                    bg={inputBg}
+                    borderColor={inputBorder}
+                    _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                    _hover={{ borderColor: iconColor }}
+                    transition="all 0.2s"
+                  />
+                </InputGroup>
+                <IconButton
+                  aria-label="Filtros"
+                  icon={<Filter size={18} />}
+                  onClick={onOpen}
+                  colorScheme="blue"
+                  _hover={{ transform: 'translateY(-1px)', shadow: 'md' }}
+                  transition="all 0.2s"
+                />
+              </HStack>
+
+              <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
+                <DrawerOverlay />
+                <DrawerContent bg={cardBg} borderLeft="1px solid" borderColor={cardBorder}>
+                  <DrawerCloseButton />
+                  <DrawerHeader color={textColor} borderBottom="1px solid" borderColor={cardBorder}>
+                    <HStack spacing={2}>
+                      <Filter size={20} />
+                      <Text>Filtros</Text>
+                    </HStack>
+                  </DrawerHeader>
+                  <DrawerBody>
+                    <VStack spacing={4} pt={4}>
+                      <FormControl>
+                        <FormLabel color={textColor} fontSize="sm">Status</FormLabel>
+                        <Select
+                          name="status"
+                          value={filters.status}
+                          onChange={handleFilterChange}
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        >
+                          <option value="">Todos</option>
+                          <option value="completed">Concluídas</option>
+                          <option value="in_progress">Em andamento</option>
+                        </Select>
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel color={textColor} fontSize="sm">Data</FormLabel>
+                        <Input
+                          name="date"
+                          type="date"
+                          value={filters.date}
+                          onChange={handleFilterChange}
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel color={textColor} fontSize="sm">Número de Série</FormLabel>
+                        <Input
+                          name="serialNumber"
+                          value={filters.serialNumber}
+                          onChange={handleFilterChange}
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        />
+                      </FormControl>
+                    </VStack>
+                  </DrawerBody>
+                </DrawerContent>
+              </Drawer>
+            </>
+          ) : (
+            <HStack spacing={4}>
               <InputGroup>
                 <InputLeftElement pointerEvents="none">
-                  <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
+                  <Search size={18} color={textSecondary} />
                 </InputLeftElement>
                 <Input
                   name="equipment"
-                  placeholder="Buscar equipamento"
+                  placeholder="Filtrar por equipamento"
                   value={filters.equipment}
                   onChange={handleFilterChange}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
+                  bg={inputBg}
+                  borderColor={inputBorder}
+                  _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                  _hover={{ borderColor: iconColor }}
+                  transition="all 0.2s"
                 />
               </InputGroup>
-              <IconButton
-                aria-label="Filtros"
-                icon={<Filter size={20} />}
-                onClick={onOpen}
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                backdropFilter="blur(12px)"
-                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                  transform: 'translateY(-1px)',
-                }}
-                transition="all 0.3s ease"
-              />
-            </HStack>
-
-            <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
-              <DrawerOverlay />
-              <DrawerContent
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
-                backdropFilter="blur(12px)"
-              >
-                <DrawerCloseButton />
-                <DrawerHeader color={colorMode === 'dark' ? 'white' : 'gray.800'}>Filtros</DrawerHeader>
-                <DrawerBody>
-                  <VStack spacing={4}>
-                    <FormControl>
-                      <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</FormLabel>
-                      <Select
-                        name="status"
-                        value={filters.status}
-                        onChange={handleFilterChange}
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                      >
-                        <option value="">Todos</option>
-                        <option value="completed">Concluídas</option>
-                        <option value="in_progress">Em andamento</option>
-                      </Select>
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data</FormLabel>
-                      <Input
-                        name="date"
-                        type="date"
-                        value={filters.date}
-                        onChange={handleFilterChange}
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                      />
-                    </FormControl>
-                    <FormControl>
-                      <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Número de Série</FormLabel>
-                      <Input
-                        name="serialNumber"
-                        value={filters.serialNumber}
-                        onChange={handleFilterChange}
-                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                        backdropFilter="blur(12px)"
-                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                      />
-                    </FormControl>
-                  </VStack>
-                </DrawerBody>
-              </DrawerContent>
-            </Drawer>
-          </>
-        ) : (
-          <HStack spacing={4} mb={6}>
-            <InputGroup>
-              <InputLeftElement pointerEvents="none">
-                  <SearchIcon color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-              </InputLeftElement>
-              <Input
-                name="equipment"
-                placeholder="Filtrar por equipamento"
-                value={filters.equipment}
-                onChange={handleFilterChange}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                  backdropFilter="blur(12px)"
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                  _hover={{
-                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                  }}
-                  _focus={{
-                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                    boxShadow: 'none',
-                  }}
-              />
-            </InputGroup>
 
               <Input
                 name="serialNumber"
@@ -468,74 +482,87 @@ export default function OrdersPage() {
                 value={filters.serialNumber}
                 onChange={handleFilterChange}
                 w="200px"
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                backdropFilter="blur(12px)"
-                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                _hover={{
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                }}
-                _focus={{
-                  borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                  boxShadow: 'none',
-                }}
+                bg={inputBg}
+                borderColor={inputBorder}
+                _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                _hover={{ borderColor: iconColor }}
+                transition="all 0.2s"
               />
 
-            <Select
-              name="status"
-              placeholder="Status"
-              value={filters.status}
-              onChange={handleFilterChange}
-              w="200px"
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                backdropFilter="blur(12px)"
-                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                _hover={{
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                }}
-                _focus={{
-                  borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                  boxShadow: 'none',
-                }}
-            >
+              <Select
+                name="status"
+                placeholder="Status"
+                value={filters.status}
+                onChange={handleFilterChange}
+                w="200px"
+                bg={inputBg}
+                borderColor={inputBorder}
+                _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+              >
                 <option value="">Todos</option>
-              <option value="completed">Concluídas</option>
-              <option value="in_progress">Em andamento</option>
-            </Select>
+                <option value="completed">Concluídas</option>
+                <option value="in_progress">Em andamento</option>
+              </Select>
 
-            <Input
-              name="date"
-              type="date"
-              value={filters.date}
-              onChange={handleFilterChange}
-              w="200px"
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                backdropFilter="blur(12px)"
-                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                _hover={{
-                  borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                }}
-                _focus={{
-                  borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                  boxShadow: 'none',
-                }}
-            />
-          </HStack>
-        )}
+              <Input
+                name="date"
+                type="date"
+                value={filters.date}
+                onChange={handleFilterChange}
+                w="200px"
+                bg={inputBg}
+                borderColor={inputBorder}
+                _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                _hover={{ borderColor: iconColor }}
+                transition="all 0.2s"
+              />
+            </HStack>
+          )}
+        </CardBody>
+      </Card>
 
-        <Divider />
+      {/* Lista de Ordens */}
+      {filteredOrders.length === 0 ? (
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+          <CardBody p={12} textAlign="center">
+            <VStack spacing={6}>
+              <Box p={6} borderRadius="full" bgGradient="linear(to-r, gray.400, gray.500)" color="white">
+                <FileText size={48} />
+              </Box>
+              <VStack spacing={2}>
+                <Heading size="lg" color={textColor} fontWeight="bold">
+                  Nenhuma ordem encontrada
+                </Heading>
+                <Text color={textSecondary} fontSize="md">
+                  {orders.length === 0
+                    ? 'Ainda não há ordens de serviço cadastradas.'
+                    : 'Nenhuma ordem corresponde aos filtros aplicados.'
+                  }
+                </Text>
+              </VStack>
+              {orders.length === 0 && (
+                <Button
+                  colorScheme="blue"
+                  size="lg"
+                  leftIcon={<Plus size={20} />}
+                  bgGradient="linear(to-r, blue.500, purple.500)"
+                  _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                  transition="all 0.3s"
+                  as={NextLink}
+                  href="/orders/new"
+                >
+                  Criar Primeira OS
+                </Button>
+              )}
+            </VStack>
+          </CardBody>
+        </Card>
+      ) : (
+        <Box flex="1">
+          {isMobile ? renderMobileView() : renderDesktopView()}
+        </Box>
+      )}
+    </VStack>
 
-        {loading ? (
-          <Flex justify="center" align="center" h="200px">
-            <Spinner size="xl" />
-          </Flex>
-        ) : filteredOrders.length === 0 ? (
-          <Text color={colorMode === 'dark' ? 'white' : 'gray.800'}>Nenhuma OS encontrada.</Text>
-          ) : (
-          <Box flex="1" overflowY="auto">
-            {isMobile ? renderMobileView() : renderDesktopView()}
-          </Box>
-        )}
-      </VStack>
-    </Box>
   )
 } 

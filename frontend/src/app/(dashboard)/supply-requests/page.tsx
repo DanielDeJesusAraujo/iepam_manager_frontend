@@ -266,7 +266,7 @@ export default function SupplyRequestsPage() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
-    if (!user || !['EMPLOYEE', 'ORGANIZER'].includes(user.role)) {
+    if (!user || !['EMPLOYEE', 'ORGANIZER', 'TECHNICIAN'].includes(user.role)) {
       router.push('/unauthorized');
       return;
     }
@@ -657,7 +657,7 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-          ) : (
+        ) : (
             <CatalogTab
               supplies={filteredSupplies}
               onAddToCart={handleAddToCart}
@@ -671,7 +671,7 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-          ) : (
+        ) : (
             <InventoryTab
               inventoryItems={filteredInventoryItems}
               onAllocateItem={handleAllocateItem}

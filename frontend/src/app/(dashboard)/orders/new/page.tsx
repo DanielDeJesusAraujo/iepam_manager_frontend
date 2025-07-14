@@ -18,8 +18,34 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Textarea
+  Textarea,
+  Flex,
+  HStack,
+  Divider,
+  Alert,
+  AlertIcon,
+  InputGroup,
+  InputLeftElement,
+  useColorModeValue,
+  Card,
+  CardBody,
+  Container,
+  Icon,
+  useBreakpointValue,
 } from '@chakra-ui/react'
+import {
+  ArrowLeft,
+  FileText,
+  User,
+  Monitor,
+  Settings,
+  Wrench,
+  Package,
+  DollarSign,
+  AlertTriangle,
+  CheckCircle,
+  Plus
+} from 'lucide-react'
 
 interface FormData {
   order_number: string
@@ -50,6 +76,25 @@ export default function NewOrderPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const toast = useToast()
+  const [formError, setFormError] = useState<string | null>(null)
+
+  // Cores responsivas
+  const bgGradient = useColorModeValue(
+    'linear(to-br, blue.50, purple.50, pink.50)',
+    'linear(to-br, gray.900, blue.900, purple.900)'
+  );
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const cardBorder = useColorModeValue('gray.200', 'gray.700');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const textSecondary = useColorModeValue('gray.600', 'gray.300');
+  const iconColor = useColorModeValue('blue.500', 'blue.300');
+  const successColor = useColorModeValue('green.500', 'green.300');
+  const warningColor = useColorModeValue('yellow.500', 'yellow.300');
+  const dangerColor = useColorModeValue('red.500', 'red.300');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -62,6 +107,7 @@ export default function NewOrderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
     setLoading(true)
     try {
       const token = localStorage.getItem('@ti-assistant:token')
@@ -107,6 +153,7 @@ export default function NewOrderPage() {
       })
       router.push('/orders')
     } catch (err: any) {
+      setFormError(err.message || 'Erro ao criar ordem de serviço')
       toast({
         title: 'Erro',
         description: err.message || 'Erro ao criar ordem de serviço',
@@ -120,129 +167,323 @@ export default function NewOrderPage() {
   }
 
   return (
-    <Box maxW="2xl" mx="auto" mt={10} p={8} borderWidth={1} borderRadius="lg" boxShadow="md">
-      <Heading size="lg" mb={6}>Nova Ordem de Serviço</Heading>
-      <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
-          <FormControl>
-            <FormLabel>Número da OS (opcional)</FormLabel>
-            <Input
-              name="order_number"
-              value={formData.order_number}
-              onChange={handleChange}
-              placeholder="Deixe em branco para gerar automaticamente"
-            />
-            <Text fontSize="sm" color="gray.500" mt={1}>
-              Se não preenchido, será gerado automaticamente no formato OS20241201123456
-            </Text>
-          </FormControl>
 
-          <FormControl>
-            <FormLabel>Nome do Cliente</FormLabel>
-            <Input
-              name="client_name"
-              value={formData.client_name}
-              onChange={handleChange}
-              placeholder="Digite o nome do cliente"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Descrição do Equipamento</FormLabel>
-            <Input
-              name="equipment_description"
-              value={formData.equipment_description}
-              onChange={handleChange}
-              placeholder="Digite a descrição do equipamento"
-            />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>Modelo do Equipamento</FormLabel>
-            <Input
-              name="model"
-              value={formData.model}
-              onChange={handleChange}
-              placeholder="Digite o modelo do equipamento"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Número de Série</FormLabel>
-            <Input
-              name="serial_number"
-              value={formData.serial_number}
-              onChange={handleChange}
-              placeholder="Digite o número de série"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Problema Reportado</FormLabel>
-            <Textarea
-              name="problem_reported"
-              value={formData.problem_reported}
-              onChange={handleChange}
-              placeholder="Descreva o problema reportado"
-            />
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel>Tipo de Serviço</FormLabel>
-            <Select
-              name="service_type"
-              value={formData.service_type}
-              onChange={handleChange}
-              placeholder="Selecione o tipo de serviço"
+    <VStack spacing={4} align="stretch" bgGradient={bgGradient} p={isMobile ? 0 : 4} py={isMobile ? "7vh" : "0vh"}>
+      {/* Header */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
+        <CardBody p={3}>
+          <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+            <Box>
+              <HStack spacing={3} mb={2}>
+                <Box p={3} borderRadius="full" bgGradient="linear(to-r, blue.500, purple.500)" color="white">
+                  <Plus size={24} />
+                </Box>
+                <VStack align="start" spacing={1}>
+                  <Heading size="lg" color={textColor} fontWeight="bold">
+                    Nova Ordem de Serviço
+                  </Heading>
+                  <Text color={textSecondary} fontSize="md">
+                    Crie uma nova ordem de serviço no sistema
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+            <Button
+              leftIcon={<ArrowLeft size={18} />}
+              variant="outline"
+              onClick={() => router.back()}
+              colorScheme="blue"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+              transition="all 0.3s"
             >
-              <option value="manutencao">Manutenção</option>
-              <option value="reparo">Reparo</option>
-              <option value="instalacao">Instalação</option>
-              <option value="configuracao">Configuração</option>
-            </Select>
-          </FormControl>
+              Voltar
+            </Button>
+          </Flex>
+        </CardBody>
+      </Card>
 
-          <FormControl>
-            <FormLabel>Acessórios</FormLabel>
-            <Input
-              name="accessories"
-              value={formData.accessories}
-              onChange={handleChange}
-              placeholder="Digite os acessórios"
-            />
-          </FormControl>
+      {/* Formulário */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+        <CardBody p={ isMobile ? 3 : 8 }>
+          {formError && (
+            <Alert status="error" mb={6} borderRadius="lg" bg="red.50" border="1px solid" borderColor="red.200">
+              <AlertIcon color={dangerColor} />
+              <Text color={dangerColor} fontWeight="medium">{formError}</Text>
+            </Alert>
+          )}
 
-          <FormControl>
-            <FormLabel>Observações</FormLabel>
-            <Textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Digite as observações"
-            />
-          </FormControl>
+          <form onSubmit={handleSubmit} autoComplete="off">
+            <VStack spacing={8} align="stretch">
+              {/* Dados do Cliente */}
+              <Box>
+                <HStack spacing={3} mb={4}>
+                  <Box p={2} borderRadius="full" bgGradient="linear(to-r, green.500, teal.500)" color="white">
+                    <User size={20} />
+                  </Box>
+                  <Heading size="md" color={textColor} fontWeight="bold">Dados do Cliente</Heading>
+                </HStack>
+                <Divider mb={6} borderColor={cardBorder} />
 
-          <FormControl>
-            <FormLabel>Valor Total</FormLabel>
-            <NumberInput
-              value={formData.total_price}
-              onChange={handlePriceChange}
-              min={0}
-              precision={2}
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-          </FormControl>
+                <VStack spacing={4}>
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Número da OS (opcional)</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <FileText size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <Input
+                        name="order_number"
+                        value={formData.order_number}
+                        onChange={handleChange}
+                        placeholder="Deixe em branco para gerar automaticamente"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        _hover={{ borderColor: iconColor }}
+                        transition="all 0.2s"
+                        autoFocus
+                      />
+                    </InputGroup>
+                    <Text fontSize="sm" color={textSecondary} mt={2}>
+                      Se não preenchido, será gerado automaticamente no formato OS20241201123456
+                    </Text>
+                  </FormControl>
 
-          <Button type="submit" colorScheme="blue" isLoading={loading} w="full">
-            Criar Ordem de Serviço
-          </Button>
-        </VStack>
-      </form>
-    </Box>
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Nome do Cliente</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <User size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <Input
+                        name="client_name"
+                        value={formData.client_name}
+                        onChange={handleChange}
+                        placeholder="Digite o nome do cliente"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        _hover={{ borderColor: iconColor }}
+                        transition="all 0.2s"
+                      />
+                    </InputGroup>
+                  </FormControl>
+                </VStack>
+              </Box>
+
+              {/* Equipamento */}
+              <Box>
+                <HStack spacing={3} mb={4}>
+                  <Box p={2} borderRadius="full" bgGradient="linear(to-r, purple.500, pink.500)" color="white">
+                    <Monitor size={20} />
+                  </Box>
+                  <Heading size="md" color={textColor} fontWeight="bold">Equipamento</Heading>
+                </HStack>
+                <Divider mb={6} borderColor={cardBorder} />
+
+                <VStack spacing={4}>
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Descrição do Equipamento</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <Monitor size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <Input
+                        name="equipment_description"
+                        value={formData.equipment_description}
+                        onChange={handleChange}
+                        placeholder="Digite a descrição do equipamento"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        _hover={{ borderColor: iconColor }}
+                        transition="all 0.2s"
+                      />
+                    </InputGroup>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Modelo do Equipamento</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <Settings size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <Input
+                        name="model"
+                        value={formData.model}
+                        onChange={handleChange}
+                        placeholder="Digite o modelo do equipamento"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        _hover={{ borderColor: iconColor }}
+                        transition="all 0.2s"
+                      />
+                    </InputGroup>
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel color={textColor} fontWeight="semibold">Número de Série</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <FileText size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <Input
+                        name="serial_number"
+                        value={formData.serial_number}
+                        onChange={handleChange}
+                        placeholder="Digite o número de série"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        _hover={{ borderColor: iconColor }}
+                        transition="all 0.2s"
+                      />
+                    </InputGroup>
+                  </FormControl>
+                </VStack>
+              </Box>
+
+              {/* Serviço */}
+              <Box>
+                <HStack spacing={3} mb={4}>
+                  <Box p={2} borderRadius="full" bgGradient="linear(to-r, orange.500, red.500)" color="white">
+                    <Wrench size={20} />
+                  </Box>
+                  <Heading size="md" color={textColor} fontWeight="bold">Serviço</Heading>
+                </HStack>
+                <Divider mb={6} borderColor={cardBorder} />
+
+                <VStack spacing={4}>
+                  <FormControl isRequired>
+                    <FormLabel color={textColor} fontWeight="semibold">Problema Reportado</FormLabel>
+                    <Textarea
+                      name="problem_reported"
+                      value={formData.problem_reported}
+                      onChange={handleChange}
+                      placeholder="Descreva o problema reportado"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                      _hover={{ borderColor: iconColor }}
+                      transition="all 0.2s"
+                      rows={4}
+                    />
+                  </FormControl>
+
+                  <FormControl isRequired>
+                    <FormLabel color={textColor} fontWeight="semibold">Tipo de Serviço</FormLabel>
+                    <Select
+                      name="service_type"
+                      value={formData.service_type}
+                      onChange={handleChange}
+                      placeholder="Selecione o tipo de serviço"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                    >
+                      <option value="manutencao">Manutenção</option>
+                      <option value="reparo">Reparo</option>
+                      <option value="instalacao">Instalação</option>
+                      <option value="configuracao">Configuração</option>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Acessórios</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <Package size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <Input
+                        name="accessories"
+                        value={formData.accessories}
+                        onChange={handleChange}
+                        placeholder="Digite os acessórios"
+                        bg={inputBg}
+                        borderColor={inputBorder}
+                        _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                        _hover={{ borderColor: iconColor }}
+                        transition="all 0.2s"
+                      />
+                    </InputGroup>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Observações</FormLabel>
+                    <Textarea
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleChange}
+                      placeholder="Digite as observações"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                      _hover={{ borderColor: iconColor }}
+                      transition="all 0.2s"
+                      rows={3}
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel color={textColor} fontWeight="semibold">Valor Total</FormLabel>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <DollarSign size={18} color={textSecondary} />
+                      </InputLeftElement>
+                      <NumberInput
+                        value={formData.total_price}
+                        onChange={handlePriceChange}
+                        min={0}
+                        precision={2}
+                        w="full"
+                      >
+                        <NumberInputField
+                          bg={inputBg}
+                          borderColor={inputBorder}
+                          _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                          _hover={{ borderColor: iconColor }}
+                          transition="all 0.2s"
+                        />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </InputGroup>
+                  </FormControl>
+                </VStack>
+              </Box>
+
+              {/* Botões */}
+              <Divider borderColor={cardBorder} />
+              <Flex justify="flex-end" gap={4}>
+                <Button
+                  variant="outline"
+                  onClick={() => router.back()}
+                  colorScheme="blue"
+                  _hover={{ transform: 'translateY(-1px)', shadow: 'md' }}
+                  transition="all 0.2s"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  isLoading={loading}
+                  leftIcon={<CheckCircle size={18} />}
+                  bgGradient="linear(to-r, blue.500, purple.500)"
+                  _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                  transition="all 0.3s"
+                >
+                  Criar Ordem de Serviço
+                </Button>
+              </Flex>
+            </VStack>
+          </form>
+        </CardBody>
+      </Card>
+    </VStack>
+
   )
 } 

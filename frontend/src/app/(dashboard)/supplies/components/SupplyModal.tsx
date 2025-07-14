@@ -70,6 +70,8 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
     const [formData, setFormData] = useState<{ [key: string]: any }>(initializeFormDataWithFreight(initialData));
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
+    const [selectedInvoiceImage, setSelectedInvoiceImage] = useState<File | null>(null);
+    const [previewInvoiceUrl, setPreviewInvoiceUrl] = useState<string>('');
     const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
     const toast = useToast();
 
@@ -99,12 +101,16 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
             if (initialData.image_url) {
                 setPreviewUrl(initialData.image_url);
             }
+            if ((initialData as any).invoice_url) {
+                setPreviewInvoiceUrl((initialData as any).invoice_url);
+            }
             if (initialData.category?.id) {
                 fetchSubcategories(initialData.category.id);
             }
         } else {
             setFormData(initializeFormDataWithFreight());
             setPreviewUrl('');
+            setPreviewInvoiceUrl('');
             setSubcategories([]);
         }
     }, [initialData, fetchSubcategories]);
@@ -136,14 +142,20 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
         
         try {
             let imageUrl = formData.image_url;
+            let invoiceUrl = (formData as any).invoice_url;
             
             if (selectedImage) {
                 imageUrl = await uploadImage(selectedImage);
+            }
+            
+            if (selectedInvoiceImage) {
+                invoiceUrl = await uploadImage(selectedInvoiceImage);
             }
 
             onSubmit({
                 ...formData,
                 image_url: imageUrl,
+                invoice_url: invoiceUrl,
                 unit_price: parseCurrencyBR(String(formData.unit_price)),
                 freight: formData.freight ? parseCurrencyBR(String(formData.freight)) : 0,
                 subcategory_id: formData.subcategory_id || undefined,
@@ -344,6 +356,25 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                         <Image
                                             src={previewUrl}
                                             alt="Preview"
+                                            maxH="200px"
+                                            objectFit="contain"
+                                        />
+                                    </Box>
+                                )}
+                            </FormControl>
+
+                            <FormControl gridColumn={{ base: 'auto', md: '1' }}>
+                                <FormLabel>Nota Fiscal</FormLabel>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => handleImageChange(e, setSelectedInvoiceImage, setPreviewInvoiceUrl)}
+                                />
+                                {previewInvoiceUrl && (
+                                    <Box mt={2}>
+                                        <Image
+                                            src={previewInvoiceUrl}
+                                            alt="Preview NF"
                                             maxH="200px"
                                             objectFit="contain"
                                         />

@@ -29,11 +29,31 @@ import {
   FormLabel,
   Input,
   ModalFooter,
-  useColorMode,
-  useBreakpointValue
+  useColorModeValue,
+  useBreakpointValue,
+  Card,
+  CardBody,
+  Container,
+  Icon,
 } from '@chakra-ui/react'
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
-import { ArrowLeft } from 'lucide-react'
+import { 
+  ArrowLeft, 
+  FileText, 
+  User, 
+  Monitor, 
+  Settings, 
+  Wrench, 
+  Package, 
+  DollarSign, 
+  Calendar, 
+  CheckCircle, 
+  Clock, 
+  Download,
+  Building,
+  Phone,
+  Mail
+} from 'lucide-react'
 import jsPDF from 'jspdf'
 
 interface Order {
@@ -66,8 +86,24 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
   const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [exitDate, setExitDate] = useState('')
-  const { colorMode } = useColorMode()
-  const isMobile = useBreakpointValue({ base: true, md: false })
+
+  // Cores responsivas
+  const bgGradient = useColorModeValue(
+    'linear(to-br, blue.50, purple.50, pink.50)',
+    'linear(to-br, gray.900, blue.900, purple.900)'
+  );
+  const cardBg = useColorModeValue('white', 'gray.800');
+  const cardBorder = useColorModeValue('gray.200', 'gray.700');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const textSecondary = useColorModeValue('gray.600', 'gray.300');
+  const iconColor = useColorModeValue('blue.500', 'blue.300');
+  const successColor = useColorModeValue('green.500', 'green.300');
+  const warningColor = useColorModeValue('yellow.500', 'yellow.300');
+  const dangerColor = useColorModeValue('red.500', 'red.300');
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -270,246 +306,383 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
 
   if (loading) {
     return (
-      <Flex justify="center" align="center" h="100vh">
-        <Spinner size="xl" />
+      <Flex justify="center" align="center" h="100vh" bgGradient={bgGradient}>
+        <VStack spacing={4}>
+          <Spinner size="xl" color={iconColor} thickness="4px" />
+          <Text color={textColor} fontWeight="medium">Carregando detalhes da ordem...</Text>
+        </VStack>
       </Flex>
     )
   }
 
   if (error || !order) {
     return (
-      <Box p={8}>
-        <Text color="red.500">{error || 'Ordem de serviço não encontrada'}</Text>
-      </Box>
+      <VStack spacing={4} align="stretch" bgGradient={bgGradient} p={isMobile ? 4 : 8} minH="100vh">
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
+          <CardBody p={6}>
+            <VStack spacing={4}>
+              <Box p={3} borderRadius="full" bgGradient="linear(to-r, red.500, pink.500)" color="white">
+                <Icon as={FileText} size={24} />
+              </Box>
+              <Text color={dangerColor} fontWeight="bold" fontSize="lg">
+                {error || 'Ordem de serviço não encontrada'}
+              </Text>
+              <Button
+                leftIcon={<ArrowLeft size={18} />}
+                onClick={() => router.back()}
+                colorScheme="blue"
+                bgGradient="linear(to-r, blue.500, purple.500)"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
+              >
+                Voltar
+              </Button>
+            </VStack>
+          </CardBody>
+        </Card>
+      </VStack>
     )
   }
 
   return (
-    <Box
-      w="full"
-      h="full"
-      py={4}
-      px={isMobile ? 2 : 8}
-    >
-      <VStack
-        spacing={4}
-        align="stretch"
-        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-        backdropFilter="blur(12px)"
-        p={isMobile ? 3 : 6}
-        borderRadius="lg"
-        boxShadow="sm"
-        borderWidth="1px"
-        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-        h="full"
-      >
-        <Flex justify="space-between" align="center" mb={6}>
-          <HStack>
-            <Button
-              leftIcon={<ArrowLeft />}
-              variant="ghost"
-              onClick={() => router.back()}
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            >
-              Voltar
-            </Button>
-            <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Detalhes da Ordem de Serviço</Heading>
-          </HStack>
-          <HStack spacing={4}>
-            <Button
-              onClick={generatePDF}
-              colorScheme="blue"
-              bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            >
-              Exportar PDF
-            </Button>
-            {!order.exit_date && (
+    <VStack spacing={4} align="stretch" bgGradient={bgGradient} p={isMobile ? 0 : 4} py={isMobile ? "7vh" : "0vh"}>
+      {/* Header */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
+        <CardBody p={3}>
+          <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+            <Box>
+              <HStack spacing={3} mb={2}>
+                <Box p={3} borderRadius="full" bgGradient="linear(to-r, blue.500, purple.500)" color="white">
+                  <FileText size={24} />
+                </Box>
+                <VStack align="start" spacing={1}>
+                  <Heading size="lg" color={textColor} fontWeight="bold">
+                    Detalhes da Ordem de Serviço
+                  </Heading>
+                  <Text color={textSecondary} fontSize="md">
+                    OS: {order.order_number}
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+            <HStack spacing={2}>
               <Button
-                onClick={onOpen}
-                colorScheme="green"
-                bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                  transform: 'translateY(-1px)',
-                }}
-                transition="all 0.3s ease"
+                leftIcon={<ArrowLeft size={18} />}
+                variant="outline"
+                onClick={() => router.back()}
+                colorScheme="blue"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
               >
-                Finalizar OS
+                Voltar
               </Button>
-            )}
-            <IconButton
-              aria-label="Editar OS"
-              icon={<EditIcon />}
-              onClick={() => router.push(`/orders/${order.id}/edit`)}
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-              _hover={{
-                bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                transform: 'translateY(-1px)',
-              }}
-              transition="all 0.3s ease"
-            />
-          </HStack>
-        </Flex>
+              <Button
+                leftIcon={<Download size={18} />}
+                onClick={generatePDF}
+                colorScheme="blue"
+                bgGradient="linear(to-r, blue.500, purple.500)"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
+              >
+                Exportar PDF
+              </Button>
+              {!order.exit_date && (
+                <Button
+                  leftIcon={<CheckCircle size={18} />}
+                  onClick={onOpen}
+                  colorScheme="green"
+                  bgGradient="linear(to-r, green.500, teal.500)"
+                  _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                  transition="all 0.3s"
+                >
+                  Finalizar OS
+                </Button>
+              )}
+              <IconButton
+                aria-label="Editar OS"
+                icon={<EditIcon />}
+                onClick={() => router.push(`/orders/${order.id}/edit`)}
+                colorScheme="blue"
+                variant="outline"
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
+              />
+              <IconButton
+                aria-label="Excluir OS"
+                icon={<DeleteIcon />}
+                colorScheme="red"
+                variant="outline"
+                onClick={handleDelete}
+                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                transition="all 0.3s"
+              />
+            </HStack>
+          </Flex>
+        </CardBody>
+      </Card>
 
-        <Grid templateColumns={isMobile ? "1fr" : "repeat(2, 1fr)"} gap={6}>
-          <GridItem>
-            <VStack
-              align="stretch"
-              spacing={4}
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'}
-              p={4}
-              borderRadius="lg"
-            >
+      {/* Status Card */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+        <CardBody p={4}>
+          <HStack spacing={3} justify="center">
+            <Box p={2} borderRadius="full" bgGradient={order.exit_date ? "linear(to-r, green.500, teal.500)" : "linear(to-r, yellow.500, orange.500)"} color="white">
+              {order.exit_date ? <CheckCircle size={20} /> : <Clock size={20} />}
+            </Box>
+            <VStack align="start" spacing={1}>
+              <Text color={textColor} fontWeight="bold" fontSize="lg">
+                Status da Ordem
+              </Text>
+              <Badge 
+                colorScheme={order.exit_date ? 'green' : 'yellow'} 
+                fontSize="md" 
+                px={3} 
+                py={1}
+                borderRadius="full"
+              >
+                {order.exit_date ? 'Concluída' : 'Em andamento'}
+              </Badge>
+            </VStack>
+          </HStack>
+        </CardBody>
+      </Card>
+
+      {/* Informações Principais */}
+      <Grid templateColumns={isMobile ? "1fr" : "repeat(2, 1fr)"} gap={4}>
+        {/* Dados do Cliente */}
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+          <CardBody p={4}>
+            <HStack spacing={3} mb={4}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, green.500, teal.500)" color="white">
+                <User size={20} />
+              </Box>
+              <Heading size="md" color={textColor} fontWeight="bold">Dados do Cliente</Heading>
+            </HStack>
+            <Divider mb={4} borderColor={cardBorder} />
+            
+            <VStack spacing={3} align="stretch">
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Número da OS</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.order_number}</Text>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Número da OS</Text>
+                <Text color={textColor} fontWeight="semibold">{order.order_number}</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Cliente</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.client_name}</Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Equipamento</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.equipment_description}</Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Modelo</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.model}</Text>
-              </Box>
-              <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Número de Série</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.serial_number}</Text>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Cliente</Text>
+                <Text color={textColor} fontWeight="semibold">{order.client_name}</Text>
               </Box>
             </VStack>
-          </GridItem>
+          </CardBody>
+        </Card>
 
-          <GridItem>
-            <VStack
-              align="stretch"
-              spacing={4}
-              bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'}
-              p={4}
-              borderRadius="lg"
-            >
+        {/* Equipamento */}
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+          <CardBody p={4}>
+            <HStack spacing={3} mb={4}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, purple.500, pink.500)" color="white">
+                <Monitor size={20} />
+              </Box>
+              <Heading size="md" color={textColor} fontWeight="bold">Equipamento</Heading>
+            </HStack>
+            <Divider mb={4} borderColor={cardBorder} />
+            
+            <VStack spacing={3} align="stretch">
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Status</Text>
-                <Badge colorScheme={order.exit_date ? 'green' : 'yellow'}>
-                  {order.exit_date ? 'Concluída' : 'Em andamento'}
-                </Badge>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Descrição</Text>
+                <Text color={textColor} fontWeight="semibold">{order.equipment_description}</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Tipo de Serviço</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.service_type}</Text>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Modelo</Text>
+                <Text color={textColor} fontWeight="semibold">{order.model}</Text>
               </Box>
               <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data de Entrada</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{new Date(order.entry_date).toLocaleDateString()}</Text>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Número de Série</Text>
+                <Text color={textColor} fontWeight="semibold">{order.serial_number}</Text>
+              </Box>
+            </VStack>
+          </CardBody>
+        </Card>
+      </Grid>
+
+      {/* Serviço e Datas */}
+      <Grid templateColumns={isMobile ? "1fr" : "repeat(2, 1fr)"} gap={4}>
+        {/* Serviço */}
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+          <CardBody p={4}>
+            <HStack spacing={3} mb={4}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, orange.500, red.500)" color="white">
+                <Wrench size={20} />
+              </Box>
+              <Heading size="md" color={textColor} fontWeight="bold">Serviço</Heading>
+            </HStack>
+            <Divider mb={4} borderColor={cardBorder} />
+            
+            <VStack spacing={3} align="stretch">
+              <Box>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Tipo de Serviço</Text>
+                <Text color={textColor} fontWeight="semibold">{order.service_type}</Text>
+              </Box>
+              <Box>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Valor Total</Text>
+                <Text color={textColor} fontWeight="semibold" fontSize="lg">R$ {order.total_price.toFixed(2)}</Text>
+              </Box>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        {/* Datas */}
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+          <CardBody p={4}>
+            <HStack spacing={3} mb={4}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, blue.500, cyan.500)" color="white">
+                <Calendar size={20} />
+              </Box>
+              <Heading size="md" color={textColor} fontWeight="bold">Datas</Heading>
+            </HStack>
+            <Divider mb={4} borderColor={cardBorder} />
+            
+            <VStack spacing={3} align="stretch">
+              <Box>
+                <Text color={textSecondary} fontSize="sm" fontWeight="medium">Data de Entrada</Text>
+                <Text color={textColor} fontWeight="semibold">{new Date(order.entry_date).toLocaleDateString()}</Text>
               </Box>
               {order.exit_date && (
                 <Box>
-                  <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data de Saída</Text>
-                  <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{new Date(order.exit_date).toLocaleDateString()}</Text>
+                  <Text color={textSecondary} fontSize="sm" fontWeight="medium">Data de Saída</Text>
+                  <Text color={textColor} fontWeight="semibold">{new Date(order.exit_date).toLocaleDateString()}</Text>
                 </Box>
               )}
-              <Box>
-                <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Valor Total</Text>
-                <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>R$ {order.total_price.toFixed(2)}</Text>
-              </Box>
             </VStack>
-          </GridItem>
-        </Grid>
+          </CardBody>
+        </Card>
+      </Grid>
 
-        <Divider my={6} />
+      {/* Problema Reportado */}
+      <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+        <CardBody p={4}>
+          <HStack spacing={3} mb={4}>
+            <Box p={2} borderRadius="full" bgGradient="linear(to-r, red.500, pink.500)" color="white">
+              <Wrench size={20} />
+            </Box>
+            <Heading size="md" color={textColor} fontWeight="bold">Problema Reportado</Heading>
+          </HStack>
+          <Divider mb={4} borderColor={cardBorder} />
+          
+          <Text color={textColor} lineHeight="1.6">{order.problem_reported}</Text>
+        </CardBody>
+      </Card>
 
-        <VStack
-          align="stretch"
-          spacing={4}
-          bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.3)' : 'rgba(255, 255, 255, 0.3)'}
-          p={4}
-          borderRadius="lg"
+      {/* Informações Adicionais */}
+      {(order.accessories || order.notes || order.supplier) && (
+        <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="lg">
+          <CardBody p={4}>
+            <HStack spacing={3} mb={4}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, gray.500, gray.600)" color="white">
+                <Package size={20} />
+              </Box>
+              <Heading size="md" color={textColor} fontWeight="bold">Informações Adicionais</Heading>
+            </HStack>
+            <Divider mb={4} borderColor={cardBorder} />
+            
+            <VStack spacing={4} align="stretch">
+              {order.accessories && (
+                <Box>
+                  <Text color={textSecondary} fontSize="sm" fontWeight="medium" mb={2}>Acessórios</Text>
+                  <Text color={textColor}>{order.accessories}</Text>
+                </Box>
+              )}
+              
+              {order.notes && (
+                <Box>
+                  <Text color={textSecondary} fontSize="sm" fontWeight="medium" mb={2}>Observações</Text>
+                  <Text color={textColor}>{order.notes}</Text>
+                </Box>
+              )}
+              
+              {order.supplier && (
+                <Box>
+                  <Text color={textSecondary} fontSize="sm" fontWeight="medium" mb={3}>Fornecedor</Text>
+                  <VStack spacing={2} align="stretch">
+                    <HStack spacing={2}>
+                      <Box p={1} borderRadius="full" bg={iconColor} color="white">
+                        <Building size={16} />
+                      </Box>
+                      <Text color={textColor} fontWeight="semibold">{order.supplier.name}</Text>
+                    </HStack>
+                    <HStack spacing={2}>
+                      <Box p={1} borderRadius="full" bg={successColor} color="white">
+                        <Phone size={16} />
+                      </Box>
+                      <Text color={textColor}>{order.supplier.phone}</Text>
+                    </HStack>
+                    <HStack spacing={2}>
+                      <Box p={1} borderRadius="full" bg={warningColor} color="white">
+                        <Mail size={16} />
+                      </Box>
+                      <Text color={textColor}>{order.supplier.email}</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+              )}
+            </VStack>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Modal de Finalização */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent
+          bg={cardBg}
+          border="1px solid"
+          borderColor={cardBorder}
+          shadow="2xl"
         >
-          <Box>
-            <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Problema Reportado</Text>
-            <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.problem_reported}</Text>
-          </Box>
-          {order.accessories && (
-            <Box>
-              <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Acessórios</Text>
-              <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.accessories}</Text>
-            </Box>
-          )}
-          {order.notes && (
-            <Box>
-              <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Observações</Text>
-              <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.notes}</Text>
-            </Box>
-          )}
-          {order.supplier && (
-            <Box>
-              <Text fontWeight="bold" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Fornecedor</Text>
-              <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.supplier.name}</Text>
-              <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.supplier.phone}</Text>
-              <Text color={colorMode === 'dark' ? 'gray.300' : 'gray.600'}>{order.supplier.email}</Text>
-            </Box>
-          )}
-        </VStack>
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent
-            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
-            backdropFilter="blur(12px)"
-          >
-            <ModalHeader color={colorMode === 'dark' ? 'white' : 'gray.800'}>Finalizar Ordem de Serviço</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl>
-                <FormLabel color={colorMode === 'dark' ? 'white' : 'gray.800'}>Data de Saída</FormLabel>
-                <Input
-                  type="date"
-                  value={exitDate}
-                  onChange={(e) => setExitDate(e.target.value)}
-                  bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                  borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                />
-              </FormControl>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="ghost"
-                mr={3}
-                onClick={onClose}
-                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                colorScheme="green"
-                onClick={handleCompleteOrder}
-                bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-                _hover={{
-                  bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                }}
-              >
-                Finalizar
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      </VStack>
-    </Box>
+          <ModalHeader color={textColor} borderBottom="1px solid" borderColor={cardBorder}>
+            <HStack spacing={3}>
+              <Box p={2} borderRadius="full" bgGradient="linear(to-r, green.500, teal.500)" color="white">
+                <CheckCircle size={20} />
+              </Box>
+              <Text>Finalizar Ordem de Serviço</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalCloseButton color={textColor} />
+          <ModalBody py={6}>
+            <FormControl>
+              <FormLabel color={textColor} fontWeight="semibold">Data de Saída</FormLabel>
+              <Input
+                type="date"
+                value={exitDate}
+                onChange={(e) => setExitDate(e.target.value)}
+                bg={inputBg}
+                borderColor={inputBorder}
+                _focus={{ borderColor: iconColor, boxShadow: `0 0 0 1px ${iconColor}` }}
+                _hover={{ borderColor: iconColor }}
+                transition="all 0.2s"
+              />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter borderTop="1px solid" borderColor={cardBorder}>
+            <Button
+              variant="outline"
+              mr={3}
+              onClick={onClose}
+              colorScheme="blue"
+              _hover={{ transform: 'translateY(-1px)', shadow: 'md' }}
+              transition="all 0.2s"
+            >
+              Cancelar
+            </Button>
+            <Button
+              colorScheme="green"
+              onClick={handleCompleteOrder}
+              bgGradient="linear(to-r, green.500, teal.500)"
+              _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+              transition="all 0.3s"
+              leftIcon={<CheckCircle size={18} />}
+            >
+              Finalizar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </VStack>
   )
 } 

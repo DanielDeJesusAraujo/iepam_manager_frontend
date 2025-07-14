@@ -220,7 +220,7 @@ export default function QuotesPage() {
                 px={{ base: 2, md: 4 }}
                 py={{ base: 2, md: 3 }}
                 borderRadius="md"
-                _selected={{
+                _selected={{ 
                   bg: useColorModeValue('white', 'gray.700'),
                   color: useColorModeValue('blue.600', 'blue.200'),
                   boxShadow: 'sm',
@@ -240,7 +240,7 @@ export default function QuotesPage() {
                 px={{ base: 2, md: 4 }}
                 py={{ base: 2, md: 3 }}
                 borderRadius="md"
-                _selected={{
+                _selected={{ 
                   bg: useColorModeValue('white', 'gray.700'),
                   color: useColorModeValue('blue.600', 'blue.200'),
                   boxShadow: 'sm',
@@ -253,21 +253,21 @@ export default function QuotesPage() {
                 Cotações Inteligentes
               </Tab>
             </TabList>
-            
+
             <Box mt={4} flex="1" overflowY="auto">
-              <TabPanels>
+            <TabPanels>
                 <TabPanel p={{ base: 2, md: 4 }}>
-                  <VStack spacing={4} align="stretch">
-                    <Box display="flex" justifyContent="flex-end">
-                      <CreateQuoteButton />
-                    </Box>
-                    <QuoteList quotes={quotes} onStatusChange={handleStatusChange} />
-                  </VStack>
-                </TabPanel>
+                <VStack spacing={4} align="stretch">
+                  <Box display="flex" justifyContent="flex-end">
+                    <CreateQuoteButton />
+                  </Box>
+                  <QuoteList quotes={quotes} onStatusChange={handleStatusChange} />
+                </VStack>
+              </TabPanel>
                 <TabPanel p={{ base: 2, md: 4 }}>
-                  <SmartQuotesTable />
-                </TabPanel>
-              </TabPanels>
+                <SmartQuotesTable />
+              </TabPanel>
+            </TabPanels>
             </Box>
           </Tabs>
         </Box>

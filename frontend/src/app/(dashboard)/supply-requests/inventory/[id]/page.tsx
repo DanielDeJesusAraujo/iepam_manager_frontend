@@ -137,14 +137,14 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
           {/* Header */}
           <Flex justify="space-between" align="center">
             <HStack spacing={4}>
-              <IconButton
-                aria-label="Voltar"
+          <IconButton
+            aria-label="Voltar"
                 icon={<ArrowLeft size={24} />}
-                variant="ghost"
-                onClick={() => router.back()}
+            variant="ghost"
+            onClick={() => router.back()}
                 size="lg"
                 _hover={{ bg: buttonHoverBg }}
-              />
+          />
               <VStack align="start" spacing={1}>
                 <Heading size="lg" color={headingColor}>
                   Detalhes do Item
@@ -153,7 +153,7 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                   Informações completas do item do inventário
                 </Text>
               </VStack>
-            </HStack>
+        </HStack>
           </Flex>
 
           {/* Main Content */}
@@ -162,9 +162,9 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
             <GridItem>
               <Card bg={bgColor} borderWidth="1px" borderColor={borderColor} overflow="hidden">
                 <CardBody p={0}>
-                  <Image
-                    src={item.image_url || '/placeholder.png'}
-                    alt={item.name}
+          <Image
+            src={item.image_url || '/placeholder.png'}
+            alt={item.name}
                     width="100%"
                     height="500px"
                     objectFit="contain"
@@ -199,7 +199,7 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                         </Badge>
                         <Badge colorScheme="blue" size="lg" px={4} py={2} borderRadius="full">
                           {item.category?.label}
-                        </Badge>
+            </Badge>
                       </HStack>
                     </VStack>
                   </CardBody>
@@ -292,12 +292,12 @@ export default function InventoryDetailPage({ params }: { params: { id: string }
                   _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
                   transition="all 0.2s"
                 >
-                  Alocar Item
-                </Button>
+                Alocar Item
+              </Button>
               </VStack>
             </GridItem>
           </Grid>
-        </VStack>
+          </VStack>
 
         <InventoryAllocationModal
           isOpen={isOpen}
