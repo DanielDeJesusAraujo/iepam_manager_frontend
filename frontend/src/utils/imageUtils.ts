@@ -1,11 +1,11 @@
 export const uploadImage = async (file: File): Promise<string> => {
-    const apiKey = process.env.IMGBB_IMAGES_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_IMAGES_API_KEY;
     
     console.log('Verificando chave da API:', apiKey ? 'Configurada' : 'Não configurada');
     
     if (!apiKey) {
-        console.error('Chave da API de imagens não configurada. Configure IMGBB_IMAGES_API_KEY no arquivo .env.local');
-        throw new Error('Chave da API de imagens não configurada. Configure IMGBB_IMAGES_API_KEY no arquivo .env.local');
+        console.error('Chave da API de imagens não configurada. Configure NEXT_PUBLIC_IMAGES_API_KEY no arquivo .env.local');
+        throw new Error('Chave da API de imagens não configurada. Configure NEXT_PUBLIC_IMAGES_API_KEY no arquivo .env.local');
     }
 
     const formData = new FormData();

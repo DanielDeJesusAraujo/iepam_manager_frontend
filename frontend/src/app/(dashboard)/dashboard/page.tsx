@@ -169,7 +169,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <VStack spacing={6} align="stretch" bgGradient={bgGradient} minH="100vh" p={4}>
+      <VStack spacing={6} align="stretch" bgGradient={bgGradient} minH="100vh" py={ isMobile ? "7vh" : 4}>
         {/* Header */}
         <Card bg={cardBg} border="1px solid" borderColor={cardBorder} shadow="xl">
           <CardBody p={6}>

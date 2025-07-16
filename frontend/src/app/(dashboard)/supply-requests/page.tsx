@@ -142,7 +142,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
   }, [activeTab, onTabChange, hasFetched]);
 
   return (
-    <Box w="full" h="full">
+    <Box w="full" h="full" py={ isMobile ? "7vh" : 4}>
       <VStack
         spacing={4}
         align="stretch"
@@ -158,16 +158,16 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
       >
         {!isMobile && (
           <>
-        <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
+            <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
               <Heading size={{ base: 'md', md: 'lg' }} color={headingColor}>Requisições de Suprimentos</Heading>
-        </Flex>
-        <Divider />
+            </Flex>
+            <Divider />
           </>
         )}
         <Box marginBottom="20px" position="sticky" top="7vh" zIndex={21} bg={bgColor} borderRadius="lg">
           <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size={{ base: 'sm', md: 'md' }}>
-            <TabList 
-              overflowX="auto" 
+            <TabList
+              overflowX="auto"
               css={{
                 '&::-webkit-scrollbar': { display: 'none' },
                 scrollbarWidth: 'none',
@@ -179,8 +179,8 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
               gap={1}
             >
               {tabLabels.map(label => (
-                <Tab 
-                  key={label} 
+                <Tab
+                  key={label}
                   whiteSpace="nowrap"
                   fontSize={{ base: 'xs', md: 'sm' }}
                   fontWeight="medium"
@@ -201,8 +201,8 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                   {label}
                 </Tab>
               ))}
-          </TabList>
-        </Tabs>
+            </TabList>
+          </Tabs>
         </Box>
         <Box mt={4} flex="1" overflowY="auto">
           {children.map((child, idx) => (
@@ -323,9 +323,9 @@ export default function SupplyRequestsPage() {
       setFilteredSupplies(filterSupplies(suppliesData, searchQuery));
       setFilteredInventoryItems(
         inventoryData.filter((item: InventoryItem) =>
-          (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+        (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       );
       setRequests(requestsData);
@@ -361,9 +361,9 @@ export default function SupplyRequestsPage() {
   useEffect(() => {
     setFilteredInventoryItems(
       inventoryItems.filter((item: InventoryItem) =>
-        (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+      (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     );
   }, [searchQuery, inventoryItems]);
@@ -507,7 +507,7 @@ export default function SupplyRequestsPage() {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) throw new Error('Token não encontrado');
       if (!selectedItem) throw new Error('Item não selecionado');
-      
+
       await allocateInventoryItem(
         selectedItem.id,
         data.return_date,
@@ -541,7 +541,7 @@ export default function SupplyRequestsPage() {
   // Função específica para o catálogo que usa cache
   const fetchTabCatalog = async () => {
     setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? true : v));
-    
+
     try {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) {
@@ -566,14 +566,14 @@ export default function SupplyRequestsPage() {
         isClosable: true,
       });
     } finally {
-    setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? false : v));
+      setLoadingTabs(tabs => tabs.map((v, i) => i === 0 ? false : v));
     }
   };
 
   // Função específica para o inventário que usa cache
   const fetchTabInventory = async () => {
     setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? true : v));
-    
+
     try {
       const token = localStorage.getItem('@ti-assistant:token');
       if (!token) {
@@ -586,18 +586,18 @@ export default function SupplyRequestsPage() {
         setInventoryItems(inventoryData);
         setFilteredInventoryItems(
           inventoryData.filter((item: InventoryItem) =>
-            (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+          (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
           )
         );
       } else {
         // Usar dados do cache
         setFilteredInventoryItems(
           inventoryItems.filter((item: InventoryItem) =>
-            (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
+          (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.serial_number.toLowerCase().includes(searchQuery.toLowerCase()))
           )
         );
       }
@@ -610,7 +610,7 @@ export default function SupplyRequestsPage() {
         isClosable: true,
       });
     } finally {
-    setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? false : v));
+      setLoadingTabs(tabs => tabs.map((v, i) => i === 1 ? false : v));
     }
   };
 
@@ -641,15 +641,15 @@ export default function SupplyRequestsPage() {
     }
   };
 
-    return (
+  return (
     <>
-    <PersistentTabsLayout
+      <PersistentTabsLayout
         tabLabels={['Catálogo', 'Inventário', 'Minhas Requisições', 'Minhas Alocações', 'Carrinho']}
-      onTabChange={[fetchTabCatalog, fetchTabInventory, fetchTabMyRequests, fetchTabMyAllocations, fetchTabCart]}
+        onTabChange={[fetchTabCatalog, fetchTabInventory, fetchTabMyRequests, fetchTabMyAllocations, fetchTabCart]}
         storageKey="persistentTabIndexColab"
-    >
-      {[
-        loadingTabs[0] ? (
+      >
+        {[
+          loadingTabs[0] ? (
             <Skeleton
               key="skeleton-catalog"
               height="400px"
@@ -657,13 +657,13 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-        ) : (
+          ) : (
             <CatalogTab
               supplies={filteredSupplies}
               onAddToCart={handleAddToCart}
             />
-        ),
-        loadingTabs[1] ? (
+          ),
+          loadingTabs[1] ? (
             <Skeleton
               key="skeleton-inventory"
               height="400px"
@@ -671,13 +671,13 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-        ) : (
+          ) : (
             <InventoryTab
               inventoryItems={filteredInventoryItems}
               onAllocateItem={handleAllocateItem}
             />
-        ),
-        loadingTabs[2] ? (
+          ),
+          loadingTabs[2] ? (
             <Skeleton
               key="skeleton-reqs"
               height="400px"
@@ -690,8 +690,8 @@ export default function SupplyRequestsPage() {
               requests={filteredRequests}
               onRequesterConfirmation={handleRequesterConfirmation}
             />
-        ),
-        loadingTabs[3] ? (
+          ),
+          loadingTabs[3] ? (
             <Skeleton
               key="skeleton-allocs"
               height="400px"
@@ -699,10 +699,10 @@ export default function SupplyRequestsPage() {
             >
               <SkeletonText mt="4" noOfLines={8} spacing="4" />
             </Skeleton>
-        ) : (
-              <MyAllocationsPage />
-        ),
-        loadingTabs[4] ? (
+          ) : (
+            <MyAllocationsPage />
+          ),
+          loadingTabs[4] ? (
             <Skeleton
               key="skeleton-cart"
               height="400px"
@@ -718,9 +718,9 @@ export default function SupplyRequestsPage() {
               onOpenModal={onOpen}
               onContinueShopping={() => router.push('/supply-requests')}
             />
-        )
-      ]}
-    </PersistentTabsLayout>
+          )
+        ]}
+      </PersistentTabsLayout>
 
       {/* Modal de Alocação de Inventário */}
       {selectedItem && (

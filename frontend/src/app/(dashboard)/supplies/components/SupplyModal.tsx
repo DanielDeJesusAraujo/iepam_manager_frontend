@@ -160,6 +160,13 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                 freight: formData.freight ? parseCurrencyBR(String(formData.freight)) : 0,
                 subcategory_id: formData.subcategory_id || undefined,
             });
+            // limpa o modal e reseta o estado
+            setFormData(initializeFormDataWithFreight());
+            setSelectedImage(null);
+            setPreviewUrl('');
+            setSelectedInvoiceImage(null);
+            setPreviewInvoiceUrl('');
+            onClose();
         } catch (error) {
             toast({
                 title: 'Erro ao fazer upload da imagem',
@@ -349,6 +356,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                 <Input
                                     type="file"
                                     accept="image/*"
+                                    capture="environment"
                                     onChange={(e) => handleImageChange(e, setSelectedImage, setPreviewUrl)}
                                 />
                                 {previewUrl && (
