@@ -19,7 +19,7 @@ import {
   Box,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { ShoppingCart, SearchIcon } from 'lucide-react';
+import { ShoppingCart, SearchIcon, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Supply } from '../../types';
 import { useFilters } from '@/contexts/GlobalContext';
@@ -27,9 +27,10 @@ import { useFilters } from '@/contexts/GlobalContext';
 interface CatalogTabProps {
   supplies: Supply[];
   onAddToCart: (supply: Supply) => void;
+  onOpenCustomRequestModal?: () => void;
 }
 
-export function CatalogTab({ supplies, onAddToCart }: CatalogTabProps) {
+export function CatalogTab({ supplies, onAddToCart, onOpenCustomRequestModal }: CatalogTabProps) {
   const router = useRouter();
   const { colorMode } = useColorMode();
   const [isMobile] = useMediaQuery('(max-width: 768px)');
@@ -40,6 +41,30 @@ export function CatalogTab({ supplies, onAddToCart }: CatalogTabProps) {
 
   return (
     <>
+      {/* Remover o botão do desktop, manter só no mobile */}
+      {onOpenCustomRequestModal && isMobile && (
+        <Flex mb={6} justify="center">
+          <Button
+            colorScheme="blue"
+            leftIcon={<Plus size={18} />}
+            onClick={onOpenCustomRequestModal}
+            w="full"
+            boxShadow="sm"
+            fontWeight="medium"
+            fontSize="md"
+            borderRadius="lg"
+            transition="all 0.2s"
+            _hover={{
+              bg: 'blue.600',
+              color: 'white',
+              transform: 'translateY(-2px)',
+              boxShadow: 'md',
+            }}
+          >
+            Pedido Customizado
+          </Button>
+        </Flex>
+      )}
       {!isMobile && (
       <InputGroup mb={6}>
         <InputLeftElement pointerEvents="none">

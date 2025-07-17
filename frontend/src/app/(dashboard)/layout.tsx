@@ -11,7 +11,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   // Não mostrar o sidebar nas páginas de login e registro
-  if (pathname === '/login' || pathname === '/register' || pathname === '/') {
+  if (pathname === '/' || pathname === '/register' || pathname === '/') {
     return children;
   }
 
