@@ -105,7 +105,7 @@ interface AllocationRequest {
 }
 
 // Layout reutilizável para abas persistentes (copiado/adaptado do admin)
-function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = 'persistentTabIndexColab' }: { tabLabels: string[], children: React.ReactNode[], onTabChange?: (() => void)[], storageKey?: string }) {
+function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = 'persistentTabIndexColab', onOpenCustomRequestModal }: { tabLabels: string[], children: React.ReactNode[], onTabChange?: (() => void)[], storageKey?: string, onOpenCustomRequestModal?: () => void }) {
   const { activeTab, setActiveTab } = useTabs();
   const prevTab = useRef(0);
   const [hasFetched, setHasFetched] = useState(() => tabLabels.map(() => false));
@@ -142,7 +142,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
   }, [activeTab, onTabChange, hasFetched]);
 
   return (
-    <Box w="full" h="full" py={ isMobile ? "7vh" : 4}>
+    <>
       <VStack
         spacing={4}
         align="stretch"
@@ -155,16 +155,38 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
         borderColor={borderColor}
         h="full"
         w="full"
+        py={ isMobile ? "7vh" : 4}
       >
         {!isMobile && (
           <>
             <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
               <Heading size={{ base: 'md', md: 'lg' }} color={headingColor}>Requisições de Suprimentos</Heading>
+              {/* Botão Pedido Customizado só na aba Catálogo (índice 0) */}
+              {activeTab === 0 && onOpenCustomRequestModal && (
+                <Button
+                  colorScheme="blue"
+                  leftIcon={<Plus size={18} />}
+                  onClick={onOpenCustomRequestModal}
+                  fontWeight="medium"
+                  fontSize="md"
+                  borderRadius="lg"
+                  boxShadow="sm"
+                  transition="all 0.2s"
+                  _hover={{
+                    bg: 'blue.600',
+                    color: 'white',
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'md',
+                  }}
+                >
+                  Pedido Customizado
+                </Button>
+              )}
             </Flex>
             <Divider />
           </>
         )}
-        <Box marginBottom="20px" position="sticky" top="7vh" zIndex={21} bg={bgColor} borderRadius="lg">
+        <Box mb={0} position="sticky" top="7vh" zIndex={21} bg={bgColor} borderRadius="lg">
           <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size={{ base: 'sm', md: 'md' }}>
             <TabList
               overflowX="auto"
@@ -204,7 +226,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
             </TabList>
           </Tabs>
         </Box>
-        <Box mt={4} flex="1" overflowY="auto">
+        <Box mt={0} flex="1" overflowY="auto">
           {children.map((child, idx) => (
             <Box key={idx} display={activeTab === idx ? 'block' : 'none'} w="full">
               {child}
@@ -212,7 +234,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
           ))}
         </Box>
       </VStack>
-    </Box>
+    </>
   );
 }
 
@@ -647,6 +669,7 @@ export default function SupplyRequestsPage() {
         tabLabels={['Catálogo', 'Inventário', 'Minhas Requisições', 'Minhas Alocações', 'Carrinho']}
         onTabChange={[fetchTabCatalog, fetchTabInventory, fetchTabMyRequests, fetchTabMyAllocations, fetchTabCart]}
         storageKey="persistentTabIndexColab"
+        onOpenCustomRequestModal={() => setIsCustomRequestModalOpen(true)}
       >
         {[
           loadingTabs[0] ? (
@@ -661,6 +684,7 @@ export default function SupplyRequestsPage() {
             <CatalogTab
               supplies={filteredSupplies}
               onAddToCart={handleAddToCart}
+              onOpenCustomRequestModal={() => setIsCustomRequestModalOpen(true)}
             />
           ),
           loadingTabs[1] ? (
@@ -747,6 +771,16 @@ export default function SupplyRequestsPage() {
         userLocales={userLocales}
         onSubmit={handleSubmitRequest}
         isSubmitting={false}
+        localeId={localeId}
+        setLocaleId={setLocaleId}
+      />
+
+      {/* Modal CustomSupplyRequestModal */}
+      <CustomSupplyRequestModal
+        isOpen={isCustomRequestModalOpen}
+        onClose={() => setIsCustomRequestModalOpen(false)}
+        onSubmit={handleCustomRequest}
+        userLocales={userLocales}
         localeId={localeId}
         setLocaleId={setLocaleId}
       />

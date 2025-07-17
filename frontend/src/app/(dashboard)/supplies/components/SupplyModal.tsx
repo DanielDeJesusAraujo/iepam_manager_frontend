@@ -1,3 +1,4 @@
+import React, { useState, useRef, useEffect, useCallback, RefObject } from 'react';
 import {
     Modal,
     ModalOverlay,
@@ -21,13 +22,19 @@ import {
     NumberDecrementStepper,
     InputGroup,
     InputLeftAddon,
+    VStack,
+    Menu,
+    MenuButton,
+    MenuList,
+    MenuItem,IconButton, useDisclosure, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter
 } from '@chakra-ui/react';
-import { useState, useEffect, useCallback } from 'react';
 import { Supply as BaseSupply, Category, Supplier, Unit } from '../utils/types';
 import { initializeFormData } from '../utils/suppliesUtils';
 import { uploadImage } from '@/utils/imageUtils';
 import { fetchSuppliers, fetchUnits } from '@/utils/apiUtils';
 import { handleImageChange } from '@/utils/imageUtils';
+import { Camera, Image as ImageIcon } from 'lucide-react';
+import { ImageSourceDialog } from './ImageSourceDialog';
 
 type Supply = BaseSupply & { freight?: number | string; subcategory_id?: string };
 
@@ -74,6 +81,14 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
     const [previewInvoiceUrl, setPreviewInvoiceUrl] = useState<string>('');
     const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
     const toast = useToast();
+    const inputFileRef = useRef<HTMLInputElement | null>(null);
+    const [fileCapture, setFileCapture] = useState<'environment' | 'user' | undefined>(undefined);
+    const [showImageChoice, setShowImageChoice] = useState(false);
+    // Adicionar refs e estados para nota fiscal
+    const inputInvoiceFileRef = useRef<HTMLInputElement | null>(null);
+    const [invoiceFileCapture, setInvoiceFileCapture] = useState<'environment' | 'user' | undefined>(undefined);
+    const [showInvoiceImageChoice, setShowInvoiceImageChoice] = useState(false);
+    const leastDestructiveRef = useRef<HTMLButtonElement>(null);
 
     const fetchSubcategories = useCallback(async (categoryId: string) => {
         if (!categoryId) {
@@ -124,14 +139,14 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                 ]);
                 setSuppliers(suppliersData);
                 setUnits(unitsData);
-        } catch (error) {
-            toast({
+            } catch (error) {
+                toast({
                     title: 'Erro ao carregar dados',
                     description: 'Não foi possível carregar os dados necessários.',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
+                    status: 'error',
+                    duration: 3000,
+                    isClosable: true,
+                });
             }
         };
         loadData();
@@ -139,15 +154,15 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         try {
             let imageUrl = formData.image_url;
             let invoiceUrl = (formData as any).invoice_url;
-            
+
             if (selectedImage) {
                 imageUrl = await uploadImage(selectedImage);
             }
-            
+
             if (selectedInvoiceImage) {
                 invoiceUrl = await uploadImage(selectedInvoiceImage);
             }
@@ -246,7 +261,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                             </FormControl>
 
                             <FormControl isRequired gridColumn={{ base: 'auto', md: '1' }}>
-                                <FormLabel>Unidade</FormLabel>
+                                <FormLabel>Unidade de Medida</FormLabel>
                                 <Select
                                     value={formData.unit_id}
                                     onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
@@ -305,7 +320,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                     ))}
                                 </Select>
                             </FormControl>
-                            
+
 
                             <FormControl isRequired gridColumn={{ base: 'auto', md: '2' }}>
                                 <FormLabel>Preço Unitário</FormLabel>
@@ -352,12 +367,42 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                             </FormControl>
 
                             <FormControl gridColumn={{ base: 'auto', md: '2' }}>
-                                <FormLabel>Imagem</FormLabel>
-                                <Input
+                                <Button
+                                    mt={"2vh"}
+                                    minW="full"
+                                    leftIcon={<ImageIcon size={18} />}
+                                    onClick={() => setShowImageChoice(true)}
+                                    colorScheme="blue"
+                                    mb={2}
+                                >
+                                    Carregar imagem do Produto
+                                </Button>
+                                <input
+                                    ref={inputFileRef}
                                     type="file"
                                     accept="image/*"
-                                    capture="environment"
-                                    onChange={(e) => handleImageChange(e, setSelectedImage, setPreviewUrl)}
+                                    style={{ display: 'none' }}
+                                    capture={fileCapture ?? undefined}
+                                    onChange={(e) => {
+                                        handleImageChange(e, setSelectedImage, setPreviewUrl);
+                                        setFileCapture(undefined);
+                                    }}
+                                />
+                                <ImageSourceDialog
+                                    isOpen={showImageChoice}
+                                    onClose={() => setShowImageChoice(false)}
+                                    onSelectGallery={() => {
+                                        setFileCapture(undefined);
+                                        setShowImageChoice(false);
+                                        setTimeout(() => inputFileRef.current?.click(), 100);
+                                    }}
+                                    onSelectCamera={() => {
+                                        setFileCapture('environment');
+                                        setShowImageChoice(false);
+                                        setTimeout(() => inputFileRef.current?.click(), 100);
+                                    }}
+                                    leastDestructiveRef={leastDestructiveRef}
+                                    title="Como deseja carregar a imagem?"
                                 />
                                 {previewUrl && (
                                     <Box mt={2}>
@@ -372,11 +417,42 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                             </FormControl>
 
                             <FormControl gridColumn={{ base: 'auto', md: '1' }}>
-                                <FormLabel>Nota Fiscal</FormLabel>
-                                <Input
+                                <Button
+                                    minW="full"
+                                    leftIcon={<ImageIcon size={18} />}
+                                    onClick={() => setShowInvoiceImageChoice(true)}
+                                    colorScheme="blue"
+
+                                    mb={2}
+                                >
+                                    Carregar imagem nota fiscal
+                                </Button>
+                                <input
+                                    ref={inputInvoiceFileRef}
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => handleImageChange(e, setSelectedInvoiceImage, setPreviewInvoiceUrl)}
+                                    style={{ display: 'none' }}
+                                    capture={invoiceFileCapture ?? undefined}
+                                    onChange={(e) => {
+                                        handleImageChange(e, setSelectedInvoiceImage, setPreviewInvoiceUrl);
+                                        setInvoiceFileCapture(undefined);
+                                    }}
+                                />
+                                <ImageSourceDialog
+                                    isOpen={showInvoiceImageChoice}
+                                    onClose={() => setShowInvoiceImageChoice(false)}
+                                    onSelectGallery={() => {
+                                        setInvoiceFileCapture(undefined);
+                                        setShowInvoiceImageChoice(false);
+                                        setTimeout(() => inputInvoiceFileRef.current?.click(), 100);
+                                    }}
+                                    onSelectCamera={() => {
+                                        setInvoiceFileCapture('environment');
+                                        setShowInvoiceImageChoice(false);
+                                        setTimeout(() => inputInvoiceFileRef.current?.click(), 100);
+                                    }}
+                                    leastDestructiveRef={leastDestructiveRef}
+                                    title="Como deseja carregar a nota fiscal?"
                                 />
                                 {previewInvoiceUrl && (
                                     <Box mt={2}>
