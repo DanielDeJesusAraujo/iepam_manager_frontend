@@ -84,15 +84,19 @@ export default function InventoryPage() {
     const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
+        console.log('[Inventory] useEffect: carregando itens e categorias');
         loadItems();
         loadCategories();
     }, []);
 
     const loadItems = async () => {
         try {
+            console.log('[Inventory] Buscando itens do inventário...');
             const data = await fetchItems();
             setItems(Array.isArray(data) ? data : []);
+            console.log('[Inventory] Itens carregados:', data);
         } catch (error) {
+            console.error('[Inventory] Erro ao carregar inventário:', error);
             toast({
                 title: 'Erro ao carregar inventário',
                 description: 'Não foi possível carregar os itens do inventário.',
@@ -106,9 +110,12 @@ export default function InventoryPage() {
 
     const loadCategories = async () => {
         try {
+            console.log('[Inventory] Buscando categorias...');
             const data = await fetchCategories();
             setCategories(Array.isArray(data) ? data : []);
+            console.log('[Inventory] Categorias carregadas:', data);
         } catch (error) {
+            console.error('[Inventory] Erro ao carregar categorias:', error);
             setCategories([]);
         }
     };
@@ -116,11 +123,15 @@ export default function InventoryPage() {
     const handleCategoryChange = async (categoryId: string) => {
         setSelectedCategory(categoryId);
         setSelectedSubcategory('');
+        console.log('[Inventory] Categoria selecionada:', categoryId);
         if (categoryId) {
             try {
+                console.log('[Inventory] Buscando subcategorias para categoria:', categoryId);
                 const data = await fetchSubcategories(categoryId);
                 setSubcategories(Array.isArray(data) ? data : []);
+                console.log('[Inventory] Subcategorias carregadas:', data);
             } catch (error) {
+                console.error('[Inventory] Erro ao carregar subcategorias:', error);
                 setSubcategories([]);
             }
         } else {
@@ -130,6 +141,7 @@ export default function InventoryPage() {
 
     const handleCreate = async (data: any) => {
         try {
+            console.log('[Inventory] Criando item:', data);
             const response = await createItem(data);
             if (!response.ok) throw new Error('Erro ao criar item');
             toast({
@@ -142,6 +154,7 @@ export default function InventoryPage() {
             loadItems();
             onClose();
         } catch (error: any) {
+            console.error('[Inventory] Erro ao criar item:', error);
             toast({
                 title: 'Erro ao criar item',
                 description: error.message || 'Não foi possível criar o item.',
@@ -155,6 +168,7 @@ export default function InventoryPage() {
     const handleDelete = async (id: string) => {
         if (window.confirm('Tem certeza que deseja excluir este item?')) {
             try {
+                console.log('[Inventory] Excluindo item:', id);
                 const response = await deleteItem(id);
                 if (!response.ok) throw new Error('Erro ao excluir item');
                 toast({
@@ -166,6 +180,7 @@ export default function InventoryPage() {
                 });
                 loadItems();
             } catch (error) {
+                console.error('[Inventory] Erro ao excluir item:', error);
                 toast({
                     title: 'Erro ao excluir item',
                     description: 'Não foi possível excluir o item.',
@@ -179,8 +194,10 @@ export default function InventoryPage() {
 
     const handleExportPDF = async () => {
         try {
+            console.log('[Inventory] Exportando PDF dos itens filtrados:', filteredItems, 'Agrupamento:', groupBy);
             await exportInventoryPDF(filteredItems, groupBy);
         } catch (error) {
+            console.error('[Inventory] Erro ao exportar PDF:', error);
             toast({
                 title: 'Erro ao exportar PDF',
                 description: 'Não foi possível gerar o relatório em PDF.',
@@ -192,6 +209,7 @@ export default function InventoryPage() {
     };
 
     const handleEdit = (item: InventoryItem) => {
+        console.log('[Inventory] Editando item:', item);
         setEditItem(item);
         setIsEditMode(true);
         onOpen();
@@ -200,6 +218,7 @@ export default function InventoryPage() {
     const handleUpdate = async (data: any) => {
         try {
             if (!editItem) return;
+            console.log('[Inventory] Atualizando item:', editItem.id, data);
             const response = await updateItem(editItem.id, data);
             if (!response.ok) throw new Error('Erro ao atualizar item');
             toast({
@@ -212,6 +231,7 @@ export default function InventoryPage() {
             loadItems();
             handleCloseModal();
         } catch (error: any) {
+            console.error('[Inventory] Erro ao atualizar item:', error);
             toast({
                 title: 'Erro ao atualizar item',
                 description: error.message || 'Não foi possível atualizar o item.',
@@ -230,6 +250,7 @@ export default function InventoryPage() {
 
     const handleDepreciateAll = async () => {
         try {
+            console.log('[Inventory] Atualizando depreciação de todos os itens...');
             const data = await depreciateAll();
             toast({
                 title: 'Depreciação atualizada',
@@ -240,6 +261,7 @@ export default function InventoryPage() {
             });
             loadItems();
         } catch (error: any) {
+            console.error('[Inventory] Erro ao atualizar depreciação:', error);
             toast({
                 title: 'Erro ao atualizar depreciação',
                 description: error.message || 'Não foi possível atualizar a depreciação dos itens.',
@@ -249,6 +271,20 @@ export default function InventoryPage() {
             });
         }
     };
+
+    // Observabilidade para filtros e agrupamento
+    useEffect(() => {
+        console.log('[Inventory] Filtro de busca:', searchTerm);
+    }, [searchTerm]);
+    useEffect(() => {
+        console.log('[Inventory] Categoria selecionada:', selectedCategory);
+    }, [selectedCategory]);
+    useEffect(() => {
+        console.log('[Inventory] Subcategoria selecionada:', selectedSubcategory);
+    }, [selectedSubcategory]);
+    useEffect(() => {
+        console.log('[Inventory] Agrupamento selecionado:', groupBy);
+    }, [groupBy]);
 
     const filteredItems = filterItems(items, searchTerm, selectedCategory, selectedSubcategory);
     const groupedItems = groupItems(filteredItems, groupBy);
