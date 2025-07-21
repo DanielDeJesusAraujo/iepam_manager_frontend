@@ -117,12 +117,12 @@ export default function LocationsPage() {
   return (
     <Container maxW="container.xl" py={8}>
       <HStack justify="space-between" mb={6}>
-        <Heading size="lg">Localizações</Heading>
+        <Heading size="lg">Polos</Heading>
         <Button
           leftIcon={<Icon as={Plus} />}
           onClick={() => router.push('/locations/add')}
         >
-          Adicionar Localização
+          Adicionar Polo
         </Button>
       </HStack>
 
@@ -132,7 +132,7 @@ export default function LocationsPage() {
             <Tr>
               <Th>Nome</Th>
               <Th>Endereço</Th>
-              <Th>Filial</Th>
+              <Th>Polo</Th>
               <Th>Ações</Th>
             </Tr>
           </Thead>

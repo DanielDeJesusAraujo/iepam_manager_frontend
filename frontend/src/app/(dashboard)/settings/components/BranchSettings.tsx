@@ -213,9 +213,9 @@ export default function BranchSettings() {
     return (
         <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
-                <Heading size="sm">Localizações</Heading>
+                <Heading size="sm">Polos</Heading>
                 <Button colorScheme="blue" onClick={onBranchModalOpen}>
-                    Nova Localização
+                    Novo Polo
                 </Button>
             </HStack>
 
@@ -224,7 +224,7 @@ export default function BranchSettings() {
                     <Tr>
                         <Th>Nome</Th>
                         <Th>Endereço</Th>
-                        <Th>Filial</Th>
+                        <Th>Polo</Th>
                         <Th width="100px">Ações</Th>
                     </Tr>
                 </Thead>
@@ -261,7 +261,7 @@ export default function BranchSettings() {
                 <ModalContent>
                     <form onSubmit={handleBranchSubmit}>
                         <ModalHeader>
-                            {editingBranch ? 'Editar' : 'Nova'} Localização
+                            {editingBranch ? 'Editar' : 'Novo'} Polo
                         </ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
@@ -279,15 +279,15 @@ export default function BranchSettings() {
                                     <Input
                                         value={branchFormData.address}
                                         onChange={(e) => setBranchFormData({ ...branchFormData, address: e.target.value })}
-                                        placeholder="Endereço da localização"
+                                        placeholder="Endereço do polo"
                                     />
                                 </FormControl>
                                 <FormControl isRequired>
-                                    <FormLabel>Filial</FormLabel>
+                                    <FormLabel>Polo</FormLabel>
                                     <Input
                                         value={branchFormData.branch}
                                         onChange={(e) => setBranchFormData({ ...branchFormData, branch: e.target.value })}
-                                        placeholder="Nome da filial"
+                                        placeholder="Nome do polo"
                                     />
                                 </FormControl>
                             </VStack>

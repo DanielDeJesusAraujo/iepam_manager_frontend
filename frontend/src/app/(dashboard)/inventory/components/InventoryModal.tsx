@@ -63,7 +63,7 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
     const [categories, setCategories] = useState<{ id: string; label: string }[]>([])
     const [subcategories, setSubcategories] = useState<{ id: string; label: string }[]>([])
     const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>([])
-    const [locales, setLocales] = useState<{ id: string; name: string }[]>([])
+    const [locales, setLocales] = useState<{ id: string; name: string; location_id: string }[]>([])
     const [errors, setErrors] = useState<Record<string, string>>({})
     const toast = useToast()
     const [isDepreciable, setIsDepreciable] = useState(false);
@@ -469,12 +469,15 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                         value={formData.locale_id}
                                         onChange={(e) => setFormData({ ...formData, locale_id: e.target.value })}
                                         placeholder="Selecione o ambiente"
+                                        isDisabled={!formData.location_id}
                                     >
-                                        {Array.isArray(locales) && locales.map((locale) => (
-                                            <option key={locale.id} value={locale.id}>
-                                                {locale.name}
-                                            </option>
-                                        ))}
+                                        {Array.isArray(locales) && locales
+                                            .filter(locale => locale.location_id === formData.location_id)
+                                            .map((locale) => (
+                                                <option key={locale.id} value={locale.id}>
+                                                    {locale.name}
+                                                </option>
+                                            ))}
                                     </Select>
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.category_id} isRequired>

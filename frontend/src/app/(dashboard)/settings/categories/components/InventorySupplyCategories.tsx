@@ -360,14 +360,27 @@ export default function InventorySupplyCategories() {
             <Box>
                 <HStack justify="space-between" mb={4}>
                     <Heading size="md">Categorias de Inventário e Suprimentos</Heading>
-                    <Button
-                        leftIcon={<AddIcon />}
-                        colorScheme="blue"
-                        onClick={onCategoryModalOpen}
-                        size="sm"
-                    >
-                        Nova Categoria
-                    </Button>
+                    <HStack>
+                        <Button
+                            leftIcon={<AddIcon />}
+                            colorScheme="blue"
+                            onClick={onCategoryModalOpen}
+                            size="sm"
+                        >
+                            Nova Categoria
+                        </Button>
+                        <Button
+                            leftIcon={<AddIcon />}
+                            colorScheme="green"
+                            onClick={() => {
+                                setSubcategoryFormData({ value: '', categoryId: '' })
+                                onSubcategoryModalOpen()
+                            }}
+                            size="sm"
+                        >
+                            Nova Subcategoria
+                        </Button>
+                    </HStack>
                 </HStack>
 
                 <Box
@@ -381,7 +394,6 @@ export default function InventorySupplyCategories() {
                         <Thead>
                             <Tr>
                                 <Th>Categoria</Th>
-                                <Th>Subcategorias</Th>
                                 <Th>Ações</Th>
                             </Tr>
                         </Thead>
@@ -420,16 +432,6 @@ export default function InventorySupplyCategories() {
                                                     />
                                                 </HStack>
                                             ))}
-                                            <Button
-                                                size="xs"
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setSubcategoryFormData({ value: '', categoryId: category.id })
-                                                    onSubcategoryModalOpen()
-                                                }}
-                                            >
-                                                + Subcategoria
-                                            </Button>
                                         </VStack>
                                     </Td>
                                     <Td>
