@@ -248,18 +248,18 @@ export default function LocationSettings() {
     return (
         <VStack spacing={6} align="stretch">
             <HStack justify="space-between">
-                <Heading size="sm">Locais</Heading>
+                <Heading size="sm">Ambientes</Heading>
                 <Button colorScheme="blue" onClick={onLocationModalOpen}>
-                    Novo Local
+                    Novo Ambiente
                 </Button>
             </HStack>
 
-            <Table variant="simple">
+            <Table variant="striped">
                 <Thead>
                     <Tr>
                         <Th>Nome</Th>
                         <Th>Descrição</Th>
-                        <Th>Localização</Th>
+                        <Th>Polo</Th>
                         <Th width="100px">Ações</Th>
                     </Tr>
                 </Thead>
@@ -271,12 +271,6 @@ export default function LocationSettings() {
                             <Td>{location.location?.name || '-'}</Td>
                             <Td>
                                 <HStack spacing={2}>
-                                    <IconButton
-                                        aria-label="Editar local"
-                                        icon={<EditIcon />}
-                                        size="sm"
-                                        onClick={() => handleLocationEdit(location)}
-                                    />
                                     <IconButton
                                         aria-label="Excluir local"
                                         icon={<DeleteIcon />}
@@ -296,17 +290,17 @@ export default function LocationSettings() {
                 <ModalContent>
                     <form onSubmit={handleLocationSubmit}>
                         <ModalHeader>
-                            {editingLocation ? 'Editar' : 'Novo'} Local
+                            {editingLocation ? 'Editar' : 'Novo'} Ambiente
                         </ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
                             <VStack spacing={4}>
                                 <FormControl isRequired>
-                                    <FormLabel>Nome do Local</FormLabel>
+                                    <FormLabel>Nome do Ambiente</FormLabel>
                                     <Input
                                         value={locationFormData.name}
                                         onChange={(e) => setLocationFormData({ ...locationFormData, name: e.target.value })}
-                                        placeholder="Nome do local"
+                                        placeholder="Nome do ambiente"
                                     />
                                 </FormControl>
                                 <FormControl>
@@ -314,17 +308,17 @@ export default function LocationSettings() {
                                     <Input
                                         value={locationFormData.description}
                                         onChange={(e) => setLocationFormData({ ...locationFormData, description: e.target.value })}
-                                        placeholder="Descrição do local"
+                                        placeholder="Descrição do ambiente"
                                     />
                                 </FormControl>
                                 <FormControl isRequired>
-                                    <FormLabel>Localização</FormLabel>
+                                    <FormLabel>Polo</FormLabel>
                                     <select
                                         value={locationFormData.location_id}
                                         onChange={e => setLocationFormData({ ...locationFormData, location_id: e.target.value })}
                                         style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #CBD5E0' }}
                                     >
-                                        <option value="">Selecione a localização</option>
+                                        <option value="">Selecione o polo</option>
                                         {branches.map(branch => (
                                             <option key={branch.id} value={branch.id}>{branch.name}</option>
                                         ))}

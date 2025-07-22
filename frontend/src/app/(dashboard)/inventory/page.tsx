@@ -54,6 +54,17 @@ import { filterItems } from './utils/filterUtils';
 import { MobileView, DesktopView } from './components/ItemViews';
 import { InventoryItem, GroupByOption } from './types';
 import { groupItems } from './utils/groupUtils';
+import { InventoryHeader } from './components/InventoryHeader';
+import { InventoryFilters } from './components/InventoryFilters';
+import {
+  fetchItems,
+  fetchCategories,
+  fetchSubcategories,
+  createItem,
+  updateItem,
+  deleteItem,
+  depreciateAll
+} from './utils/inventoryApi';
 
 export default function InventoryPage() {
     const [groupBy, setGroupBy] = useState<GroupByOption>('none');
@@ -67,34 +78,25 @@ export default function InventoryPage() {
     const toast = useToast();
     const { colorMode } = useColorMode();
     Chart.register(...registerables);
-
-    const bgColor = useColorModeValue('white', 'gray.800');
-    const borderColor = useColorModeValue('gray.200', 'gray.700');
-    const hoverBg = useColorModeValue('gray.50', 'gray.700');
-
     const isMobile = useBreakpointValue({ base: true, md: false });
     const { isOpen: isFilterOpen, onOpen: onFilterOpen, onClose: onFilterClose } = useDisclosure();
-
     const [editItem, setEditItem] = useState<InventoryItem | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
 
     useEffect(() => {
-        fetchItems();
-        fetchCategories();
+        console.log('[Inventory] useEffect: carregando itens e categorias');
+        loadItems();
+        loadCategories();
     }, []);
 
-    const fetchItems = async () => {
+    const loadItems = async () => {
         try {
-            const token = localStorage.getItem('@ti-assistant:token')
-            const response = await fetch('/api/inventory', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
+            console.log('[Inventory] Buscando itens do inventário...');
+            const data = await fetchItems();
             setItems(Array.isArray(data) ? data : []);
+            console.log('[Inventory] Itens carregados:', data);
         } catch (error) {
+            console.error('[Inventory] Erro ao carregar inventário:', error);
             toast({
                 title: 'Erro ao carregar inventário',
                 description: 'Não foi possível carregar os itens do inventário.',
@@ -106,18 +108,14 @@ export default function InventoryPage() {
         }
     };
 
-    const fetchCategories = async () => {
+    const loadCategories = async () => {
         try {
-            const token = localStorage.getItem('@ti-assistant:token')
-            const response = await fetch('/api/categories', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
+            console.log('[Inventory] Buscando categorias...');
+            const data = await fetchCategories();
             setCategories(Array.isArray(data) ? data : []);
+            console.log('[Inventory] Categorias carregadas:', data);
         } catch (error) {
+            console.error('[Inventory] Erro ao carregar categorias:', error);
             setCategories([]);
         }
     };
@@ -125,19 +123,15 @@ export default function InventoryPage() {
     const handleCategoryChange = async (categoryId: string) => {
         setSelectedCategory(categoryId);
         setSelectedSubcategory('');
-
+        console.log('[Inventory] Categoria selecionada:', categoryId);
         if (categoryId) {
             try {
-                const token = localStorage.getItem('@ti-assistant:token')
-                const response = await fetch(`/api/subcategories/category/${categoryId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
+                console.log('[Inventory] Buscando subcategorias para categoria:', categoryId);
+                const data = await fetchSubcategories(categoryId);
                 setSubcategories(Array.isArray(data) ? data : []);
+                console.log('[Inventory] Subcategorias carregadas:', data);
             } catch (error) {
+                console.error('[Inventory] Erro ao carregar subcategorias:', error);
                 setSubcategories([]);
             }
         } else {
@@ -147,20 +141,9 @@ export default function InventoryPage() {
 
     const handleCreate = async (data: any) => {
         try {
-            const token = localStorage.getItem('@ti-assistant:token')
-            const response = await fetch('/api/inventory', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-
-            if (!response.ok) {
-                throw new Error('Erro ao criar item');
-            }
-
+            console.log('[Inventory] Criando item:', data);
+            const response = await createItem(data);
+            if (!response.ok) throw new Error('Erro ao criar item');
             toast({
                 title: 'Item criado',
                 description: 'O item foi adicionado ao inventário com sucesso.',
@@ -168,9 +151,10 @@ export default function InventoryPage() {
                 duration: 3000,
                 isClosable: true,
             });
-            fetchItems();
+            loadItems();
             onClose();
         } catch (error: any) {
+            console.error('[Inventory] Erro ao criar item:', error);
             toast({
                 title: 'Erro ao criar item',
                 description: error.message || 'Não foi possível criar o item.',
@@ -184,19 +168,9 @@ export default function InventoryPage() {
     const handleDelete = async (id: string) => {
         if (window.confirm('Tem certeza que deseja excluir este item?')) {
             try {
-                const token = localStorage.getItem('@ti-assistant:token')
-                const response = await fetch(`/api/inventory/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao excluir item');
-                }
-
+                console.log('[Inventory] Excluindo item:', id);
+                const response = await deleteItem(id);
+                if (!response.ok) throw new Error('Erro ao excluir item');
                 toast({
                     title: 'Item excluído',
                     description: 'O item foi removido do inventário com sucesso.',
@@ -204,8 +178,9 @@ export default function InventoryPage() {
                     duration: 3000,
                     isClosable: true,
                 });
-                fetchItems();
+                loadItems();
             } catch (error) {
+                console.error('[Inventory] Erro ao excluir item:', error);
                 toast({
                     title: 'Erro ao excluir item',
                     description: 'Não foi possível excluir o item.',
@@ -219,8 +194,10 @@ export default function InventoryPage() {
 
     const handleExportPDF = async () => {
         try {
+            console.log('[Inventory] Exportando PDF dos itens filtrados:', filteredItems, 'Agrupamento:', groupBy);
             await exportInventoryPDF(filteredItems, groupBy);
         } catch (error) {
+            console.error('[Inventory] Erro ao exportar PDF:', error);
             toast({
                 title: 'Erro ao exportar PDF',
                 description: 'Não foi possível gerar o relatório em PDF.',
@@ -232,6 +209,7 @@ export default function InventoryPage() {
     };
 
     const handleEdit = (item: InventoryItem) => {
+        console.log('[Inventory] Editando item:', item);
         setEditItem(item);
         setIsEditMode(true);
         onOpen();
@@ -239,18 +217,10 @@ export default function InventoryPage() {
 
     const handleUpdate = async (data: any) => {
         try {
-            const token = localStorage.getItem('@ti-assistant:token');
-            const response = await fetch(`/api/inventory/${editItem?.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-            if (!response.ok) {
-                throw new Error('Erro ao atualizar item');
-            }
+            if (!editItem) return;
+            console.log('[Inventory] Atualizando item:', editItem.id, data);
+            const response = await updateItem(editItem.id, data);
+            if (!response.ok) throw new Error('Erro ao atualizar item');
             toast({
                 title: 'Item atualizado',
                 description: 'O item foi atualizado com sucesso.',
@@ -258,9 +228,10 @@ export default function InventoryPage() {
                 duration: 3000,
                 isClosable: true,
             });
-            fetchItems();
+            loadItems();
             handleCloseModal();
         } catch (error: any) {
+            console.error('[Inventory] Erro ao atualizar item:', error);
             toast({
                 title: 'Erro ao atualizar item',
                 description: error.message || 'Não foi possível atualizar o item.',
@@ -279,18 +250,8 @@ export default function InventoryPage() {
 
     const handleDepreciateAll = async () => {
         try {
-            const token = localStorage.getItem('@ti-assistant:token');
-            const response = await fetch('/api/inventory', {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Erro ao atualizar depreciação dos itens');
-            }
-            const data = await response.json();
+            console.log('[Inventory] Atualizando depreciação de todos os itens...');
+            const data = await depreciateAll();
             toast({
                 title: 'Depreciação atualizada',
                 description: `${data.updated} itens atualizados com sucesso!`,
@@ -298,8 +259,9 @@ export default function InventoryPage() {
                 duration: 3000,
                 isClosable: true,
             });
-            fetchItems();
+            loadItems();
         } catch (error: any) {
+            console.error('[Inventory] Erro ao atualizar depreciação:', error);
             toast({
                 title: 'Erro ao atualizar depreciação',
                 description: error.message || 'Não foi possível atualizar a depreciação dos itens.',
@@ -309,6 +271,20 @@ export default function InventoryPage() {
             });
         }
     };
+
+    // Observabilidade para filtros e agrupamento
+    useEffect(() => {
+        console.log('[Inventory] Filtro de busca:', searchTerm);
+    }, [searchTerm]);
+    useEffect(() => {
+        console.log('[Inventory] Categoria selecionada:', selectedCategory);
+    }, [selectedCategory]);
+    useEffect(() => {
+        console.log('[Inventory] Subcategoria selecionada:', selectedSubcategory);
+    }, [selectedSubcategory]);
+    useEffect(() => {
+        console.log('[Inventory] Agrupamento selecionado:', groupBy);
+    }, [groupBy]);
 
     const filteredItems = filterItems(items, searchTerm, selectedCategory, selectedSubcategory);
     const groupedItems = groupItems(filteredItems, groupBy);
@@ -334,346 +310,29 @@ export default function InventoryPage() {
                     gap={3}
                 >
                     {!isMobile && <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Inventário</Heading>}
-                    <HStack 
-                        spacing={2} 
-                        w="100%" 
-                        justify={isMobile ? "space-between" : "flex-end"}
-                        wrap="wrap"
-                    >
-                        {isMobile ? (
-                            <>
-                                <VStack spacing={2} w="100%">
-                                    <Button
-                                        leftIcon={<FiPlus />}
-                                        colorScheme="blue"
-                                        onClick={onOpen}
-                                        size="sm"
-                                        w="100%"
-                                        bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                                        _hover={{
-                                            bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                            transform: 'translateY(-1px)',
-                                        }}
-                                        transition="all 0.3s ease"
-                                    >
-                                        Novo Item
-                                    </Button>
-                                    <Button
-                                        leftIcon={<FiBarChart2 />}
-                                        colorScheme="purple"
-                                        as={Link}
-                                        href="/inventory/statistics"
-                                        size="sm"
-                                        w="100%"
-                                        bg={colorMode === 'dark' ? 'rgba(159, 122, 234, 0.8)' : undefined}
-                                        _hover={{
-                                            bg: colorMode === 'dark' ? 'rgba(159, 122, 234, 0.9)' : undefined,
-                                            transform: 'translateY(-1px)',
-                                        }}
-                                        transition="all 0.3s ease"
-                                    >
-                                        Estatísticas
-                                    </Button>
-                                    <Button
-                                        colorScheme="green"
-                                        onClick={handleExportPDF}
-                                        size="sm"
-                                        w="100%"
-                                        bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-                                        _hover={{
-                                            bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                                            transform: 'translateY(-1px)',
-                                        }}
-                                        transition="all 0.3s ease"
-                                    >
-                                        Exportar PDF
-                                    </Button>
-                                    <Button
-                                        colorScheme="orange"
-                                        onClick={handleDepreciateAll}
-                                        size="sm"
-                                        w="100%"
-                                        bg={colorMode === 'dark' ? 'rgba(251, 140, 0, 0.8)' : undefined}
-                                        _hover={{
-                                            bg: colorMode === 'dark' ? 'rgba(251, 140, 0, 0.9)' : undefined,
-                                            transform: 'translateY(-1px)',
-                                        }}
-                                        transition="all 0.3s ease"
-                                    >
-                                        Atualizar Depreciação
-                                    </Button>
-                                </VStack>
-                            </>
-                        ) : (
-                            <>
-                                <Menu>
-                                    <MenuButton
-                                        as={Button}
-                                        leftIcon={<FiFilter />}
-                                        size="md"
-                                        bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                                        _hover={{
-                                            bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                            transform: 'translateY(-1px)',
-                                        }}
-                                        transition="all 0.3s ease"
-                                    >
-                                        Agrupar por
-                                    </MenuButton>
-                                    <MenuList>
-                                        <MenuItem
-                                            onClick={() => setGroupBy('none')}
-                                            bg={groupBy === 'none' ? 'blue.50' : undefined}
-                                        >
-                                            Sem agrupamento
-                                        </MenuItem>
-                                        <MenuItem
-                                            onClick={() => setGroupBy('location')}
-                                            bg={groupBy === 'location' ? 'blue.50' : undefined}
-                                        >
-                                            Localização
-                                        </MenuItem>
-                                        <MenuItem
-                                            onClick={() => setGroupBy('category')}
-                                            bg={groupBy === 'category' ? 'blue.50' : undefined}
-                                        >
-                                            Categoria
-                                        </MenuItem>
-                                        <MenuItem
-                                            onClick={() => setGroupBy('status')}
-                                            bg={groupBy === 'status' ? 'blue.50' : undefined}
-                                        >
-                                            Status
-                                        </MenuItem>
-                                        <MenuItem
-                                            onClick={() => setGroupBy('subcategory')}
-                                            bg={groupBy === 'subcategory' ? 'blue.50' : undefined}
-                                        >
-                                            Subcategoria
-                                        </MenuItem>
-                                    </MenuList>
-                                </Menu>
-                                <Button
-                                    leftIcon={<FiBarChart2 />}
-                                    colorScheme="purple"
-                                    as={Link}
-                                    href="/inventory/statistics"
-                                    size="md"
-                                    bg={colorMode === 'dark' ? 'rgba(159, 122, 234, 0.8)' : undefined}
-                                    _hover={{
-                                        bg: colorMode === 'dark' ? 'rgba(159, 122, 234, 0.9)' : undefined,
-                                        transform: 'translateY(-1px)',
-                                    }}
-                                    transition="all 0.3s ease"
-                                >
-                                    Estatísticas
-                                </Button>
-                                <Button
-                                    leftIcon={<FiPlus />}
-                                    colorScheme="blue"
-                                    onClick={onOpen}
-                                    size="md"
-                                    bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                                    _hover={{
-                                        bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined,
-                                        transform: 'translateY(-1px)',
-                                    }}
-                                    transition="all 0.3s ease"
-                                >
-                                    Novo Item
-                                </Button>
-                                <Button
-                                    colorScheme="green"
-                                    onClick={handleExportPDF}
-                                    size="md"
-                                    bg={colorMode === 'dark' ? 'rgba(72, 187, 120, 0.8)' : undefined}
-                                    _hover={{
-                                        bg: colorMode === 'dark' ? 'rgba(72, 187, 120, 0.9)' : undefined,
-                                        transform: 'translateY(-1px)',
-                                    }}
-                                    transition="all 0.3s ease"
-                                >
-                                    Exportar PDF
-                                </Button>
-                                <Button
-                                    colorScheme="orange"
-                                    onClick={handleDepreciateAll}
-                                    size="md"
-                                    bg={colorMode === 'dark' ? 'rgba(251, 140, 0, 0.8)' : undefined}
-                                    _hover={{
-                                        bg: colorMode === 'dark' ? 'rgba(251, 140, 0, 0.9)' : undefined,
-                                        transform: 'translateY(-1px)',
-                                    }}
-                                    transition="all 0.3s ease"
-                                >
-                                    Atualizar Depreciação
-                                </Button>
-                            </>
-                        )}
-                    </HStack>
+                    <InventoryHeader
+                        onOpen={onOpen}
+                        onExportPDF={handleExportPDF}
+                        onDepreciateAll={handleDepreciateAll}
+                        groupBy={groupBy}
+                        setGroupBy={setGroupBy}
+                    />
                 </Flex>
-
-                {isMobile ? (
-                    <>
-                        <VStack spacing={3} align="stretch">
-                            <InputGroup size="sm">
-                                <InputLeftElement pointerEvents="none">
-                                    <FiSearch color={colorMode === 'dark' ? 'gray.400' : 'gray.300'} />
-                                </InputLeftElement>
-                                <Input
-                                    placeholder="Buscar item..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                    backdropFilter="blur(12px)"
-                                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                    _hover={{
-                                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                    }}
-                                    _focus={{
-                                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                        boxShadow: 'none',
-                                    }}
-                                />
-                            </InputGroup>
-
-                            <Button
-                                leftIcon={<FiFilter />}
-                                size="sm"
-                                variant="outline"
-                                onClick={onFilterOpen}
-                                w="100%"
-                                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                backdropFilter="blur(12px)"
-                                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                _hover={{
-                                    bg: colorMode === 'dark' ? 'rgba(45, 55, 72, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                                    transform: 'translateY(-1px)',
-                                }}
-                                transition="all 0.3s ease"
-                            >
-                                Filtros
-                            </Button>
-                        </VStack>
-
-                        <Drawer isOpen={isFilterOpen} placement="bottom" onClose={onFilterClose}>
-                            <DrawerOverlay />
-                            <DrawerContent borderTopRadius="xl">
-                                <DrawerCloseButton />
-                                <DrawerHeader borderBottomWidth="1px">Filtros</DrawerHeader>
-                                <DrawerBody py={4}>
-                                    <VStack spacing={4}>
-                                        <FormControl>
-                                            <FormLabel>Categoria</FormLabel>
-                                            <Select
-                                                value={selectedCategory}
-                                                onChange={(e) => handleCategoryChange(e.target.value)}
-                                                size="sm"
-                                            >
-                                                <option value="">Todas</option>
-                                                {Array.isArray(categories) && categories.map(category => (
-                                                    <option key={category.id} value={category.id}>
-                                                        {category.label}
-                                                    </option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-
-                                        <FormControl>
-                                            <FormLabel>Subcategoria</FormLabel>
-                                            <Select
-                                                value={selectedSubcategory}
-                                                onChange={(e) => setSelectedSubcategory(e.target.value)}
-                                                isDisabled={!selectedCategory}
-                                                size="sm"
-                                            >
-                                                <option value="">Todas</option>
-                                                {Array.isArray(subcategories) && subcategories.map(subcategory => (
-                                                    <option key={subcategory.id} value={subcategory.id}>
-                                                        {subcategory.label}
-                                                    </option>
-                                                ))}
-                                            </Select>
-                                        </FormControl>
-                                    </VStack>
-                                </DrawerBody>
-                            </DrawerContent>
-                        </Drawer>
-                    </>
-                ) : (
-                    <HStack spacing={4} wrap="wrap">
-                        <InputGroup maxW="400px">
-                            <InputLeftElement pointerEvents="none">
-                                <FiSearch color="gray.300" />
-                            </InputLeftElement>
-                            <Input
-                                placeholder="Buscar por nome, modelo ou número de série..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                    bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                    backdropFilter="blur(12px)"
-                                    borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                    _hover={{
-                                        borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                    }}
-                                    _focus={{
-                                        borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                        boxShadow: 'none',
-                                    }}
-                            />
-                        </InputGroup>
-
-                        <Select
-                            placeholder="Categoria"
-                            value={selectedCategory}
-                            onChange={(e) => handleCategoryChange(e.target.value)}
-                            maxW="200px"
-                                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                backdropFilter="blur(12px)"
-                                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                _hover={{
-                                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                }}
-                                _focus={{
-                                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                    boxShadow: 'none',
-                                }}
-                        >
-                            {Array.isArray(categories) && categories.map(category => (
-                                <option key={category.id} value={category.id}>
-                                    {category.label}
-                                </option>
-                            ))}
-                        </Select>
-
-                        <Select
-                            placeholder="Subcategoria"
-                            value={selectedSubcategory}
-                            onChange={(e) => setSelectedSubcategory(e.target.value)}
-                            maxW="200px"
-                            isDisabled={!selectedCategory}
-                                bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-                                backdropFilter="blur(12px)"
-                                borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-                                _hover={{
-                                    borderColor: colorMode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                                }}
-                                _focus={{
-                                    borderColor: colorMode === 'dark' ? 'blue.400' : 'blue.500',
-                                    boxShadow: 'none',
-                                }}
-                        >
-                            {Array.isArray(subcategories) && subcategories.map(subcategory => (
-                                <option key={subcategory.id} value={subcategory.id}>
-                                    {subcategory.label}
-                                </option>
-                            ))}
-                        </Select>
-                    </HStack>
-                )}
-
+                <InventoryFilters
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    selectedSubcategory={selectedSubcategory}
+                    setSelectedSubcategory={setSelectedSubcategory}
+                    categories={categories}
+                    subcategories={subcategories}
+                    isFilterOpen={isFilterOpen}
+                    onFilterOpen={onFilterOpen}
+                    onFilterClose={onFilterClose}
+                    handleCategoryChange={handleCategoryChange}
+                />
                 <Divider />
-
                 <Box flex="1" overflowY="auto">
                     {Object.entries(groupedItems).map(([groupName, groupItems]) => (
                         <Box key={groupName} mb={6}>
@@ -689,7 +348,6 @@ export default function InventoryPage() {
                     ))}
                 </Box>
             </VStack>
-
             <InventoryModal
                 isOpen={isOpen}
                 onClose={handleCloseModal}

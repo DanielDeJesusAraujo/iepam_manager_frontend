@@ -4,9 +4,11 @@ import baseUrl from '@/utils/enviroments';
 
 export async function GET(request: Request) {
   try {
+    console.log('[API][suppliers][GET] Iniciando request');
     const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
+      console.error('[API][suppliers][GET] Token não fornecido');
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
@@ -17,13 +19,14 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      console.error('[API][suppliers][GET] Erro ao buscar fornecedores');
       throw new Error('Erro ao buscar fornecedores');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Erro na rota /api/suppliers:', error);
+    console.error('[API][suppliers][GET] Erro na rota /api/suppliers:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar fornecedores' },
       { status: 500 }
@@ -33,9 +36,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    console.log('[API][suppliers][POST] Iniciando request');
     const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
+      console.error('[API][suppliers][POST] Token não fornecido');
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
@@ -52,13 +57,14 @@ export async function POST(request: Request) {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('[API][suppliers][POST] Erro ao criar fornecedor');
       throw new Error(errorData.message || 'Erro ao criar fornecedor');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Erro na rota /api/suppliers:', error);
+    console.error('[API][suppliers][POST] Erro na rota /api/suppliers:', error);
     return NextResponse.json(
       { error: error.message || 'Erro ao criar fornecedor' },
       { status: 500 }

@@ -58,7 +58,7 @@ export default function AlertsPage() {
         const user = JSON.parse(localStorage.getItem('@ti-assistant:user') || '{}');
 
         if (!token) {
-            router.push('/login');
+            router.push('/');
             return;
         }
 

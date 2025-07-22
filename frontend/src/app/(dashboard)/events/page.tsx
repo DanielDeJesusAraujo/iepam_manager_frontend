@@ -229,7 +229,6 @@ export default function EventsPage() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('Tem certeza que deseja excluir este evento?')) return;
-
         try {
             const token = localStorage.getItem('@ti-assistant:token');
             const response = await fetch(`/api/events/${id}`, {

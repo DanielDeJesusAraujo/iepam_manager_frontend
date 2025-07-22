@@ -6,10 +6,12 @@ export async function PUT(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][subcategories][PUT] Iniciando request');
     try {
         const token = request.headers.get('authorization')?.split(' ')[1]
 
         if (!token) {
+            console.error('[API][subcategories][PUT] Token não fornecido');
             return new NextResponse('Não autorizado', { status: 401 })
         }
 
@@ -27,12 +29,13 @@ export async function PUT(
         const data = await response.json()
 
         if (!response.ok) {
+            console.error('[API][subcategories][PUT] Erro ao atualizar subcategoria');
             throw new Error(data.message || 'Erro ao atualizar subcategoria')
         }
 
         return NextResponse.json(data)
     } catch (error) {
-        console.error('Erro ao atualizar subcategoria:', error)
+        console.error('[API][subcategories][PUT] Erro ao atualizar subcategoria:', error)
         return new NextResponse('Erro interno do servidor', { status: 500 })
     }
 }
@@ -41,10 +44,12 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][subcategories][DELETE] Iniciando request');
     try {
         const token = request.headers.get('authorization')?.split(' ')[1]
 
         if (!token) {
+            console.error('[API][subcategories][DELETE] Token não fornecido');
             return new NextResponse('Não autorizado', { status: 401 })
         }
 
@@ -57,12 +62,13 @@ export async function DELETE(
 
         if (!response.ok) {
             const data = await response.json()
+            console.error('[API][subcategories][DELETE] Erro ao excluir subcategoria');
             throw new Error(data.message || 'Erro ao excluir subcategoria')
         }
 
         return new NextResponse(null, { status: 204 })
     } catch (error) {
-        console.error('Erro ao excluir subcategoria:', error)
+        console.error('[API][subcategories][DELETE] Erro ao excluir subcategoria:', error)
         return new NextResponse('Erro interno do servidor', { status: 500 })
     }
 } 

@@ -6,9 +6,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('[API][users][GET] Iniciando request');
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.error('[API][users][GET] Token não fornecido');
       return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
@@ -19,6 +21,7 @@ export async function GET(
     });
 
     if (!response.ok) {
+      console.error('[API][users][GET] Erro ao buscar usuário');
       if (response.status === 404) {
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
       }
@@ -28,7 +31,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Erro na API de usuários:', error);
+    console.error('[API][users][GET] Erro na API de usuários:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }
@@ -41,10 +44,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('[API][users][PUT] Iniciando request');
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     const body = await request.json();
 
-  if (!token) {
+    if (!token) {
+      console.error('[API][users][PUT] Token não fornecido');
       return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
@@ -58,6 +63,7 @@ export async function PUT(
     });
 
     if (!response.ok) {
+      console.error('[API][users][PUT] Erro ao atualizar usuário');
       const errorData = await response.json();
       return NextResponse.json(errorData, { status: response.status });
     }
@@ -65,7 +71,7 @@ export async function PUT(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Erro na API de usuários:', error);
+    console.error('[API][users][PUT] Erro na API de usuários:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }
@@ -78,9 +84,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('[API][users][DELETE] Iniciando request');
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.error('[API][users][DELETE] Token não fornecido');
       return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
@@ -92,13 +100,14 @@ export async function DELETE(
     });
 
     if (!response.ok) {
+      console.error('[API][users][DELETE] Erro ao excluir usuário');
       const errorData = await response.json();
       return NextResponse.json(errorData, { status: response.status });
     }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Erro na API de usuários:', error);
+    console.error('[API][users][DELETE] Erro na API de usuários:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

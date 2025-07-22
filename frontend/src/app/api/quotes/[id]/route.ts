@@ -5,10 +5,10 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  console.log('[API][quotes][GET] Iniciando request');
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
   if (!token) {
-    console.error('Erro: Token não fornecido');
+    console.error('[API][quotes][GET] Token não fornecido');
     return NextResponse.json(
       { error: 'Não autorizado' },
       { status: 401 }
@@ -16,7 +16,6 @@ export async function GET(
   }
 
   try {
-    
     const response = await fetch(`${baseUrl}/quotes/${params.id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -26,7 +25,7 @@ export async function GET(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Erro do backend:', errorData);
+      console.error('[API][quotes][GET] Erro do backend:', errorData);
       return NextResponse.json(
         { error: errorData.message || 'Erro ao buscar cotação' },
         { status: response.status }
@@ -34,8 +33,10 @@ export async function GET(
     }
 
     const data = await response.json();
+    console.log('[API][quotes][GET] Cotação encontrada com sucesso');
     return NextResponse.json(data);
   } catch (error: any) {
+    console.error('[API][quotes][GET] Erro:', error);
     return NextResponse.json(
       { error: error.message || 'Erro ao buscar cotação' },
       { status: 500 }

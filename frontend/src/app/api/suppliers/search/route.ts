@@ -7,10 +7,12 @@ export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   try {
+    console.log('[API][suppliers][search][GET] Iniciando request');
     const headersList = await headers();
     const authorization = headersList.get('authorization');
 
     if (!authorization) {
+      console.error('[API][suppliers][search][GET] Token não fornecido');
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
@@ -18,6 +20,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search');
 
     if (!search) {
+      console.error('[API][suppliers][search][GET] CNPJ não fornecido');
       return NextResponse.json({ error: 'CNPJ não fornecido' }, { status: 400 });
     }
 
@@ -28,13 +31,14 @@ export async function GET(request: Request) {
     });
 
     if (!response.ok) {
+      console.error('[API][suppliers][search][GET] Erro ao buscar fornecedor');
       return NextResponse.json([], { status: 200 });
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Erro na rota /api/suppliers/search:', error);
+    console.error('[API][suppliers][search][GET] Erro na rota /api/suppliers/search:', error);
     return NextResponse.json([], { status: 200 });
   }
 } 

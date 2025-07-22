@@ -28,7 +28,7 @@ import SecuritySettings from './SecuritySettings';
 import IntegrationSettings from './IntegrationSettings';
 import UnitOfMeasureSettings from './UnitOfMeasureSettings';
 import CategorySettings from './CategorySettings';
-import LocationSettings from './LocationSettings';
+import LocationSettings from './EnviromentSettings';
 import UserManagement from './UserManagement';
 import ThemeSettings from './ThemeSettings';
 
