@@ -6,6 +6,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('[API][tasks][complete][PATCH] Iniciando request');
     const response = await fetch(`${baseUrl}/tasks/${params.id}/complete`, {
       method: 'PATCH',
       headers: {
@@ -14,6 +15,7 @@ export async function PATCH(
     });
 
     if (!response.ok) {
+      console.error('[API][tasks][complete][PATCH] Erro ao marcar tarefa como concluída');
       const error = await response.json();
       return NextResponse.json(error, { status: response.status });
     }
@@ -21,7 +23,7 @@ export async function PATCH(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error marking task as completed:', error);
+    console.error('[API][tasks][complete][PATCH] Error marking task as completed:', error);
     return NextResponse.json(
       { error: 'Erro ao marcar tarefa como concluída' },
       { status: 500 }

@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 
 export async function GET(request: Request) {
     try {
+        console.log('[API][subcategories][GET] Iniciando request');
         const token = request.headers.get('authorization')?.split(' ')[1];
         const response = await fetch(`${baseUrl}/subcategories`, {
             headers: {
@@ -13,13 +14,14 @@ export async function GET(request: Request) {
         });
 
         if (!response.ok) {
+            console.error('[API][subcategories][GET] Erro ao buscar subcategorias');
             throw new Error('Erro ao buscar subcategorias');
         }
 
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Erro ao buscar subcategorias:', error);
+        console.error('[API][subcategories][GET] Erro ao buscar subcategorias:', error);
         return NextResponse.json(
             { error: 'Erro ao buscar subcategorias' },
             { status: 500 }
@@ -29,9 +31,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: NextRequest) {
     try {
+        console.log('[API][subcategories][POST] Iniciando request');
         const token = request.headers.get('authorization')?.split(' ')[1];
 
         if (!token) {
+            console.error('[API][subcategories][POST] Token não fornecido');
             return new NextResponse('Não autorizado', { status: 401 });
         }
 
@@ -49,12 +53,13 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
 
         if (!response.ok) {
+            console.error('[API][subcategories][POST] Erro ao criar subcategoria');
             throw new Error(data.message || 'Erro ao criar subcategoria');
         }
 
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Erro ao criar subcategoria:', error);
+        console.error('[API][subcategories][POST] Erro ao criar subcategoria:', error);
         return new NextResponse('Erro interno do servidor', { status: 500 });
     }
 } 

@@ -2,13 +2,14 @@ import baseUrl from '@/utils/enviroments';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+  console.log('[API][quotes][GET] Iniciando request');
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
   const created_by = searchParams.get('created_by');
 
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
   if (!token) {
+    console.warn('[API][quotes][GET] Token não fornecido');
     return NextResponse.json(
       { error: 'Não autorizado' },
       { status: 401 }
@@ -25,15 +26,16 @@ export async function GET(request: Request) {
         'Authorization': `Bearer ${token}`
       }
     });
-
+    console.log('[API][quotes][GET] Response ok');
     if (!response.ok) {
+      console.error('[API][quotes][GET] Erro ao buscar cotações');
       throw new Error('Erro ao buscar cotações');
     }
-
+    console.log('[API][quotes][GET] Cotações encontradas com sucesso');
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Erro ao buscar cotações:', error);
+    console.error('[API][quotes][GET] Erro ao buscar cotações:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar cotações' },
       { status: 500 }
@@ -42,20 +44,21 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  console.log('[API][quotes][POST] Iniciando request');
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
   if (!token) {
+    console.warn('[API][quotes][POST] Token não fornecido');
     return NextResponse.json(
       { error: 'Não autorizado' },
       { status: 401 }
     );
   }
-
+  console.log('[API][quotes][POST] Token ok');
   try {
     const body = await request.json();
-
     // Validação dos dados
     if (!body.supplier_id) {
+      console.error('[API][quotes][POST] ID do fornecedor é obrigatório');
       return NextResponse.json(
         { error: 'ID do fornecedor é obrigatório' },
         { status: 400 }
@@ -63,6 +66,7 @@ export async function POST(request: Request) {
     }
 
     if (!Array.isArray(body.items) || body.items.length === 0) {
+      console.error('[API][quotes][POST] A cotação deve ter pelo menos um item');
       return NextResponse.json(
         { error: 'A cotação deve ter pelo menos um item' },
         { status: 400 }
@@ -72,24 +76,28 @@ export async function POST(request: Request) {
     // Validação dos itens
     for (const item of body.items) {
       if (!item.product_name) {
+        console.error('[API][quotes][POST] Nome do produto é obrigatório');
         return NextResponse.json(
           { error: 'Nome do produto é obrigatório' },
           { status: 400 }
         );
       }
       if (!item.quantity || item.quantity <= 0) {
+        console.error('[API][quotes][POST] Quantidade deve ser maior que zero');
         return NextResponse.json(
           { error: 'Quantidade deve ser maior que zero' },
           { status: 400 }
         );
       }
       if (!item.unit_price || item.unit_price < 0) {
+        console.error('[API][quotes][POST] Preço unitário deve ser maior ou igual a zero');
         return NextResponse.json(
           { error: 'Preço unitário deve ser maior ou igual a zero' },
           { status: 400 }
         );
       }
       if (item.link && !isValidUrl(item.link)) {
+        console.error('[API][quotes][POST] Link do produto inválido');
         return NextResponse.json(
           { error: 'Link do produto inválido' },
           { status: 400 }
@@ -111,21 +119,22 @@ export async function POST(request: Request) {
       })),
       total_value: Number(body.total_value)
     };
-
+    console.log('[API][quotes][POST] Payload ok');
     // Busca o nome do fornecedor
     const supplierResponse = await fetch(`${baseUrl}/suppliers/${body.supplier_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
-
+    console.log('[API][quotes][POST] Response ok');
     if (!supplierResponse.ok) {
+      console.error('[API][quotes][POST] Erro ao buscar dados do fornecedor');
       throw new Error('Erro ao buscar dados do fornecedor');
     }
 
     const supplierData = await supplierResponse.json();
     payload.supplier = supplierData.name;
-
+    console.log('[API][quotes][POST] Fornecedor encontrado com sucesso');
     const response = await fetch(`${baseUrl}/quotes`, {
       method: 'POST',
       headers: {
@@ -134,21 +143,21 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(payload)
     });
-
+    console.log('[API][quotes][POST] Response ok');
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Erro do backend:', errorData);
+      console.error('[API][quotes][POST] Erro do backend:', errorData);
       return NextResponse.json(
         { error: errorData.message || 'Erro ao criar cotação' },
         { status: response.status }
       );
     }
-
+    console.log('[API][quotes][POST] Cotação criada com sucesso');
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Erro ao criar cotação:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('[API][quotes][POST] Erro ao criar cotação:', error);
+    console.error('[API][quotes][POST] Stack trace:', error.stack);
     return NextResponse.json(
       { error: error.message || 'Erro ao criar cotação' },
       { status: 500 }

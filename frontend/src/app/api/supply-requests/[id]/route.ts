@@ -5,9 +5,11 @@ export async function PUT(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][supply-requests][PUT] Iniciando request');
     const token = request.headers.get('Authorization')?.split(' ')[1];
 
     if (!token) {
+        console.error('[API][supply-requests][PUT] Token não fornecido');
         return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
@@ -26,11 +28,13 @@ export async function PUT(
         const data = await response.json();
 
         if (!response.ok) {
+            console.error('[API][supply-requests][PUT] Erro ao atualizar requisição');
             throw new Error(data.message || 'Erro ao atualizar requisição');
         }
 
         return NextResponse.json(data);
     } catch (error: any) {
+        console.error('[API][supply-requests][PUT] Erro ao atualizar requisição:', error);
         return NextResponse.json(
             { error: error.message || 'Erro interno do servidor' },
             { status: 500 }

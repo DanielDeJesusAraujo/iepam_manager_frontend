@@ -5,12 +5,14 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
+    console.log('[API][statistics][GET] Iniciando request');
     try {
         const token = request.headers.get('authorization')?.split(' ')[1];
         const { searchParams } = new URL(request.url);
         const timeRange = searchParams.get('timeRange') || '30';
 
         if (!token) {
+            console.error('[API][statistics][GET] Token não fornecido');
             return NextResponse.json(
                 { message: 'Token não fornecido' },
                 { status: 401 }
@@ -62,7 +64,7 @@ export async function GET(request: Request) {
             alertsByLevel,
         });
     } catch (error) {
-        console.error('Erro ao buscar estatísticas:', error);
+        console.error('[API][statistics][GET] Erro ao buscar estatísticas:', error);
         return NextResponse.json(
             { message: 'Erro ao buscar estatísticas' },
             { status: 500 }
@@ -71,6 +73,7 @@ export async function GET(request: Request) {
 }
 
 function processStatusData(data: any[], statusKey: string) {
+    console.log('[API][statistics][GET] Processando dados de status');
     if (!Array.isArray(data)) return [];
 
     const statusCount = data.reduce((acc: { [key: string]: number }, item: any) => {
@@ -86,6 +89,7 @@ function processStatusData(data: any[], statusKey: string) {
 }
 
 function processTimeData(data: any[], dateKey: string, timeRange: string) {
+    console.log('[API][statistics][GET] Processando dados de tempo');
     if (!Array.isArray(data)) return [];
 
     const now = new Date();
@@ -110,6 +114,7 @@ function processTimeData(data: any[], dateKey: string, timeRange: string) {
 }
 
 function processTypeData(data: any[], typeKey: string) {
+    console.log('[API][statistics][GET] Processando dados de tipo');
     if (!Array.isArray(data)) return [];
 
     const typeCount = data.reduce((acc: { [key: string]: number }, item: any) => {

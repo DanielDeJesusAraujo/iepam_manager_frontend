@@ -6,11 +6,13 @@ export async function GET(
     request: Request,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][inventory-allocations][GET] Iniciando request');
     try {
         const headersList = headers();
         const token = headersList.get('authorization');
 
         if (!token) {
+            console.warn('[API][inventory-allocations][GET] Token não fornecido');
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
@@ -22,13 +24,15 @@ export async function GET(
         });
 
         if (!response.ok) {
+            console.error('[API][inventory-allocations][GET] Erro ao buscar alocação');
             throw new Error('Erro ao buscar alocação');
         }
 
         const data = await response.json();
+        console.log('[API][inventory-allocations][GET] Alocação encontrada com sucesso');
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Erro ao buscar alocação:', error);
+        console.error('[API][inventory-allocations][GET] Erro:', error);
         return NextResponse.json(
             { error: 'Erro ao buscar alocação' },
             { status: 500 }
@@ -40,11 +44,13 @@ export async function PUT(
     request: Request,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][inventory-allocations][PUT] Iniciando request');
     try {
         const headersList = headers();
         const token = headersList.get('authorization');
 
         if (!token) {
+            console.warn('[API][inventory-allocations][PUT] Token não fornecido');
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
@@ -60,13 +66,15 @@ export async function PUT(
         });
 
         if (!response.ok) {
+            console.error('[API][inventory-allocations][PUT] Erro ao atualizar alocação');
             throw new Error('Erro ao atualizar alocação');
         }
 
         const data = await response.json();
+        console.log('[API][inventory-allocations][PUT] Alocação atualizada com sucesso');
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Erro ao atualizar alocação:', error);
+        console.error('[API][inventory-allocations][PUT] Erro:', error);
         return NextResponse.json(
             { error: 'Erro ao atualizar alocação' },
             { status: 500 }
@@ -78,11 +86,13 @@ export async function DELETE(
     request: Request,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][inventory-allocations][DELETE] Iniciando request');
     try {
         const headersList = headers();
         const token = headersList.get('authorization');
 
         if (!token) {
+            console.warn('[API][inventory-allocations][DELETE] Token não fornecido');
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
@@ -95,6 +105,7 @@ export async function DELETE(
         });
 
         if (!response.ok) {
+            console.error('[API][inventory-allocations][DELETE] Erro ao excluir alocação');
             throw new Error('Erro ao excluir alocação');
         }
 

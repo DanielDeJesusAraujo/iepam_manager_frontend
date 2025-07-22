@@ -5,10 +5,11 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  
+  console.log('[API][quotes][status][PATCH] Iniciando request');
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
+    console.warn('[API][quotes][status][PATCH] Token não fornecido');
     console.error('Erro: Token não fornecido');
     return NextResponse.json(
       { error: 'Não autorizado' },
@@ -35,7 +36,7 @@ export async function PATCH(
         : null;
 
     if (!endpoint) {
-      console.error('Erro: Status inválido');
+      console.error('[API][quotes][status][PATCH] Status inválido');
       return NextResponse.json(
         { error: 'Status inválido' },
         { status: 400 }
@@ -52,7 +53,7 @@ export async function PATCH(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('Erro do backend:', errorData);
+      console.error('[API][quotes][status][PATCH] Erro do backend:', errorData);
       return NextResponse.json(
         { error: errorData.message || 'Erro ao atualizar status da cotação' },
         { status: response.status }
@@ -62,8 +63,8 @@ export async function PATCH(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Erro ao atualizar status da cotação:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('[API][quotes][status][PATCH] Erro ao atualizar status da cotação:', error);
+    console.error('[API][quotes][status][PATCH] Stack trace:', error.stack);
     return NextResponse.json(
       { error: error.message || 'Erro ao atualizar status da cotação' },
       { status: 500 }

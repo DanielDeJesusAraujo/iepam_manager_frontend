@@ -6,9 +6,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('[API][supply-batches][GET] Iniciando request');
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.error('[API][supply-batches][GET] Token não fornecido');
       return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
@@ -20,13 +22,14 @@ export async function GET(
     });
 
     if (!response.ok) {
+      console.error('[API][supply-batches][GET] Erro ao buscar lote');
       throw new Error('Erro ao buscar lote');
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Erro na API route:', error);
+    console.error('[API][supply-batches][GET] Erro na API route:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

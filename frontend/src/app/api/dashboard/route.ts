@@ -5,10 +5,12 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
+    console.log('[API][dashboard][GET] Iniciando request');
     try {
         const token = request.headers.get('authorization')?.split(' ')[1]
 
         if (!token) {
+            console.warn('[API][dashboard][GET] Token não fornecido');
             return NextResponse.json(
                 { message: 'Token não fornecido' },
                 { status: 401 }
@@ -91,6 +93,7 @@ export async function GET(request: Request) {
             recentServiceOrders: Array.isArray(serviceOrders) ? serviceOrders.slice(0, 5) : [], // 5 OS mais recentes
         })
     } catch (error) {
+        console.error('[API][dashboard][GET] Erro:', error);
         return NextResponse.json(
             { message: 'Erro ao buscar dados da dashboard' },
             { status: 500 }
@@ -101,7 +104,6 @@ export async function GET(request: Request) {
 function processConsumptionTrends(supplyRequests: any[]) {
     if (!Array.isArray(supplyRequests)) return [];
 
-    // Agrupa as requisições por mês
     const monthlyConsumption = supplyRequests.reduce((acc: { [key: string]: number }, request: any) => {
         if (request.status === 'APPROVED') {
             const date = new Date(request.created_at);
@@ -111,7 +113,6 @@ function processConsumptionTrends(supplyRequests: any[]) {
         return acc;
     }, {});
 
-    // Converte para o formato esperado pelo gráfico
     return Object.entries(monthlyConsumption)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([date, quantity]) => ({

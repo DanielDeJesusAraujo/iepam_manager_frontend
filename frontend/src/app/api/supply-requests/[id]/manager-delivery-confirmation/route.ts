@@ -5,9 +5,11 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    console.log('[API][supply-requests][manager-delivery-confirmation][PATCH] Iniciando request');
     const token = request.headers.get('Authorization')?.split(' ')[1];
 
     if (!token) {
+        console.error('[API][supply-requests][manager-delivery-confirmation][PATCH] Token não fornecido');
         return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
@@ -16,6 +18,7 @@ export async function PATCH(
         const { confirmation } = body;
 
         if (typeof confirmation !== 'boolean') {
+            console.error('[API][supply-requests][manager-delivery-confirmation][PATCH] Confirmação inválida');
             return NextResponse.json(
                 { error: 'Confirmação inválida' },
                 { status: 400 }
@@ -34,11 +37,13 @@ export async function PATCH(
         const data = await response.json();
 
         if (!response.ok) {
+            console.error('[API][supply-requests][manager-delivery-confirmation][PATCH] Erro ao atualizar confirmação');
             throw new Error(data.message || 'Erro ao atualizar confirmação');
         }
 
         return NextResponse.json(data);
     } catch (error: any) {
+        console.error('[API][supply-requests][manager-delivery-confirmation][PATCH] Erro ao atualizar confirmação:', error);
         return NextResponse.json(
             { error: error.message || 'Erro interno do servidor' },
             { status: 500 }

@@ -5,9 +5,11 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  console.log('[API][orders][upload][POST] Iniciando request');
   try {
     const authHeader = req.headers.get('authorization')
     if (!authHeader) {
+      console.warn('[API][orders][upload][POST] Token não fornecido');
       return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
     }
 
@@ -17,13 +19,15 @@ export async function POST(req: NextRequest) {
         'Authorization': authHeader
       }
     });
-
+ 
     if (!userResponse.ok) {
+      console.error('[API][orders][upload][POST] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
     }
 
     const user = await userResponse.json();
     if (!['ADMIN', 'MANAGER'].includes(user.role)) {
+      console.error('[API][orders][upload][POST] Acesso negado');
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -31,6 +35,7 @@ export async function POST(req: NextRequest) {
     const files = formData.getAll('files')
 
     if (!files || files.length === 0) {
+      console.error('[API][orders][upload][POST] Nenhum arquivo enviado');
       return NextResponse.json(
         { message: 'Nenhum arquivo enviado' },
         { status: 400 }
@@ -52,13 +57,15 @@ export async function POST(req: NextRequest) {
     })
 
     if (!backendRes.ok) {
+      console.error('[API][orders][upload][POST] Erro ao fazer upload dos arquivos');
       throw new Error('Erro ao fazer upload dos arquivos')
     }
 
     const data = await backendRes.json()
+    console.log('[API][orders][upload][POST] Upload realizado com sucesso');
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Erro ao fazer upload:', error)
+    console.error('[API][orders][upload][POST] Erro:', error)
     return NextResponse.json(
       { message: 'Erro ao fazer upload dos arquivos' },
       { status: 500 }

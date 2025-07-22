@@ -2,9 +2,11 @@ import baseUrl from '@/utils/enviroments'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
+    console.log('[API][locales][GET] Iniciando request');
     try {
         const token = request.headers.get('authorization')
         if (!token) {
+            console.warn('[API][locales][GET] Token não fornecido');
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 })
         }
 
@@ -15,17 +17,20 @@ export async function GET(request: NextRequest) {
         })
 
         const data = await response.json()
+        console.log('[API][locales][GET] Locais encontrados com sucesso');
         return NextResponse.json(data)
     } catch (error) {
-        console.error('Erro ao buscar locais:', error)
+        console.error('[API][locales][GET] Erro:', error)
         return NextResponse.json({ error: 'Erro ao buscar locais' }, { status: 500 })
     }
 }
 
 export async function POST(request: NextRequest) {
+    console.log('[API][locales][POST] Iniciando request');
     try {
         const token = request.headers.get('authorization')
         if (!token) {
+            console.warn('[API][locales][POST] Token não fornecido');
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 })
         }
 
@@ -41,9 +46,10 @@ export async function POST(request: NextRequest) {
         })
 
         const data = await response.json()
+        console.log('[API][locales][POST] Local criado com sucesso');
         return NextResponse.json(data)
     } catch (error) {
-        console.error('Erro ao criar local:', error)
+        console.error('[API][locales][POST] Erro:', error)
         return NextResponse.json({ error: 'Erro ao criar local' }, { status: 500 })
     }
 }
