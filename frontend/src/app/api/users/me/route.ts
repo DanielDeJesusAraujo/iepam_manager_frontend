@@ -20,6 +20,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][users][me][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       const error = await response.json();
       console.error('[API][users][me][GET] Erro ao buscar dados do usuário');

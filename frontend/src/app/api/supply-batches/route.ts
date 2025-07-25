@@ -15,7 +15,16 @@ export async function GET(request: NextRequest) {
                 'Content-Type': 'application/json',
             },
         });
-        console.log('[API][supply-batches][GET] Response ok');
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supply-batches][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+        
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {

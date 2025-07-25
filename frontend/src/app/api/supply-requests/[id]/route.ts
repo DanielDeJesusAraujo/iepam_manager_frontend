@@ -25,6 +25,15 @@ export async function PUT(
             body: JSON.stringify(body),
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supply-requests][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json();
 
         if (!response.ok) {

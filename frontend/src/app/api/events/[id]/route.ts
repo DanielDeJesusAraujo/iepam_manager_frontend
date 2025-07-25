@@ -20,6 +20,15 @@ export async function GET(
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][events][GET] Erro ao buscar evento');
             throw new Error('Erro ao buscar evento');
@@ -55,6 +64,15 @@ export async function PUT(
             },
             body: JSON.stringify(body)
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][events][PUT] Erro ao atualizar evento');
@@ -92,6 +110,15 @@ export async function PATCH(
             body: JSON.stringify(body)
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][PATCH] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][events][PATCH] Erro ao atualizar evento');
             throw new Error('Erro ao atualizar evento');
@@ -123,6 +150,15 @@ export async function DELETE(
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][events][DELETE] Erro ao excluir evento');

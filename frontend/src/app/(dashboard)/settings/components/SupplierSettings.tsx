@@ -28,6 +28,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { Building2, Mail, Phone, MapPin, User, Trash2, Edit2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Supplier {
   id: string;
@@ -85,7 +86,7 @@ export default function SupplierSettings() {
   const [loading, setLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-
+  const router = useRouter();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
@@ -103,6 +104,11 @@ export default function SupplierSettings() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
 
       if (!response.ok) throw new Error('Erro ao carregar fornecedores');
       const data = await response.json();
@@ -144,6 +150,11 @@ export default function SupplierSettings() {
           contact_person: contactPerson 
         })
       });
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json();

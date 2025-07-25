@@ -15,6 +15,15 @@ export async function GET(
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][subcategories][category][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][subcategories][category][GET] Erro ao buscar subcategorias');
             throw new Error('Erro ao buscar subcategorias');

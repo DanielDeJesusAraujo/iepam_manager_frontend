@@ -20,6 +20,15 @@ export async function GET(request: Request) {
       }
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][users][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][users][GET] Erro ao buscar usuários');
       throw new Error('Erro ao buscar usuários');
@@ -68,6 +77,15 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(body)
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][users][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const errorData = await response.json();

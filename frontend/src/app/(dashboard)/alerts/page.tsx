@@ -84,7 +84,12 @@ export default function AlertsPage() {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
-            });
+            }) ;
+
+            if (response.status === 429) {
+                router.push('/rate-limit')
+                return
+            }
 
             if (!response.ok) {
                 throw new Error('Erro ao buscar alertas');

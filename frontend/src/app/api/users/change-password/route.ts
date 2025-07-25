@@ -29,6 +29,15 @@ export async function POST(request: NextRequest) {
             })
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][users][change-password][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             const data = await response.json();
             console.error('[API][users][change-password][POST] Erro ao alterar senha');

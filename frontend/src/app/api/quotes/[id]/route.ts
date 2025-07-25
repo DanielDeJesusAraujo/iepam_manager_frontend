@@ -22,6 +22,14 @@ export async function GET(
       }
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][quotes][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -33,7 +41,6 @@ export async function GET(
     }
 
     const data = await response.json();
-    console.log('[API][quotes][GET] Cotação encontrada com sucesso');
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('[API][quotes][GET] Erro:', error);

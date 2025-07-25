@@ -27,6 +27,7 @@ import {
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
+import { useRouter } from 'next/navigation';
 
 interface Location {
     id: string
@@ -51,7 +52,7 @@ export default function LocationSettings() {
     const [editingLocation, setEditingLocation] = useState<Location | null>(null)
     const toast = useToast()
     const { isOpen: isLocationModalOpen, onOpen: onLocationModalOpen, onClose: onLocationModalClose } = useDisclosure()
-
+    const router = useRouter();
     const [locationFormData, setLocationFormData] = useState({
         name: '',
         description: '',
@@ -99,6 +100,12 @@ export default function LocationSettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             const data = await response.json()
             setBranches(data)
         } catch (error) {
@@ -133,6 +140,11 @@ export default function LocationSettings() {
                     body: JSON.stringify(locationFormData),
                 })
 
+                if (response.status === 429) {
+                    router.push('/rate-limit');
+                    return;
+                }
+
                 if (!response.ok) {
                     throw new Error('Erro ao atualizar local')
                 }
@@ -154,6 +166,11 @@ export default function LocationSettings() {
                     },
                     body: JSON.stringify(locationFormData),
                 })
+
+                if (response.status === 429) {
+                    router.push('/rate-limit');
+                    return;
+                }
 
                 if (!response.ok) {
                     throw new Error('Erro ao criar local')
@@ -200,6 +217,11 @@ export default function LocationSettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Erro ao excluir local')

@@ -21,6 +21,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][locales][user-location][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][locales][user-location][GET] Erro ao buscar locais da filial do usuário');
       const error = await response.json();

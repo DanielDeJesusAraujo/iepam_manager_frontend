@@ -23,6 +23,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory][available][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][inventory][available][GET] Erro ao buscar itens do inventário');
             throw new Error('Erro ao buscar itens do inventário');

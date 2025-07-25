@@ -30,8 +30,10 @@ import { useState, useEffect } from 'react'
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
 import { Category } from '../interfaces/ICategory'
 import { Subcategory } from '../interfaces/ISubtategory'
+import { useRouter } from 'next/navigation'
 
 export default function CategorySettings() {
+    const router = useRouter();
     const [categories, setCategories] = useState<Category[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -66,6 +68,12 @@ export default function CategorySettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             const data = await response.json()
             setCategories(data)
         } catch (error) {
@@ -93,17 +101,22 @@ export default function CategorySettings() {
                 // Atualizar categoria existente
                 const response = await fetch(`/api/categories/${editingCategory.id}`, {
                     method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
                     body: JSON.stringify({
                         value: categoryFormData.value,
                         label: categoryFormData.value
                     }),
-            })
+                })
 
-            if (!response.ok) {
+                if (response.status === 429) {
+                    router.push('/rate-limit');
+                    return;
+                }
+
+                if (!response.ok) {
                     throw new Error('Erro ao atualizar categoria')
                 }
 
@@ -128,6 +141,11 @@ export default function CategorySettings() {
                     }),
                 })
 
+                if (categoryResponse.status === 429) {
+                    router.push('/rate-limit');
+                    return;
+                }
+
                 if (!categoryResponse.ok) {
                     throw new Error('Erro ao criar categoria')
                 }
@@ -149,18 +167,23 @@ export default function CategorySettings() {
                         }),
                     })
 
+                    if (subcategoryResponse.status === 429) {
+                        router.push('/rate-limit');
+                        return;
+                    }
+
                     if (!subcategoryResponse.ok) {
                         throw new Error('Erro ao criar subcategoria')
                     }
-            }
+                }
 
-            toast({
-                title: 'Sucesso',
+                toast({
+                    title: 'Sucesso',
                     description: 'Categoria e subcategoria criadas com sucesso.',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            })
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                })
             }
 
             fetchCategories()
@@ -252,6 +275,11 @@ export default function CategorySettings() {
                 },
             })
 
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             if (!response.ok) {
                 throw new Error('Erro ao excluir categoria')
             }
@@ -293,6 +321,11 @@ export default function CategorySettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Erro ao excluir subcategoria');
@@ -449,12 +482,12 @@ export default function CategorySettings() {
                                 {!editingCategory && (
                                     <FormControl isRequired>
                                         <FormLabel>Nome da Subcategoria</FormLabel>
-                                    <Input
+                                        <Input
                                             value={categoryFormData.subcategoryValue}
                                             onChange={(e) => setCategoryFormData({ ...categoryFormData, subcategoryValue: e.target.value })}
                                             placeholder="Nome da primeira subcategoria"
-                                    />
-                                </FormControl>
+                                        />
+                                    </FormControl>
                                 )}
                             </VStack>
                         </ModalBody>

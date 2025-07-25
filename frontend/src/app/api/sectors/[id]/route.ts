@@ -17,14 +17,23 @@ export async function GET(
         'Authorization': `Bearer ${token}`,
       },
     })
-    console.log('[API][sectors][GET] Response ok');
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][sectors][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       if (response.status === 404) {
         return NextResponse.json({ error: 'Setor não encontrado' }, { status: 404 })
       }
       throw new Error('Erro ao buscar setor')
     }
-    console.log('[API][sectors][GET] Setor encontrado com sucesso');
+    
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
@@ -47,7 +56,7 @@ export async function PUT(
     if (!token) {
       return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 })
     }
-    console.log('[API][sectors][PUT] Token ok');
+    
     const response = await fetch(`${baseUrl}/sectors/${params.id}`, {
       method: 'PUT',
       headers: {
@@ -56,13 +65,22 @@ export async function PUT(
       },
       body: JSON.stringify(body),
     })
-    console.log('[API][sectors][PUT] Response ok');
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][sectors][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][sectors][PUT] Erro ao atualizar setor');
       const errorData = await response.json()
       return NextResponse.json(errorData, { status: response.status })
     }
-    console.log('[API][sectors][PUT] Setor atualizado com sucesso');
+    
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
@@ -85,20 +103,29 @@ export async function DELETE(
       console.error('[API][sectors][DELETE] Token não fornecido');
       return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 })
     }
-    console.log('[API][sectors][DELETE] Token ok');
+    
     const response = await fetch(`${baseUrl}/sectors/${params.id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     })
-    console.log('[API][sectors][DELETE] Response ok');
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][sectors][DELETE] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][sectors][DELETE] Erro ao deletar setor');
       const errorData = await response.json()
       return NextResponse.json(errorData, { status: response.status })
     }
-    console.log('[API][sectors][DELETE] Setor deletado com sucesso');
+    
     return new NextResponse(null, { status: 204 })
   } catch (error) {
     console.error('[API][sectors][DELETE] Erro na API de setores:', error)

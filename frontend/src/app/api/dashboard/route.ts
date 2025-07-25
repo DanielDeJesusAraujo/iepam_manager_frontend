@@ -23,6 +23,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         })
+
+        if (inventoryResponse.status === 429) {
+            const message = await inventoryResponse.text();
+            console.log('[API][dashboard][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const inventory = await inventoryResponse.json()
 
         // Busca dados de ordens de serviço
@@ -31,6 +41,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         })
+
+        if (serviceOrdersResponse.status === 429) {
+            const message = await serviceOrdersResponse.text();
+            console.log('[API][dashboard][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const serviceOrders = await serviceOrdersResponse.json()
 
         // Busca dados de alertas
@@ -39,6 +59,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         })
+
+        if (alertsResponse.status === 429) {
+            const message = await alertsResponse.text();
+            console.log('[API][dashboard][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const alertsData = await alertsResponse.json()
 
         // Busca dados de fornecedores
@@ -47,6 +77,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         })
+
+        if (suppliersResponse.status === 429) {
+            const message = await suppliersResponse.text();
+            console.log('[API][dashboard][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const suppliers = await suppliersResponse.json()
 
         // Busca dados de cotações
@@ -55,6 +95,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         })
+
+        if (quotesResponse.status === 429) {
+            const message = await quotesResponse.text();
+            console.log('[API][dashboard][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const quotes = await quotesResponse.json()
 
         // Busca dados de requisições de suprimentos
@@ -63,6 +113,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         })
+
+        if (supplyRequestsResponse.status === 429) {
+            const message = await supplyRequestsResponse.text();
+            console.log('[API][dashboard][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const supplyRequests = await supplyRequestsResponse.json()
 
         // Garante que alerts é um array

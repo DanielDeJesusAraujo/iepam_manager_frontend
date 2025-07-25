@@ -22,6 +22,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][inventory][GET] Erro ao buscar itens do inventário');
             throw new Error('next: Erro ao buscar itens do inventário');
@@ -54,6 +63,15 @@ export async function POST(request: Request) {
             body: JSON.stringify(body)
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             console.error('[API][inventory][POST] Erro ao criar item:', errorData.message);
@@ -83,6 +101,16 @@ export async function PATCH(request: Request) {
                 'Content-Type': 'application/json'
             }
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory][PATCH] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][inventory][PATCH] Erro ao atualizar depreciação dos itens');
             throw new Error('next: Erro ao atualizar depreciação dos itens');

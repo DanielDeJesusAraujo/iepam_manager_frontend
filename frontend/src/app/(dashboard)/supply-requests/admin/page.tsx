@@ -22,7 +22,7 @@ import {
     Button
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-import { 
+import {
     SupplyRequestsTab,
     AllocationsTab,
     InventoryTransactionsTab,
@@ -306,104 +306,104 @@ export default function AdminSupplyRequestsPage() {
     }, []);
 
     useEffect(() => {
-            if (search || statusFilter) {
-                const filtered = requests.filter(request => {
-                    const matchesSearch =
-                        (request.is_custom
-                            ? request.item_name?.toLowerCase().includes(search.toLowerCase())
-                            : request.supply?.name.toLowerCase().includes(search.toLowerCase())) ||
-                        request.user.name.toLowerCase().includes(search.toLowerCase()) ||
-                        request.user.email.toLowerCase().includes(search.toLowerCase());
-                    const matchesStatus = !statusFilter || request.status === statusFilter;
-                    return matchesSearch && matchesStatus;
-                });
-                setFilteredRequests(filtered);
-            } else {
-                setFilteredRequests(requests);
-            }
+        if (search || statusFilter) {
+            const filtered = requests.filter(request => {
+                const matchesSearch =
+                    (request.is_custom
+                        ? request.item_name?.toLowerCase().includes(search.toLowerCase())
+                        : request.supply?.name.toLowerCase().includes(search.toLowerCase())) ||
+                    request.user.name.toLowerCase().includes(search.toLowerCase()) ||
+                    request.user.email.toLowerCase().includes(search.toLowerCase());
+                const matchesStatus = !statusFilter || request.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+            setFilteredRequests(filtered);
+        } else {
+            setFilteredRequests(requests);
+        }
     }, [requests, search, statusFilter]);
 
     useEffect(() => {
-            if (search || statusFilter || returnDateFilter || sectorFilter || locationFilter || localeFilter || requesterFilter) {
-                const filtered = allocationRequests.filter(request => {
-                    const matchesSearch =
-                        request.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
-                        request.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
-                        request.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
-                        request.requester.name.toLowerCase().includes(search.toLowerCase()) ||
-                        request.requester.email.toLowerCase().includes(search.toLowerCase()) ||
-                        (request.locale_name && request.locale_name.toLowerCase().includes(search.toLowerCase())) ||
-                        (request.location_name && request.location_name.toLowerCase().includes(search.toLowerCase())) ||
-                        (request.requester_sector && request.requester_sector.toLowerCase().includes(search.toLowerCase()));
-                    
-                    const matchesStatus = !statusFilter || request.status === statusFilter;
-                    const matchesReturnDate = !returnDateFilter || (request.return_date && new Date(request.return_date).toLocaleDateString('pt-BR') === returnDateFilter);
-                    const matchesSector = !sectorFilter || (request.requester_sector && request.requester_sector === sectorFilter);
-                    const matchesLocation = !locationFilter || (request.location_name && request.location_name === locationFilter);
-                    const matchesLocale = !localeFilter || (request.locale_name && request.locale_name === localeFilter);
-                    const matchesRequester = !requesterFilter || (request.requester.name && request.requester.name === requesterFilter);
-                    
-                    return matchesSearch && matchesStatus && matchesReturnDate && matchesSector && matchesLocation && matchesLocale && matchesRequester;
-                });
-                setFilteredAllocationRequests(filtered);
-            } else {
-                setFilteredAllocationRequests(allocationRequests);
-            }
+        if (search || statusFilter || returnDateFilter || sectorFilter || locationFilter || localeFilter || requesterFilter) {
+            const filtered = allocationRequests.filter(request => {
+                const matchesSearch =
+                    request.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
+                    request.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
+                    request.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
+                    request.requester.name.toLowerCase().includes(search.toLowerCase()) ||
+                    request.requester.email.toLowerCase().includes(search.toLowerCase()) ||
+                    (request.locale_name && request.locale_name.toLowerCase().includes(search.toLowerCase())) ||
+                    (request.location_name && request.location_name.toLowerCase().includes(search.toLowerCase())) ||
+                    (request.requester_sector && request.requester_sector.toLowerCase().includes(search.toLowerCase()));
+
+                const matchesStatus = !statusFilter || request.status === statusFilter;
+                const matchesReturnDate = !returnDateFilter || (request.return_date && new Date(request.return_date).toLocaleDateString('pt-BR') === returnDateFilter);
+                const matchesSector = !sectorFilter || (request.requester_sector && request.requester_sector === sectorFilter);
+                const matchesLocation = !locationFilter || (request.location_name && request.location_name === locationFilter);
+                const matchesLocale = !localeFilter || (request.locale_name && request.locale_name === localeFilter);
+                const matchesRequester = !requesterFilter || (request.requester.name && request.requester.name === requesterFilter);
+
+                return matchesSearch && matchesStatus && matchesReturnDate && matchesSector && matchesLocation && matchesLocale && matchesRequester;
+            });
+            setFilteredAllocationRequests(filtered);
+        } else {
+            setFilteredAllocationRequests(allocationRequests);
+        }
     }, [allocationRequests, search, statusFilter, returnDateFilter, sectorFilter, locationFilter, localeFilter, requesterFilter]);
 
     useEffect(() => {
-            let filtered = inventoryTransactions;
+        let filtered = inventoryTransactions;
 
-            if (search) {
-                filtered = filtered.filter(transaction =>
-                    transaction.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.from_user.name.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.from_user.email.toLowerCase().includes(search.toLowerCase()) ||
-                    (transaction.to_user && transaction.to_user.name.toLowerCase().includes(search.toLowerCase())) ||
-                    (transaction.to_user && transaction.to_user.email.toLowerCase().includes(search.toLowerCase()))
-                );
-            }
+        if (search) {
+            filtered = filtered.filter(transaction =>
+                transaction.inventory.name.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.inventory.model.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.inventory.serial_number.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.from_user.name.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.from_user.email.toLowerCase().includes(search.toLowerCase()) ||
+                (transaction.to_user && transaction.to_user.name.toLowerCase().includes(search.toLowerCase())) ||
+                (transaction.to_user && transaction.to_user.email.toLowerCase().includes(search.toLowerCase()))
+            );
+        }
 
-            if (statusFilter) {
-                filtered = filtered.filter(transaction => transaction.transaction_type === statusFilter);
-            }
+        if (statusFilter) {
+            filtered = filtered.filter(transaction => transaction.transaction_type === statusFilter);
+        }
 
-            if (transactionLocationFilter) {
-                filtered = filtered.filter(transaction => 
-                    transaction.destination_locale?.location.name === transactionLocationFilter
-                );
-            }
+        if (transactionLocationFilter) {
+            filtered = filtered.filter(transaction =>
+                transaction.destination_locale?.location.name === transactionLocationFilter
+            );
+        }
 
-            if (transactionLocaleFilter) {
-                filtered = filtered.filter(transaction => 
-                    transaction.destination_locale?.name === transactionLocaleFilter
-                );
-            }
+        if (transactionLocaleFilter) {
+            filtered = filtered.filter(transaction =>
+                transaction.destination_locale?.name === transactionLocaleFilter
+            );
+        }
 
-            setFilteredInventoryTransactions(filtered);
+        setFilteredInventoryTransactions(filtered);
     }, [inventoryTransactions, search, statusFilter, returnDateFilter, sectorFilter, locationFilter, localeFilter, requesterFilter, transactionLocationFilter, transactionLocaleFilter]);
 
     useEffect(() => {
-            let filtered = supplyTransactions;
+        let filtered = supplyTransactions;
 
-            if (search) {
-                filtered = filtered.filter(transaction =>
-                    transaction.supply.name.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.supply.description?.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.from_user.name.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.from_user.email.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.to_user.name.toLowerCase().includes(search.toLowerCase()) ||
-                    transaction.to_user.email.toLowerCase().includes(search.toLowerCase())
-                );
-            }
+        if (search) {
+            filtered = filtered.filter(transaction =>
+                transaction.supply.name.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.supply.description?.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.from_user.name.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.from_user.email.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.to_user.name.toLowerCase().includes(search.toLowerCase()) ||
+                transaction.to_user.email.toLowerCase().includes(search.toLowerCase())
+            );
+        }
 
-            if (statusFilter) {
-                filtered = filtered.filter(transaction => transaction.transaction_type === statusFilter);
-            }
+        if (statusFilter) {
+            filtered = filtered.filter(transaction => transaction.transaction_type === statusFilter);
+        }
 
-            setFilteredSupplyTransactions(filtered);
+        setFilteredSupplyTransactions(filtered);
     }, [supplyTransactions, search, statusFilter]);
 
     const fetchRequests = async () => {
@@ -419,6 +419,11 @@ export default function AdminSupplyRequestsPage() {
                     'Authorization': `Bearer ${token}`
                 }
             });
+
+            if (regularResponse.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
 
             if (!regularResponse.ok) {
                 throw new Error('Erro ao carregar requisições regulares');
@@ -809,25 +814,25 @@ export default function AdminSupplyRequestsPage() {
             request.location?.name || '-',
             request.sector?.name || '-',
             request.locale?.name || '-',
-            ]);
-            autoTable(doc, {
+        ]);
+        autoTable(doc, {
             head: [['Suprimento', 'Usuário', 'Quantidade', 'Status', 'Data da Solicitação', 'Data Limite de Entrega', 'Data de Entrega', 'Filial', 'Setor', 'Local']],
-                body: tableData,
-                startY: yPosition,
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2,
-                },
-                headStyles: {
-                    fillColor: [66, 139, 202],
-                    textColor: 255,
-                    fontStyle: 'bold',
-                },
-                alternateRowStyles: {
-                    fillColor: [245, 245, 245],
-                },
-                margin: { top: 10 },
-            });
+            body: tableData,
+            startY: yPosition,
+            styles: {
+                fontSize: 8,
+                cellPadding: 2,
+            },
+            headStyles: {
+                fillColor: [66, 139, 202],
+                textColor: 255,
+                fontStyle: 'bold',
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245],
+            },
+            margin: { top: 10 },
+        });
         doc.save('requisicoes_suprimentos.pdf');
         toast({
             title: 'Sucesso',
@@ -976,15 +981,15 @@ export default function AdminSupplyRequestsPage() {
                         ) : (
                             <SupplyRequestsTab
                                 key="suprimentos"
-                requests={requests}
-                filteredRequests={filteredRequests}
-                search={search}
-                onSearchChange={setSearch}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                onApprove={handleStatusUpdate}
-                onReject={handleStatusUpdate}
-                onConfirmDelivery={handleManagerDeliveryConfirmation}
+                                requests={requests}
+                                filteredRequests={filteredRequests}
+                                search={search}
+                                onSearchChange={setSearch}
+                                statusFilter={statusFilter}
+                                onStatusFilterChange={setStatusFilter}
+                                onApprove={handleStatusUpdate}
+                                onReject={handleStatusUpdate}
+                                onConfirmDelivery={handleManagerDeliveryConfirmation}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
                                 isMobile={true}
@@ -1011,10 +1016,10 @@ export default function AdminSupplyRequestsPage() {
                                 onLocaleFilterChange={setLocaleFilter}
                                 requesterFilter={requesterFilter}
                                 onRequesterFilterChange={setRequesterFilter}
-                onAllocationApprove={handleAllocationStatusUpdate}
-                onAllocationReject={handleAllocationStatusUpdate}
-                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
-                onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
+                                onAllocationApprove={handleAllocationStatusUpdate}
+                                onAllocationReject={handleAllocationStatusUpdate}
+                                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
+                                onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
                                 isMobile={true}
@@ -1038,7 +1043,7 @@ export default function AdminSupplyRequestsPage() {
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
                                 isMobile={true}
-            />
+                            />
                         ),
                         loadingTabs[3] ? (
                             <Skeleton key="skeleton-supply" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
@@ -1071,17 +1076,17 @@ export default function AdminSupplyRequestsPage() {
                 loadingTabs[0] ? (
                     <Skeleton key="skeleton-req" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
                 ) : (
-                            <SupplyRequestsTab
+                    <SupplyRequestsTab
                         key="suprimentos"
-                                requests={requests}
-                                filteredRequests={filteredRequests}
-                                search={search}
-                                onSearchChange={setSearch}
-                                statusFilter={statusFilter}
-                                onStatusFilterChange={setStatusFilter}
-                                onApprove={handleStatusUpdate}
-                                onReject={handleStatusUpdate}
-                                onConfirmDelivery={handleManagerDeliveryConfirmation}
+                        requests={requests}
+                        filteredRequests={filteredRequests}
+                        search={search}
+                        onSearchChange={setSearch}
+                        statusFilter={statusFilter}
+                        onStatusFilterChange={setStatusFilter}
+                        onApprove={handleStatusUpdate}
+                        onReject={handleStatusUpdate}
+                        onConfirmDelivery={handleManagerDeliveryConfirmation}
                         onExportPDF={exportToPDF}
                         onClearFilters={clearFilters}
                     />
@@ -1089,65 +1094,65 @@ export default function AdminSupplyRequestsPage() {
                 loadingTabs[1] ? (
                     <Skeleton key="skeleton-alloc" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
                 ) : (
-                            <AllocationsTab
+                    <AllocationsTab
                         key="alocacoes"
-                                allocationRequests={allocationRequests}
-                                filteredAllocationRequests={filteredAllocationRequests}
-                                search={search}
-                                onSearchChange={setSearch}
-                                statusFilter={statusFilter}
-                                onStatusFilterChange={setStatusFilter}
-                                returnDateFilter={returnDateFilter}
-                                onReturnDateFilterChange={setReturnDateFilter}
-                                sectorFilter={sectorFilter}
-                                onSectorFilterChange={setSectorFilter}
-                                locationFilter={locationFilter}
-                                onLocationFilterChange={setLocationFilter}
-                                localeFilter={localeFilter}
-                                onLocaleFilterChange={setLocaleFilter}
-                                requesterFilter={requesterFilter}
-                                onRequesterFilterChange={setRequesterFilter}
-                                onAllocationApprove={handleAllocationStatusUpdate}
-                                onAllocationReject={handleAllocationStatusUpdate}
-                                onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
-                                onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
-                                onExportPDF={exportToPDF}
-                                onClearFilters={clearFilters}
-                            />
+                        allocationRequests={allocationRequests}
+                        filteredAllocationRequests={filteredAllocationRequests}
+                        search={search}
+                        onSearchChange={setSearch}
+                        statusFilter={statusFilter}
+                        onStatusFilterChange={setStatusFilter}
+                        returnDateFilter={returnDateFilter}
+                        onReturnDateFilterChange={setReturnDateFilter}
+                        sectorFilter={sectorFilter}
+                        onSectorFilterChange={setSectorFilter}
+                        locationFilter={locationFilter}
+                        onLocationFilterChange={setLocationFilter}
+                        localeFilter={localeFilter}
+                        onLocaleFilterChange={setLocaleFilter}
+                        requesterFilter={requesterFilter}
+                        onRequesterFilterChange={setRequesterFilter}
+                        onAllocationApprove={handleAllocationStatusUpdate}
+                        onAllocationReject={handleAllocationStatusUpdate}
+                        onAllocationConfirmDelivery={handleManagerDeliveryConfirmation}
+                        onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
+                        onExportPDF={exportToPDF}
+                        onClearFilters={clearFilters}
+                    />
                 ),
                 loadingTabs[2] ? (
                     <Skeleton key="skeleton-inv" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
                 ) : (
-                            <InventoryTransactionsTab
+                    <InventoryTransactionsTab
                         key="transacoes-inventario"
-                                inventoryTransactions={inventoryTransactions}
-                                filteredInventoryTransactions={filteredInventoryTransactions}
-                                search={search}
-                                onSearchChange={setSearch}
-                                statusFilter={statusFilter}
-                                onStatusFilterChange={setStatusFilter}
-                                transactionLocationFilter={transactionLocationFilter}
-                                onTransactionLocationFilterChange={setTransactionLocationFilter}
-                                transactionLocaleFilter={transactionLocaleFilter}
-                                onTransactionLocaleFilterChange={setTransactionLocaleFilter}
-                                onExportPDF={exportToPDF}
-                                onClearFilters={clearFilters}
-                            />
+                        inventoryTransactions={inventoryTransactions}
+                        filteredInventoryTransactions={filteredInventoryTransactions}
+                        search={search}
+                        onSearchChange={setSearch}
+                        statusFilter={statusFilter}
+                        onStatusFilterChange={setStatusFilter}
+                        transactionLocationFilter={transactionLocationFilter}
+                        onTransactionLocationFilterChange={setTransactionLocationFilter}
+                        transactionLocaleFilter={transactionLocaleFilter}
+                        onTransactionLocaleFilterChange={setTransactionLocaleFilter}
+                        onExportPDF={exportToPDF}
+                        onClearFilters={clearFilters}
+                    />
                 ),
                 loadingTabs[3] ? (
                     <Skeleton key="skeleton-supply" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
                 ) : (
-                            <SupplyTransactionsTab
+                    <SupplyTransactionsTab
                         key="transacoes-suprimento"
-                                supplyTransactions={supplyTransactions}
-                                filteredSupplyTransactions={filteredSupplyTransactions}
-                                search={search}
-                                onSearchChange={setSearch}
-                                statusFilter={statusFilter}
-                                onStatusFilterChange={setStatusFilter}
-                                onExportPDF={exportToPDF}
-                                onClearFilters={clearFilters}
-                            />
+                        supplyTransactions={supplyTransactions}
+                        filteredSupplyTransactions={filteredSupplyTransactions}
+                        search={search}
+                        onSearchChange={setSearch}
+                        statusFilter={statusFilter}
+                        onStatusFilterChange={setStatusFilter}
+                        onExportPDF={exportToPDF}
+                        onClearFilters={clearFilters}
+                    />
                 )
             ]}
         </PersistentTabsLayout>

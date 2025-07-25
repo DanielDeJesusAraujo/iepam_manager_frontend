@@ -16,6 +16,15 @@ export async function GET(request: NextRequest) {
             }
         })
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][locales][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json()
         console.log('[API][locales][GET] Locais encontrados com sucesso');
         return NextResponse.json(data)
@@ -44,6 +53,15 @@ export async function POST(request: NextRequest) {
             },
             body: JSON.stringify(body)
         })
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][locales][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         const data = await response.json()
         console.log('[API][locales][POST] Local criado com sucesso');

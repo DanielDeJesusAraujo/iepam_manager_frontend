@@ -20,6 +20,15 @@ export async function GET(
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][suppliers][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][suppliers][GET] Erro ao buscar fornecedor');
       throw new Error('Erro ao buscar fornecedor');
@@ -60,6 +69,15 @@ export async function PUT(
       body: JSON.stringify(body),
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][suppliers][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       const errorData = await response.json();
       console.error('[API][suppliers][PUT] Erro ao atualizar fornecedor');
@@ -96,6 +114,15 @@ export async function DELETE(
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][suppliers][DELETE] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       console.error('[API][suppliers][DELETE] Erro ao excluir fornecedor');

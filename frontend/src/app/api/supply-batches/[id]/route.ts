@@ -21,6 +21,15 @@ export async function GET(
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][supply-batches][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][supply-batches][GET] Erro ao buscar lote');
       throw new Error('Erro ao buscar lote');

@@ -20,6 +20,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supplies][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             console.error('[API][supplies][GET] Erro ao carregar suprimentos');
@@ -56,6 +65,15 @@ export async function POST(request: NextRequest) {
             },
             body: JSON.stringify(body),
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supplies][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             const errorData = await response.json();

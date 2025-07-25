@@ -28,6 +28,15 @@ export async function PUT(
 
         const data = await response.json()
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][categories][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][categories][PUT] Erro ao atualizar categoria');
             throw new Error(data.message || 'Erro ao atualizar categoria')
@@ -59,6 +68,15 @@ export async function DELETE(
                 'Authorization': `Bearer ${token}`,
             },
         })
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][categories][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             const data = await response.json()

@@ -25,11 +25,11 @@ import {
     ModalCloseButton,
     ModalFooter,
     Select,
-    Text,
     Badge,
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
+import { useRouter } from 'next/navigation';
 
 interface Location {
     id: string
@@ -62,7 +62,7 @@ export default function SectorSettings() {
     const [editingSector, setEditingSector] = useState<Sector | null>(null)
     const toast = useToast()
     const { isOpen: isSectorModalOpen, onOpen: onSectorModalOpen, onClose: onSectorModalClose } = useDisclosure()
-
+    const router = useRouter();
     const [sectorFormData, setSectorFormData] = useState({
         name: '',
         description: '',
@@ -86,6 +86,12 @@ export default function SectorSettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             const data = await response.json()
             setSectors(data)
         } catch (error) {

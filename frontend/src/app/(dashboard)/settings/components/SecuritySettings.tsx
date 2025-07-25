@@ -56,6 +56,11 @@ export default function SecuritySettings() {
                 })
             })
 
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             if (!response.ok) {
                 const data = await response.json()
                 throw new Error(data.message || 'Erro ao alterar senha')

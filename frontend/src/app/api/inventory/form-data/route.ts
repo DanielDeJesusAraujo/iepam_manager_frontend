@@ -17,12 +17,22 @@ export async function GET(request: Request) {
             );
         }
 
+        
         // Busca localizações
         const locationsResponse = await fetch(`${baseUrl}/locations`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
+        
+        if (locationsResponse.status === 429) {
+            const message = await locationsResponse.text();
+            console.log('[API][inventory][form-data][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!locationsResponse.ok) {
             console.error('[API][inventory][form-data][GET] Erro ao buscar localizações');
@@ -38,6 +48,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (suppliersResponse.status === 429) {
+            const message = await suppliersResponse.text();
+            console.log('[API][inventory][form-data][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!suppliersResponse.ok) {
             console.error('[API][inventory][form-data][GET] Erro ao buscar fornecedores');
             throw new Error('Erro ao buscar fornecedores');
@@ -52,6 +71,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (categoriesResponse.status === 429) {
+            const message = await categoriesResponse.text();
+            console.log('[API][inventory][form-data][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!categoriesResponse.ok) {
             console.error('[API][inventory][form-data][GET] Erro ao buscar categorias');
             throw new Error('Erro ao buscar categorias');
@@ -65,6 +93,15 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (subcategoriesResponse.status === 429) {
+            const message = await subcategoriesResponse.text();
+            console.log('[API][inventory][form-data][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!subcategoriesResponse.ok) {
             console.error('[API][inventory][form-data][GET] Erro ao buscar subcategorias');

@@ -121,6 +121,11 @@ export default function OrderDetailsPage({ params }: { params: { id: string } })
           }
         })
 
+        if (response.status === 429) {
+          router.push('/rate-limit');
+          return;
+        }
+
         console.log('Resposta recebida:', response.data); // Debug log
 
         if (response.status !== 200) {

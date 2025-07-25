@@ -16,7 +16,6 @@ export async function GET(
         { status: 401 }
       );
     }
-    console.log('[API][sectors][location][GET] Token ok');
 
     const response = await fetch(`${baseUrl}/sectors/location/${params.locationId}`, {
       headers: {
@@ -24,7 +23,14 @@ export async function GET(
       },
     });
 
-    console.log('[API][sectors][location][GET] Response ok');
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][sectors][location][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       console.error('[API][sectors][location][GET] Erro ao buscar setores da localização');
@@ -33,7 +39,6 @@ export async function GET(
     }
 
     const data = await response.json();
-    console.log('[API][sectors][location][GET] Setores da localização encontrados com sucesso');
     return NextResponse.json(data);
     
   } catch (error) {

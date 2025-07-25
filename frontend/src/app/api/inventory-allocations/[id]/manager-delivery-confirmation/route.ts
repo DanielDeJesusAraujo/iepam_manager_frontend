@@ -27,6 +27,15 @@ export async function PATCH(
             body: JSON.stringify(body)
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][PATCH] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             console.error('[API][inventory-allocations][PATCH] Erro ao confirmar entrega');

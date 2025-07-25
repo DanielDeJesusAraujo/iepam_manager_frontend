@@ -71,9 +71,7 @@ export default function LoginPage() {
       // Redirect based on user role
       if (data.user.role === 'EMPLOYEE' || data.user.role === 'TECHNICIAN') {
         router.push('/supply-requests')
-      } else if (data.user.role === 'SUPPORT') {
-        router.push('/servers')
-      } else {
+      } else if (data.user.role === 'ADMIN' || data.user.role === 'MANAGER') {
         router.push('/dashboard')
       }
     } catch (error) {
@@ -110,7 +108,7 @@ export default function LoginPage() {
         >
 
           <Text fontSize={isMobile ? "xl" : "2xl"} fontWeight="bold" color={textColor} textAlign="center">
-            IEPAM APP
+            IEPAM Manager
           </Text>
 
           <Text color={secondaryTextColor} fontSize={isMobile ? "sm" : "md"} textAlign="center">

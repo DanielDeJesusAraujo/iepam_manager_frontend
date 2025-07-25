@@ -20,6 +20,15 @@ export async function GET(request: Request) {
       }
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][quotes][smart][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][quotes][smart][GET] Erro ao buscar cotações inteligentes');
       throw new Error('Erro ao buscar cotações inteligentes');

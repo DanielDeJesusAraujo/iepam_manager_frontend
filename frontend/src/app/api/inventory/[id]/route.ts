@@ -24,6 +24,15 @@ export async function GET(
         }
       });
   
+      if (response.status === 429) {
+        const message = await response.text();
+        console.log('[API][inventory][GET] Rate limit exceeded', message);
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', details: message },
+          { status: 429 }
+        );
+      }
+
       if (!response.ok) {
         console.error(`[API][inventory/${params.id}][GET] Erro ao buscar detalhes do item`);
         throw new Error('Erro ao buscar detalhes do item do inventário');
@@ -67,6 +76,15 @@ export async function PUT(
             body: JSON.stringify(body)
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error(`[API][inventory/${params.id}][PUT] Erro ao atualizar item`);
             throw new Error('Erro ao atualizar item do inventário');
@@ -106,6 +124,15 @@ export async function DELETE(
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error(`[API][inventory/${params.id}][DELETE] Erro ao excluir item`);

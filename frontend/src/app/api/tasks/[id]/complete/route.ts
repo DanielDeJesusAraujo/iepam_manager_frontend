@@ -14,6 +14,15 @@ export async function PATCH(
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][tasks][complete][PATCH] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][tasks][complete][PATCH] Erro ao marcar tarefa como concluída');
       const error = await response.json();

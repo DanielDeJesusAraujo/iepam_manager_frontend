@@ -10,9 +10,11 @@ import {
     useToast,
     useColorModeValue,
 } from '@chakra-ui/react'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 export default function GeneralSettings() {
+    const router = useRouter();
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         company_name: '',
@@ -36,6 +38,11 @@ export default function GeneralSettings() {
                     'Authorization': `Bearer ${token}`
                 }
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
 
             if (response.ok) {
                 const data = await response.json()

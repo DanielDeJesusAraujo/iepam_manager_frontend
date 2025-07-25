@@ -17,6 +17,14 @@ export async function GET(
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][maintenance-schedules][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
     if (!userResponse.ok) { 
       console.error('[API][maintenance-schedules][GET] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -31,6 +39,15 @@ export async function GET(
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][maintenance-schedules][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       console.error('[API][maintenance-schedules][GET] Erro ao buscar agendamento de manutenção');
@@ -65,6 +82,14 @@ export async function PUT(
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][maintenance-schedules][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
     if (!userResponse.ok) {
       console.error('[API][maintenance-schedules][PUT] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -82,6 +107,15 @@ export async function PUT(
       },
       body: JSON.stringify(body),
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][maintenance-schedules][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const error = await response.json();
@@ -116,6 +150,14 @@ export async function DELETE(
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][maintenance-schedules][DELETE] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
     if (!userResponse.ok) {
       console.error('[API][maintenance-schedules][DELETE] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -131,6 +173,15 @@ export async function DELETE(
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][maintenance-schedules][DELETE] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const error = await response.json();

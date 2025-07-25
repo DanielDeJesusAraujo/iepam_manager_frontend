@@ -31,6 +31,7 @@ import {
   Checkbox,
 } from '@chakra-ui/react';
 import { Mail, Lock, User, Trash2, Edit } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -77,7 +78,7 @@ export default function UserManagement() {
   const toast = useToast();
   const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure();
   const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onClose: onCreateModalClose } = useDisclosure();
-
+  const router = useRouter();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
@@ -96,6 +97,11 @@ export default function UserManagement() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
 
       if (!response.ok) throw new Error('Erro ao carregar usuários');
       const data = await response.json();
@@ -120,6 +126,11 @@ export default function UserManagement() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
 
       if (!response.ok) throw new Error('Erro ao carregar setores');
       const data = await response.json();

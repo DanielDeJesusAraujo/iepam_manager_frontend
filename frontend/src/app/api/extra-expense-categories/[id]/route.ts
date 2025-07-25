@@ -28,6 +28,15 @@ export async function PUT(
             body: JSON.stringify(body)
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][extra-expense-categories][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][extra-expense-categories][PUT] Erro ao atualizar categoria de gastos extras');
             throw new Error('Erro ao atualizar categoria de gastos extras');
@@ -66,6 +75,15 @@ export async function DELETE(
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][extra-expense-categories][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][extra-expense-categories][DELETE] Erro ao excluir categoria de gastos extras');

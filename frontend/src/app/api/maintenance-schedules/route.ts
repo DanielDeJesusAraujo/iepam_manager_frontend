@@ -13,6 +13,14 @@ export async function GET(request: NextRequest) {
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][maintenance-schedules][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
     if (!userResponse.ok) {
       console.error('[API][maintenance-schedules][GET] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -30,6 +38,15 @@ export async function GET(request: NextRequest) {
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][maintenance-schedules][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       console.error('[API][maintenance-schedules][GET] Erro ao buscar agendamentos de manutenção');
@@ -61,6 +78,14 @@ export async function POST(request: NextRequest) {
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][maintenance-schedules][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
     if (!userResponse.ok) {
       console.error('[API][maintenance-schedules][POST] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -78,6 +103,15 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(body),
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][maintenance-schedules][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const error = await response.json();

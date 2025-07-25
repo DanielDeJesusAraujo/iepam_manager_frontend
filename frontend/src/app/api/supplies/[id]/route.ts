@@ -23,6 +23,15 @@ export async function GET(
             },
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supplies][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][supplies][GET] Erro ao buscar detalhes do suprimento');
             throw new Error('Erro ao buscar detalhes do suprimento');
@@ -62,6 +71,15 @@ export async function PUT(
             body: JSON.stringify(body),
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supplies][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             const errorData = await response.json();
             console.error('[API][supplies][PUT] Erro ao atualizar suprimento');
@@ -98,6 +116,15 @@ export async function DELETE(
                 'Content-Type': 'application/json',
             },
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supplies][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][supplies][DELETE] Erro ao excluir suprimento');

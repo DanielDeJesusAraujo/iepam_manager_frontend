@@ -15,6 +15,16 @@ export async function GET(request: NextRequest) {
             }
         });
 
+        if (userResponse.status === 429) {
+            // Rate limit atingido
+            const message = await userResponse.text();
+            console.log('[API][alerts][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!userResponse.ok) {
             return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
         }
@@ -55,6 +65,16 @@ export async function DELETE(request: NextRequest) {
             }
         });
 
+        if (userResponse.status === 429) {
+            // Rate limit atingido
+            const message = await userResponse.text();
+            console.log('[API][alerts][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!userResponse.ok) {
             return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
         }
@@ -77,6 +97,16 @@ export async function DELETE(request: NextRequest) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (response.status === 429) {
+            // Rate limit atingido
+            const message = await response.text();
+            console.log('[API][alerts][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             throw new Error('Erro ao excluir alerta');

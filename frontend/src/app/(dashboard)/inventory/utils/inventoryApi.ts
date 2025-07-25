@@ -1,15 +1,28 @@
-export const fetchItems = async () => {
-  const token = localStorage.getItem('@ti-assistant:token');
-  console.log('[API] GET /api/inventory');
-  const response = await fetch('/api/inventory', {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+import { InventoryResponse, RateLimitResponse } from "@/app/interfaces";
+
+export const fetchItems = async (): Promise<RateLimitResponse | InventoryResponse[]> => {
+  try {
+    const token = localStorage.getItem('@ti-assistant:token');
+    console.log('[API] GET /api/inventory');
+    const response = await fetch('/api/inventory', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 429) {
+      console.log('[API] Rate limit exceeded');
+      return { status: 429, message: 'Rate limit exceeded' };
     }
-  });
-  const data = await response.json();
-  console.log('[API] Response /api/inventory:', data);
-  return data;
+
+    const data = await response.json();
+    console.log('[API] Response /api/inventory:', data);
+    return data;
+  } catch (error) {
+    console.error('[API] Erro ao buscar itens do inventário:', error);
+    throw error;
+  }
 };
 
 export const fetchCategories = async () => {
