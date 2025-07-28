@@ -474,10 +474,10 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                                         {Array.isArray(locales) && locales
                                             .filter(locale => locale.location_id === formData.location_id)
                                             .map((locale) => (
-                                                <option key={locale.id} value={locale.id}>
-                                                    {locale.name}
-                                                </option>
-                                            ))}
+                                            <option key={locale.id} value={locale.id}>
+                                                {locale.name}
+                                            </option>
+                                        ))}
                                     </Select>
                                 </FormControl>
                                 <FormControl isInvalid={!!errors.category_id} isRequired>
