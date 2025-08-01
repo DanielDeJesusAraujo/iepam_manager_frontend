@@ -19,6 +19,15 @@ export async function GET(
             }
         })
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][locales][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json()
         console.log('[API][locales][GET] Local encontrado com sucesso');
         return NextResponse.json(data)
@@ -51,6 +60,15 @@ export async function PUT(
             body: JSON.stringify(body)
         })
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][locales][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json()
         console.log('[API][locales][PUT] Local atualizado com sucesso');
         return NextResponse.json(data)
@@ -77,6 +95,15 @@ export async function DELETE(
                 'Authorization': token
             }
         })
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][locales][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][locales][DELETE] Erro ao excluir local');

@@ -17,6 +17,15 @@ export async function GET(req: NextRequest) {
       }
     });
 
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][orders][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!userResponse.ok) {
       console.error('[API][orders][GET] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -33,7 +42,16 @@ export async function GET(req: NextRequest) {
         'Authorization': `Bearer ${token}`
       }
     })
-    console.log('[API][orders][GET] Response ok');
+
+    if (backendRes.status === 429) {
+      const message = await backendRes.text();
+      console.log('[API][orders][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!backendRes.ok) {
       const errorText = await backendRes.text()
       console.error(`[API][orders][GET] Erro ao buscar ordens de serviço: ${errorText}`);
@@ -50,7 +68,7 @@ export async function GET(req: NextRequest) {
         { status: 500 }
       )
     }
-    console.log('[API][orders][GET] Ordens de serviço encontradas com sucesso');
+
     return NextResponse.json(data)
   } catch (error) {
     console.error('[API][orders][GET] Erro:', error) // Debug log
@@ -77,6 +95,15 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][orders][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!userResponse.ok) {
       console.error('[API][orders][POST] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
@@ -98,13 +125,22 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify(body)
     })
-    console.log('[API][orders][POST] Response ok');
+
+    if (backendRes.status === 429) {
+      const message = await backendRes.text();
+      console.log('[API][orders][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!backendRes.ok) {
       console.error('[API][orders][POST] Erro ao criar ordem de serviço');
       const errorData = await backendRes.json()
       throw new Error(errorData.message || 'Erro ao criar ordem de serviço')
     }
-    console.log('[API][orders][POST] Ordem de serviço criada com sucesso');
+
     const data = await backendRes.json()
     return NextResponse.json(data, { status: 201 })
   } catch (error: any) {

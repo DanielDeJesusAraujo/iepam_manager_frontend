@@ -2,24 +2,15 @@
 
 import {
     Box,
-    Container,
     Heading,
     VStack,
     useColorModeValue,
-    Card,
-    CardBody,
     Accordion,
     AccordionItem,
     AccordionButton,
     AccordionPanel,
     AccordionIcon,
-    Text,
-    Switch,
-    FormControl,
-    FormLabel,
     useColorMode,
-    Select,
-    Divider,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import GeneralSettings from './GeneralSettings';
@@ -28,11 +19,13 @@ import SecuritySettings from './SecuritySettings';
 import IntegrationSettings from './IntegrationSettings';
 import UnitOfMeasureSettings from './UnitOfMeasureSettings';
 import CategorySettings from './CategorySettings';
-import LocationSettings from './EnviromentSettings';
+import LocationSettings from './LocationSettings';
 import UserManagement from './UserManagement';
 import ThemeSettings from './ThemeSettings';
+import { useRouter } from 'next/navigation';
 
 export function MobileSettings() {
+    const router = useRouter();
     const [userRole, setUserRole] = useState<string>('');
     const { colorMode } = useColorMode();
     const bgColor = useColorModeValue('rgba(255, 255, 255, 0.5)', 'rgba(45, 55, 72, 0.5)');
@@ -65,14 +58,12 @@ export function MobileSettings() {
                 h="full"
             >
                 <Heading size="lg" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Configurações</Heading>
-
                 <Accordion allowMultiple>
-                    {/* Tema - Sempre visível */}
-                    <AccordionItem 
+                    <AccordionItem
                         borderColor={accordionBorderColor}
                         bg={accordionBg}
                         backdropFilter="blur(12px)"
-                        _hover={{ 
+                        _hover={{
                             bg: accordionHoverBg,
                             transform: 'translateY(-2px)',
                             shadow: 'lg'
@@ -95,11 +86,11 @@ export function MobileSettings() {
                     </AccordionItem>
 
                     {/* Segurança - Sempre visível */}
-                    <AccordionItem 
+                    <AccordionItem
                         borderColor={accordionBorderColor}
                         bg={accordionBg}
                         backdropFilter="blur(12px)"
-                        _hover={{ 
+                        _hover={{
                             bg: accordionHoverBg,
                             transform: 'translateY(-2px)',
                             shadow: 'lg'
@@ -124,11 +115,11 @@ export function MobileSettings() {
                     {/* Outras configurações - Visíveis apenas para não funcionários */}
                     {!isEmployee && (
                         <>
-                            <AccordionItem 
+                            <AccordionItem
                                 borderColor={accordionBorderColor}
                                 bg={accordionBg}
                                 backdropFilter="blur(12px)"
-                                _hover={{ 
+                                _hover={{
                                     bg: accordionHoverBg,
                                     transform: 'translateY(-2px)',
                                     shadow: 'lg'
@@ -150,11 +141,11 @@ export function MobileSettings() {
                                 </AccordionPanel>
                             </AccordionItem>
 
-                            <AccordionItem 
+                            <AccordionItem
                                 borderColor={accordionBorderColor}
                                 bg={accordionBg}
                                 backdropFilter="blur(12px)"
-                                _hover={{ 
+                                _hover={{
                                     bg: accordionHoverBg,
                                     transform: 'translateY(-2px)',
                                     shadow: 'lg'
@@ -176,11 +167,11 @@ export function MobileSettings() {
                                 </AccordionPanel>
                             </AccordionItem>
 
-                            <AccordionItem 
+                            <AccordionItem
                                 borderColor={accordionBorderColor}
                                 bg={accordionBg}
                                 backdropFilter="blur(12px)"
-                                _hover={{ 
+                                _hover={{
                                     bg: accordionHoverBg,
                                     transform: 'translateY(-2px)',
                                     shadow: 'lg'
@@ -202,11 +193,11 @@ export function MobileSettings() {
                                 </AccordionPanel>
                             </AccordionItem>
 
-                            <AccordionItem 
+                            <AccordionItem
                                 borderColor={accordionBorderColor}
                                 bg={accordionBg}
                                 backdropFilter="blur(12px)"
-                                _hover={{ 
+                                _hover={{
                                     bg: accordionHoverBg,
                                     transform: 'translateY(-2px)',
                                     shadow: 'lg'
@@ -228,11 +219,11 @@ export function MobileSettings() {
                                 </AccordionPanel>
                             </AccordionItem>
 
-                            <AccordionItem 
+                            <AccordionItem
                                 borderColor={accordionBorderColor}
                                 bg={accordionBg}
                                 backdropFilter="blur(12px)"
-                                _hover={{ 
+                                _hover={{
                                     bg: accordionHoverBg,
                                     transform: 'translateY(-2px)',
                                     shadow: 'lg'
@@ -254,11 +245,11 @@ export function MobileSettings() {
                                 </AccordionPanel>
                             </AccordionItem>
 
-                            <AccordionItem 
+                            <AccordionItem
                                 borderColor={accordionBorderColor}
                                 bg={accordionBg}
                                 backdropFilter="blur(12px)"
-                                _hover={{ 
+                                _hover={{
                                     bg: accordionHoverBg,
                                     transform: 'translateY(-2px)',
                                     shadow: 'lg'
@@ -284,11 +275,11 @@ export function MobileSettings() {
 
                     {/* Gerenciamento de Usuários - Visível apenas para administradores */}
                     {isAdmin && (
-                        <AccordionItem 
+                        <AccordionItem
                             borderColor={accordionBorderColor}
                             bg={accordionBg}
                             backdropFilter="blur(12px)"
-                            _hover={{ 
+                            _hover={{
                                 bg: accordionHoverBg,
                                 transform: 'translateY(-2px)',
                                 shadow: 'lg'

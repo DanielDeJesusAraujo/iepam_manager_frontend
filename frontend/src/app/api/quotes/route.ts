@@ -26,12 +26,21 @@ export async function GET(request: Request) {
         'Authorization': `Bearer ${token}`
       }
     });
-    console.log('[API][quotes][GET] Response ok');
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][quotes][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][quotes][GET] Erro ao buscar cotações');
       throw new Error('Erro ao buscar cotações');
     }
-    console.log('[API][quotes][GET] Cotações encontradas com sucesso');
+    
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
@@ -53,7 +62,7 @@ export async function POST(request: Request) {
       { status: 401 }
     );
   }
-  console.log('[API][quotes][POST] Token ok');
+
   try {
     const body = await request.json();
     // Validação dos dados
@@ -126,7 +135,16 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${token}`
       }
     });
-    console.log('[API][quotes][POST] Response ok');
+
+    if (supplierResponse.status === 429) {
+      const message = await supplierResponse.text();
+      console.log('[API][quotes][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!supplierResponse.ok) {
       console.error('[API][quotes][POST] Erro ao buscar dados do fornecedor');
       throw new Error('Erro ao buscar dados do fornecedor');
@@ -143,7 +161,16 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify(payload)
     });
-    console.log('[API][quotes][POST] Response ok');
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][quotes][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       const errorData = await response.json();
       console.error('[API][quotes][POST] Erro do backend:', errorData);
@@ -152,7 +179,7 @@ export async function POST(request: Request) {
         { status: response.status }
       );
     }
-    console.log('[API][quotes][POST] Cotação criada com sucesso');
+
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {

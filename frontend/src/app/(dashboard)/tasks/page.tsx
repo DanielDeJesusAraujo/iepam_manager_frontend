@@ -102,6 +102,12 @@ export default function TasksPage() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         setTasks(data);

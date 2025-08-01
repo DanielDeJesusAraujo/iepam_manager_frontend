@@ -23,6 +23,15 @@ export async function GET(
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][inventory-allocations][GET] Erro ao buscar alocação');
             throw new Error('Erro ao buscar alocação');
@@ -65,6 +74,15 @@ export async function PUT(
             body: JSON.stringify(body)
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][PUT] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][inventory-allocations][PUT] Erro ao atualizar alocação');
             throw new Error('Erro ao atualizar alocação');
@@ -103,6 +121,15 @@ export async function DELETE(
                 'Content-Type': 'application/json'
             }
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][DELETE] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][inventory-allocations][DELETE] Erro ao excluir alocação');

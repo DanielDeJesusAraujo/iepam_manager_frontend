@@ -28,6 +28,7 @@ import {
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
+import { useRouter } from 'next/navigation';
 
 interface UnitOfMeasure {
     id: string
@@ -42,7 +43,7 @@ export default function UnitOfMeasureSettings() {
     const [editingUnit, setEditingUnit] = useState<UnitOfMeasure | null>(null)
     const toast = useToast()
     const { isOpen, onOpen, onClose } = useDisclosure()
-
+    const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
         symbol: '',
@@ -65,6 +66,12 @@ export default function UnitOfMeasureSettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             const data = await response.json()
             setUnits(data)
         } catch (error) {

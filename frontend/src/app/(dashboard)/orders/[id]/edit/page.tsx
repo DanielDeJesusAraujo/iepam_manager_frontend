@@ -71,6 +71,11 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                     }
                 })
 
+                if (response.status === 429) {
+                    router.push('/rate-limit');
+                    return;
+                }
+
                 if (!response.ok) {
                     const errorData = await response.json()
                     throw new Error(errorData.message || 'Erro ao buscar ordem de serviço')
@@ -132,6 +137,11 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                 },
                 body: JSON.stringify(order)
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
 
             if (!response.ok) {
                 const errorData = await response.json()

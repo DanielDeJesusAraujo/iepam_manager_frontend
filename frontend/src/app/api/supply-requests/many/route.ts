@@ -23,6 +23,15 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify(body),
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supply-requests][many][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json();
 
         if (!response.ok) {

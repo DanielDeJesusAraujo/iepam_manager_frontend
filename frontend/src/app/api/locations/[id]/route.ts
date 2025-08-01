@@ -23,6 +23,15 @@ export async function GET(
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][locations][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       const error = await response.json();
       console.error('[API][locations][GET] Erro ao buscar localização');
@@ -67,6 +76,15 @@ export async function PUT(
       },
       body: JSON.stringify(body),
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][locations][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const error = await response.json();

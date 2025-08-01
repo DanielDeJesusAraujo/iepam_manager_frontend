@@ -139,6 +139,11 @@ export default function NewOrderPage() {
         body: JSON.stringify(dataToSend)
       })
 
+      if (res.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
+
       if (!res.ok) {
         const errorData = await res.json()
         throw new Error(errorData.message || 'Erro ao criar ordem de serviço')

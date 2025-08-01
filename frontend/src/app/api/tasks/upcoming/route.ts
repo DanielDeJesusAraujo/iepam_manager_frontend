@@ -13,6 +13,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][tasks][upcoming][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][tasks][upcoming][GET] Erro ao buscar tarefas próximas');
       throw new Error('Failed to fetch upcoming tasks');

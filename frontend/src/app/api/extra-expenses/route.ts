@@ -20,6 +20,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][extra-expenses][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][extra-expenses][GET] Erro ao buscar gastos extras');
             throw new Error('Erro ao buscar gastos extras');
@@ -58,6 +67,15 @@ export async function POST(request: NextRequest) {
         });
 
         const data = await response.json();
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][extra-expenses][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][extra-expenses][POST] Erro ao criar gasto extra');

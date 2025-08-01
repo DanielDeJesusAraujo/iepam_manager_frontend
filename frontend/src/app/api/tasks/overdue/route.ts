@@ -10,6 +10,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][tasks][overdue][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][tasks][overdue][GET] Erro ao buscar tarefas atrasadas');
       throw new Error('Failed to fetch overdue tasks');

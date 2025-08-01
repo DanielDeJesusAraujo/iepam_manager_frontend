@@ -46,6 +46,7 @@ import { filterSupplies } from './utils/filterUtils';
 import { exportSuppliesBelowMinimum } from './utils/exportUtils';
 import { SupplyStatistics } from './components/SupplyStatistics';
 import { SupplyBatchList } from './components/SupplyBatchList';
+import { useRouter } from 'next/navigation';
 
 export default function SuppliesPage() {
     const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -56,7 +57,7 @@ export default function SuppliesPage() {
     const toast = useToast();
     const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
     const { colorMode } = useColorMode();
-
+    const router = useRouter();
     const isMobile = useBreakpointValue({ base: true, md: false });
 
     const bgColor = useColorModeValue('white', 'gray.800');
@@ -77,6 +78,12 @@ export default function SuppliesPage() {
                     'Content-Type': 'application/json'
                 }
             });
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             const data = await response.json();
             setSupplies(Array.isArray(data) ? data : []);
         } catch (error) {

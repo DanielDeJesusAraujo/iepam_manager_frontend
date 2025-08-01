@@ -1,14 +1,14 @@
 'use client';
 
-import { 
-  Box, 
-  VStack, 
-  useColorModeValue, 
-  Tabs, 
-  TabList, 
-  TabPanels, 
-  Tab, 
-  TabPanel, 
+import {
+  Box,
+  VStack,
+  useColorModeValue,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
   useToast,
   useBreakpointValue,
   useColorMode,
@@ -33,6 +33,7 @@ import { CreateQuoteButton } from './components/CreateQuoteButton';
 import { SmartQuotesTable } from './components/SmartQuotesTable';
 import { useState, useEffect } from 'react';
 import { FiPlus, FiFilter, FiSearch, FiChevronRight } from 'react-icons/fi';
+import { useRouter } from 'next/navigation';
 
 interface Quote {
   id: string;
@@ -53,6 +54,7 @@ interface Quote {
 }
 
 export default function QuotesPage() {
+  const router = useRouter();
   const { colorMode } = useColorMode();
   const [isMobile] = useMediaQuery('(max-width: 768px)');
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -74,6 +76,11 @@ export default function QuotesPage() {
           'Authorization': `Bearer ${localStorage.getItem('@ti-assistant:token')}`
         }
       });
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
 
       if (!response.ok) {
         throw new Error('Erro ao buscar cotações');
@@ -110,6 +117,11 @@ export default function QuotesPage() {
         body: JSON.stringify({ status })
       });
 
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('Erro ao alterar status da cotação');
       }
@@ -137,7 +149,7 @@ export default function QuotesPage() {
 
   const filteredQuotes = quotes.filter(quote => {
     const matchesSearch = quote.supplier.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         quote.user.name.toLowerCase().includes(searchTerm.toLowerCase());
+      quote.user.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !statusFilter || quote.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -200,8 +212,8 @@ export default function QuotesPage() {
 
         <Box position="sticky" top="7vh" zIndex={21} bg={useColorModeValue('white', 'gray.700')} borderRadius="lg">
           <Tabs variant="enclosed" size={{ base: 'sm', md: 'md' }}>
-            <TabList 
-              overflowX="auto" 
+            <TabList
+              overflowX="auto"
               css={{
                 '&::-webkit-scrollbar': { display: 'none' },
                 scrollbarWidth: 'none',
@@ -212,7 +224,7 @@ export default function QuotesPage() {
               p={1}
               gap={1}
             >
-              <Tab 
+              <Tab
                 whiteSpace="nowrap"
                 fontSize={{ base: 'xs', md: 'sm' }}
                 fontWeight="medium"
@@ -220,7 +232,7 @@ export default function QuotesPage() {
                 px={{ base: 2, md: 4 }}
                 py={{ base: 2, md: 3 }}
                 borderRadius="md"
-                _selected={{ 
+                _selected={{
                   bg: useColorModeValue('white', 'gray.700'),
                   color: useColorModeValue('blue.600', 'blue.200'),
                   boxShadow: 'sm',
@@ -232,7 +244,7 @@ export default function QuotesPage() {
               >
                 Todas as Cotações
               </Tab>
-              <Tab 
+              <Tab
                 whiteSpace="nowrap"
                 fontSize={{ base: 'xs', md: 'sm' }}
                 fontWeight="medium"
@@ -240,7 +252,7 @@ export default function QuotesPage() {
                 px={{ base: 2, md: 4 }}
                 py={{ base: 2, md: 3 }}
                 borderRadius="md"
-                _selected={{ 
+                _selected={{
                   bg: useColorModeValue('white', 'gray.700'),
                   color: useColorModeValue('blue.600', 'blue.200'),
                   boxShadow: 'sm',
@@ -255,19 +267,19 @@ export default function QuotesPage() {
             </TabList>
 
             <Box mt={4} flex="1" overflowY="auto">
-            <TabPanels>
+              <TabPanels>
                 <TabPanel p={{ base: 2, md: 4 }}>
-                <VStack spacing={4} align="stretch">
-                  <Box display="flex" justifyContent="flex-end">
-                    <CreateQuoteButton />
-                  </Box>
-                  <QuoteList quotes={quotes} onStatusChange={handleStatusChange} />
-                </VStack>
-              </TabPanel>
+                  <VStack spacing={4} align="stretch">
+                    <Box display="flex" justifyContent="flex-end">
+                      <CreateQuoteButton />
+                    </Box>
+                    <QuoteList quotes={quotes} onStatusChange={handleStatusChange} />
+                  </VStack>
+                </TabPanel>
                 <TabPanel p={{ base: 2, md: 4 }}>
-                <SmartQuotesTable />
-              </TabPanel>
-            </TabPanels>
+                  <SmartQuotesTable />
+                </TabPanel>
+              </TabPanels>
             </Box>
           </Tabs>
         </Box>

@@ -13,6 +13,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][extra-expense-categories][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][extra-expense-categories][GET] Erro ao buscar categorias de gastos extras');
             throw new Error('Erro ao buscar categorias de gastos extras');
@@ -51,6 +60,15 @@ export async function POST(request: NextRequest) {
         });
 
         const data = await response.json();
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][extra-expense-categories][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][extra-expense-categories][POST] Erro ao criar categoria de gastos extras');

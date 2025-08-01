@@ -13,10 +13,20 @@ export async function GET(req: NextRequest) {
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][internal-service-orders][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!userResponse.ok) {
       console.error('[API][internal-service-orders][GET] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
     }
+
     const user = await userResponse.json();
     if (user.role !== 'TECHNICIAN') {
       console.error('[API][internal-service-orders][GET] Acesso negado');
@@ -25,11 +35,21 @@ export async function GET(req: NextRequest) {
     const backendRes = await fetch(`${baseUrl}/internal-service-orders?technician_id=${user.id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (backendRes.status === 429) {
+      const message = await backendRes.text();
+      console.log('[API][internal-service-orders][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!backendRes.ok) {
-      const errorText = await backendRes.text();
       console.error('[API][internal-service-orders][GET] Erro ao buscar ordens de serviço internas');
       throw new Error('Erro ao buscar ordens de serviço internas');
     }
+
     const data = await backendRes.json();
     return NextResponse.json(data);
   } catch (error) {
@@ -50,15 +70,27 @@ export async function POST(req: NextRequest) {
     const userResponse = await fetch(`${baseUrl}/users/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][internal-service-orders][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!userResponse.ok) {
       console.error('[API][internal-service-orders][POST] Erro ao verificar permissões');
       return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
     }
+
     const user = await userResponse.json();
     if (user.role !== 'TECHNICIAN') {
       console.error('[API][internal-service-orders][POST] Acesso negado');
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
+    
     const body = await req.json();
     body.technician_id = user.id;
     const backendRes = await fetch(`${baseUrl}/internal-service-orders`, {

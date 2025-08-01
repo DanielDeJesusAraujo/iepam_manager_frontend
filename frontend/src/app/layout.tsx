@@ -4,8 +4,8 @@ import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: "TI Assistant",
-  description: "Sistema de gerenciamento de TI",
+  title: "IEPAM Manager",
+  description: "Sistema de gerenciamento de IEPAM",
 };
 
 export default function RootLayout({

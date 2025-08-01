@@ -22,6 +22,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][custom-supply-requests][user][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][custom-supply-requests][user][GET] Erro ao buscar requisições customizadas do usuário');
             throw new Error('Erro ao buscar requisições customizadas do usuário');

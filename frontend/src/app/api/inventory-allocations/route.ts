@@ -19,6 +19,15 @@ export async function GET(request: Request) {
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][inventory-allocations][GET] Erro ao buscar alocações');
             throw new Error('Erro ao buscar alocações');
@@ -57,6 +66,15 @@ export async function POST(request: Request) {
             },
             body: JSON.stringify(body)
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][inventory-allocations][POST] Erro ao criar alocação');

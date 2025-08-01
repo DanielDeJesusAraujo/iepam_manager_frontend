@@ -19,6 +19,15 @@ export async function POST(req: NextRequest) {
         'Authorization': authHeader
       }
     });
+
+    if (userResponse.status === 429) {
+      const message = await userResponse.text();
+      console.log('[API][orders][upload][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
  
     if (!userResponse.ok) {
       console.error('[API][orders][upload][POST] Erro ao verificar permissões');
@@ -56,13 +65,21 @@ export async function POST(req: NextRequest) {
       body: backendFormData,
     })
 
+    if (backendRes.status === 429) {
+      const message = await backendRes.text();
+      console.log('[API][orders][upload][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!backendRes.ok) {
       console.error('[API][orders][upload][POST] Erro ao fazer upload dos arquivos');
       throw new Error('Erro ao fazer upload dos arquivos')
     }
 
     const data = await backendRes.json()
-    console.log('[API][orders][upload][POST] Upload realizado com sucesso');
     return NextResponse.json(data)
   } catch (error) {
     console.error('[API][orders][upload][POST] Erro:', error)

@@ -20,17 +20,22 @@ export async function GET(
         { status: 401 }
       )
     }
-    console.log('[API][orders][GET] Token ok');
     const url = `${baseUrl}/service-orders/${params.id}`;
-    console.log('[API][orders][GET] URL:', url);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
-    console.log('[API][orders][GET] Response ok');
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][orders][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     const data = await response.json()
-    console.log('[API][orders][GET] Data:', data);
     if (!response.ok) {
       console.error(`[API][orders][GET] Erro ao buscar ordem de serviço: ${data.message}`);
       return NextResponse.json(
@@ -77,9 +82,15 @@ export async function PATCH(
       },
       body: JSON.stringify(body)
     })
-    console.log('[API][orders][PATCH] Response ok');
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][orders][PATCH] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
     const data = await response.json()
-    console.log('[API][orders][PATCH] Data:', data);
     if (!response.ok) {
       console.error(`[API][orders][PATCH] Erro ao atualizar ordem de serviço: ${data.message}`);
       return NextResponse.json(
@@ -115,14 +126,22 @@ export async function DELETE(
     }
 
     const url = `${baseUrl}/service-orders/${params.id}`;
-    console.log('[API][orders][DELETE] URL:', url);
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
-    
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][orders][DELETE] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       const data = await response.json()
       console.error(`[API][orders][DELETE] Erro ao excluir ordem de serviço: ${data.message}`);
@@ -131,7 +150,7 @@ export async function DELETE(
         { status: response.status }
       )
     }
-    console.log('[API][orders][DELETE] Ordem de serviço excluída com sucesso');
+    
     return NextResponse.json({ message: 'Ordem de serviço excluída com sucesso' })
   } catch (error) {
     console.error(`[API][orders][DELETE] Erro: ${error}`);
@@ -161,7 +180,6 @@ export async function PUT(
     const body = await request.json()
     console.log('[API][orders][PUT] Body:', body);
     const url = `${baseUrl}/service-orders/${params.id}`;
-    console.log('[API][orders][PUT] URL:', url);
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
@@ -170,7 +188,16 @@ export async function PUT(
       },
       body: JSON.stringify(body)
     })
-    console.log('[API][orders][PUT] Response ok');
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][orders][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     const data = await response.json()
     if (!response.ok) {
       console.error(`[API][orders][PUT] Erro ao atualizar ordem de serviço: ${data.message}`);
@@ -179,7 +206,7 @@ export async function PUT(
         { status: response.status }
       )
     }
-    console.log('[API][orders][PUT] Ordem de serviço atualizada com sucesso');
+    
     return NextResponse.json(data)
   } catch (error) {
     console.error(`[API][orders][PUT] Erro: ${error}`);

@@ -13,6 +13,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][tasks][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][tasks][GET] Erro ao buscar tarefas');
       throw new Error('Failed to fetch tasks');
@@ -42,6 +51,15 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(body),
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][tasks][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const error = await response.json();

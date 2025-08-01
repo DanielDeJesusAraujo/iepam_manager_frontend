@@ -29,9 +29,17 @@ export async function POST(
       },
       body: JSON.stringify(body)
     })
-    console.log(`[API][orders][close][POST] Response ok`);
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][orders][close][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     const data = await response.json()
-    console.log('[API][orders][close][POST] Data ok');
     if (!response.ok) {
       console.error(`[API][orders][close][POST] Erro ao finalizar ordem de serviço: ${data.message}`);
       return NextResponse.json(
@@ -40,7 +48,6 @@ export async function POST(
       )
     }
 
-    console.log('[API][orders][close][POST] Data ok');
     return NextResponse.json(data)
   } catch (error) {
     console.error(`[API][orders][close][POST] Erro: ${error}`);

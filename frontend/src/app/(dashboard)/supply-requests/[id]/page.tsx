@@ -144,6 +144,11 @@ export default function SupplyDetails({ params }: { params: { id: string } }) {
                 },
             });
 
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Erro ao carregar detalhes do suprimento');

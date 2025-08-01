@@ -13,6 +13,16 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
                 'Content-Type': 'application/json'
             }
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][inventory-allocations][PATCH] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json();
         console.log('[API][manager-return-confirmation] Status backend:', response.status, 'Data:', data);
         return NextResponse.json(data, { status: response.status });

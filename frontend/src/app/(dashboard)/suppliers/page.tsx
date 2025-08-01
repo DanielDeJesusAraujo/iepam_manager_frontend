@@ -44,6 +44,12 @@ export default function SuppliersPage() {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        if (response.status === 429) {
+          router.push('/rate-limit');
+          return;
+        }
+
         if (response.ok) {
           fetchSuppliers();
         }
@@ -121,7 +127,12 @@ export default function SuppliersPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
+
       if (!response.ok) throw new Error('Erro ao carregar fornecedores');
       const data = await response.json();
       setAllSuppliers(data);

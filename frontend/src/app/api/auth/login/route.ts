@@ -25,6 +25,15 @@ export async function POST(request: Request) {
       body: JSON.stringify({ email, password }),
     })
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][auth][login][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     const data = await response.json()
 
     if (!response.ok) {

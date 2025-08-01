@@ -19,7 +19,16 @@ export async function GET(
             }
         });
 
-        if (!response.ok) {
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][resources][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
+        if (!response.ok) { 
             console.error('[API][events][resources][GET] Erro ao buscar recursos');
             throw new Error('Erro ao buscar recursos');
         }
@@ -54,6 +63,15 @@ export async function POST(
             },
             body: JSON.stringify(body)
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][resources][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][events][resources][POST] Erro ao adicionar recurso');

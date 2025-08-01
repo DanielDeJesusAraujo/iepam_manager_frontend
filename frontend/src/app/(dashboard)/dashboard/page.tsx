@@ -130,6 +130,11 @@ export default function DashboardPage() {
         }
       })
 
+      if (response.status === 429) {
+        router.push('/rate-limit')
+        return
+      }
+
       if (!response.ok) {
         const data = await response.json()
         throw new Error(data.message || 'Erro ao carregar dados do dashboard')

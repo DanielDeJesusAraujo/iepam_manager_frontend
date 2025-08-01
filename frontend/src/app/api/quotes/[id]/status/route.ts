@@ -5,7 +5,6 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  console.log('[API][quotes][status][PATCH] Iniciando request');
   const token = request.headers.get('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
@@ -50,6 +49,15 @@ export async function PATCH(
         'Authorization': `Bearer ${token}`
       }
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][quotes][status][PATCH] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       const errorData = await response.json();

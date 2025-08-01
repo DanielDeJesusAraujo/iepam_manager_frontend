@@ -21,6 +21,15 @@ export async function GET(
             }
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][participants][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         if (!response.ok) {
             console.error('[API][events][participants][GET] Erro ao buscar participantes');
             throw new Error('Erro ao buscar participantes');
@@ -56,6 +65,15 @@ export async function POST(
             },
             body: JSON.stringify(body)
         });
+
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][events][participants][POST] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
 
         if (!response.ok) {
             console.error('[API][events][participants][POST] Erro ao adicionar participante');

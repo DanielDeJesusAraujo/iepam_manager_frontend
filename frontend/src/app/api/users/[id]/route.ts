@@ -20,6 +20,15 @@ export async function GET(
       },
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][users][GET] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][users][GET] Erro ao buscar usuário');
       if (response.status === 404) {
@@ -62,6 +71,15 @@ export async function PUT(
       body: JSON.stringify(body),
     });
 
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][users][PUT] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
     if (!response.ok) {
       console.error('[API][users][PUT] Erro ao atualizar usuário');
       const errorData = await response.json();
@@ -98,6 +116,15 @@ export async function DELETE(
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][users][DELETE] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
 
     if (!response.ok) {
       console.error('[API][users][DELETE] Erro ao excluir usuário');

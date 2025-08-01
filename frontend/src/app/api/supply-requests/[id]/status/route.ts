@@ -42,6 +42,15 @@ export async function PATCH(
             body: JSON.stringify({ status }),
         });
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][supply-requests][status][PATCH] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json();
 
         if (!response.ok) {

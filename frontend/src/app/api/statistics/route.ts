@@ -25,6 +25,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (serversResponse.status === 429) {
+            const message = await serversResponse.text();
+            console.log('[API][statistics][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const servers = await serversResponse.json();
 
         // Busca dados de inventário
@@ -33,6 +43,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (inventoryResponse.status === 429) {
+            const message = await inventoryResponse.text();
+            console.log('[API][statistics][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const inventory = await inventoryResponse.json();
 
         // Busca dados de ordens de serviço
@@ -41,6 +61,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (serviceOrdersResponse.status === 429) {
+            const message = await serviceOrdersResponse.text();
+            console.log('[API][statistics][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const serviceOrders = await serviceOrdersResponse.json();
 
         // Busca dados de alertas
@@ -49,6 +79,16 @@ export async function GET(request: Request) {
                 'Authorization': `Bearer ${token}`
             }
         });
+
+        if (alertsResponse.status === 429) {
+            const message = await alertsResponse.text();
+            console.log('[API][statistics][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+        
         const alerts = await alertsResponse.json();
 
         // Processa os dados para as estatísticas

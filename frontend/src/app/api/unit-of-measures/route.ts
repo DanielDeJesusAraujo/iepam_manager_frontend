@@ -18,6 +18,15 @@ export async function GET(request: NextRequest) {
             },
         })
 
+        if (response.status === 429) {
+            const message = await response.text();
+            console.log('[API][unit-of-measures][GET] Rate limit exceeded', message);
+            return NextResponse.json(
+                { error: 'Rate limit exceeded', details: message },
+                { status: 429 }
+            );
+        }
+
         const data = await response.json()
 
         if (!response.ok) {

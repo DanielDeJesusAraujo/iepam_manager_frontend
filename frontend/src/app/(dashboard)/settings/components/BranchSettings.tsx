@@ -27,6 +27,7 @@ import {
 } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons'
+import { useRouter } from 'next/navigation';
 
 interface Branch {
     id: string
@@ -41,6 +42,7 @@ export default function BranchSettings() {
     const [editingBranch, setEditingBranch] = useState<Branch | null>(null)
     const toast = useToast()
     const { isOpen: isBranchModalOpen, onOpen: onBranchModalOpen, onClose: onBranchModalClose } = useDisclosure()
+    const router = useRouter();
 
     const [branchFormData, setBranchFormData] = useState({
         name: '',
@@ -64,6 +66,12 @@ export default function BranchSettings() {
                     'Authorization': `Bearer ${token}`,
                 },
             })
+
+            if (response.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
+
             const data = await response.json()
             setBranches(data)
         } catch (error) {

@@ -88,6 +88,10 @@ export default function MaintenanceSchedulesPage() {
           'Authorization': `Bearer ${token}`
         }
       });
+      if (response.status === 429) {
+        router.push('/rate-limit');
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
         setSchedules(data);

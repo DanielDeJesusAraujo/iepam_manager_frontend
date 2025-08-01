@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Box,
     Button,
@@ -67,6 +68,7 @@ import {
 } from './utils/inventoryApi';
 
 export default function InventoryPage() {
+    const router = useRouter();
     const [groupBy, setGroupBy] = useState<GroupByOption>('none');
     const [items, setItems] = useState<InventoryItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -93,6 +95,10 @@ export default function InventoryPage() {
         try {
             console.log('[Inventory] Buscando itens do inventário...');
             const data = await fetchItems();
+            if (!Array.isArray(data) && data.status === 429) {
+                router.push('/rate-limit');
+                return;
+            }
             setItems(Array.isArray(data) ? data : []);
             console.log('[Inventory] Itens carregados:', data);
         } catch (error) {
