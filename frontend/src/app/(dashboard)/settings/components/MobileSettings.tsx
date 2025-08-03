@@ -19,7 +19,7 @@ import SecuritySettings from './SecuritySettings';
 import IntegrationSettings from './IntegrationSettings';
 import UnitOfMeasureSettings from './UnitOfMeasureSettings';
 import CategorySettings from './CategorySettings';
-import LocationSettings from './LocationSettings';
+import EnviromentSettings from './EnviromentSettings';
 import UserManagement from './UserManagement';
 import ThemeSettings from './ThemeSettings';
 import { useRouter } from 'next/navigation';
@@ -267,7 +267,7 @@ export function MobileSettings() {
                                     </AccordionButton>
                                 </h2>
                                 <AccordionPanel pb={4}>
-                                    <LocationSettings />
+                                    <EnviromentSettings />
                                 </AccordionPanel>
                             </AccordionItem>
                         </>
