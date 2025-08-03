@@ -56,16 +56,13 @@ export function CartTab({ cart, onRemoveFromCart, onUpdateQuantity, onOpenModal,
           {cart.length === 0 ? (
             <VStack spacing={4} py={8}>
               <ShoppingCart size={isMobile ? 40 : 48} color={colorMode === 'dark' ? '#A0AEC0' : '#718096'} />
-              <Text fontSize="lg" color={colorMode === 'dark' ? 'gray.300' : 'gray.500'} textAlign="center">
-                Seu carrinho está vazio
-              </Text>
               <Text fontSize="sm" color={colorMode === 'dark' ? 'gray.400' : 'gray.600'} textAlign="center">
                 Adicione itens do catálogo para fazer seu pedido
               </Text>
               <Button 
-                colorScheme="blue" 
-                onClick={onContinueShopping} 
-                bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined} 
+                colorScheme="blue"
+                onClick={onContinueShopping}
+                bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
                 _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }} 
                 transition="all 0.3s ease"
                 size={isMobile ? 'md' : 'lg'}
