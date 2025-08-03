@@ -47,6 +47,11 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const { colorMode } = useColorMode()
 
+  // Debug logs
+  console.log('Sidebar - User:', user)
+  console.log('Sidebar - isAuthenticated:', isAuthenticated)
+  console.log('Sidebar - User role:', user?.role)
+
   const handleLogout = () => {
     // O logout será gerenciado pelo contexto global
     router.push('/')
@@ -61,6 +66,9 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
 
   const isEmployee = user && user.role === 'EMPLOYEE'
   const isAdmin = user && user.role === 'ADMIN'
+
+  console.log('Sidebar - isAdmin:', isAdmin)
+  console.log('Sidebar - isEmployee:', isEmployee)
 
   const menuItems = [
     ...(user && ['ADMIN', 'MANAGER'].includes(user.role) ? [{ icon: Home, label: 'Dashboard', href: '/dashboard' }] : []),
