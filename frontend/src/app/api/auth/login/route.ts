@@ -44,7 +44,23 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json(data)
+    const res = NextResponse.json(data)
+    try {
+      // Persistir token em cookie http-only para que o middleware possa encaminhar Authorization
+      if (data?.token) {
+        res.cookies.set('@ti-assistant:token', data.token, {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          // opcional: secure: process.env.NODE_ENV === 'production'
+          maxAge: 60 * 60 * 24, // 1 dia
+        })
+      }
+    } catch (cookieError) {
+      console.warn('[API][auth][login][POST] Falha ao setar cookie de token', cookieError)
+    }
+
+    return res
   } catch (error) {
     console.error('[API][auth][login][POST] Erro:', error);
     return NextResponse.json(

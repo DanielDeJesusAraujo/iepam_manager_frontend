@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Button,
@@ -29,6 +29,44 @@ export default function LoginPage() {
   const router = useRouter()
   const toast = useToast()
   const isMobile = useBreakpointValue({ base: true, md: false })
+
+  // redireciona se já autenticado
+  useEffect(() => {
+    // 1) tenta pelo localStorage
+    const userJson = localStorage.getItem('@ti-assistant:user')
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson)
+        if (user?.role === 'EMPLOYEE' || user?.role === 'TECHNICIAN') {
+          router.replace('/supply-requests')
+          return
+        } else if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
+          router.replace('/dashboard')
+          return
+        }
+      } catch {}
+    }
+
+    // 2) fallback: tenta via sessão da API (usa cookie httpOnly + middleware para Authorization)
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' })
+        if (!res.ok) return
+        const user = await res.json()
+        if (cancelled) return
+        if (user?.role === 'EMPLOYEE' || user?.role === 'TECHNICIAN') {
+          router.replace('/supply-requests')
+        } else if (user?.role === 'ADMIN' || user?.role === 'MANAGER') {
+          router.replace('/dashboard')
+        }
+      } catch {}
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [router])
 
   const bgColor = useColorModeValue('gray.50', 'gray.900')
   const textColor = useColorModeValue('gray.800', 'white')
@@ -70,9 +108,9 @@ export default function LoginPage() {
 
       // Redirect based on user role
       if (data.user.role === 'EMPLOYEE' || data.user.role === 'TECHNICIAN') {
-        router.push('/supply-requests')
+        router.replace('/supply-requests')
       } else if (data.user.role === 'ADMIN' || data.user.role === 'MANAGER') {
-        router.push('/dashboard')
+        router.replace('/dashboard')
       }
     } catch (error) {
       toast({
