@@ -119,8 +119,6 @@ export default function QuoteDetailsPage() {
         return 'Aprovada';
       case 'REJECTED':
         return 'Rejeitada';
-      case 'CANCELLED':
-        return 'Cancelada';
       default:
         return status;
     }
