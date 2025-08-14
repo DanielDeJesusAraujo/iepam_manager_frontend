@@ -42,7 +42,7 @@ import Link from 'next/link';
 interface Quote {
   id: string;
   supplier: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   total_value: number;
   created_at: string;
   created_by: string;
@@ -59,7 +59,7 @@ interface Quote {
 
 interface QuoteListProps {
   quotes: Quote[];
-  onStatusChange: (quoteId: string, status: 'APPROVED' | 'REJECTED' | 'CANCELLED') => Promise<void>;
+  onStatusChange: (quoteId: string, status: 'APPROVED' | 'REJECTED') => Promise<void>;
 }
 
 export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
@@ -95,7 +95,6 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
       PENDING: 'yellow',
       APPROVED: 'green',
       REJECTED: 'red',
-      CANCELLED: 'gray',
     };
     return colors[status as keyof typeof colors] || 'gray';
   };
@@ -105,7 +104,6 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
       PENDING: 'Pendente',
       APPROVED: 'Aprovada',
       REJECTED: 'Rejeitada',
-      CANCELLED: 'Cancelada',
     };
     return texts[status as keyof typeof texts] || status;
   };
@@ -145,7 +143,6 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
             <option value="PENDING">Pendentes</option>
             <option value="APPROVED">Aprovadas</option>
             <option value="REJECTED">Rejeitadas</option>
-            <option value="CANCELLED">Canceladas</option>
           </Select>
 
           <Select
@@ -262,16 +259,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
                         >
                           Rejeitar
                         </Button>
-                        <Button
-                          size="sm"
-                          colorScheme="gray"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onStatusChange(quote.id, 'CANCELLED');
-                          }}
-                        >
-                          Cancelar
-                        </Button>
+
                       </>
                     )}
                   </HStack>
@@ -312,7 +300,6 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
                   <option value="PENDING">Pendentes</option>
                   <option value="APPROVED">Aprovadas</option>
                   <option value="REJECTED">Rejeitadas</option>
-                  <option value="CANCELLED">Canceladas</option>
                 </Select>
               </FormControl>
 

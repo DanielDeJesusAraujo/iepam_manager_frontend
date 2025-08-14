@@ -53,7 +53,23 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   console.log('Sidebar - User role:', user?.role)
 
   const handleLogout = () => {
-    // O logout será gerenciado pelo contexto global
+    // Limpar todos os itens do localStorage que começam com @ti-assistant:
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('@ti-assistant:')) {
+        localStorage.removeItem(key)
+      }
+    })
+    
+    // Limpar outros itens específicos
+    localStorage.removeItem('filters')
+    localStorage.removeItem('searchQuery')
+    localStorage.removeItem('selectedUnit')
+    localStorage.removeItem('selectedSector')
+    localStorage.removeItem('selectedEnvironment')
+    localStorage.removeItem('selectedBranch')
+    localStorage.removeItem('selectedCategory')
+    localStorage.removeItem('chakra-ui-color-mode')
+    
     router.push('/')
   }
 

@@ -38,7 +38,7 @@ import { useRouter } from 'next/navigation';
 interface Quote {
   id: string;
   supplier: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   total_value: number;
   created_at: string;
   created_by: string;
@@ -106,7 +106,7 @@ export default function QuotesPage() {
     fetchQuotes();
   }, []);
 
-  const handleStatusChange = async (quoteId: string, status: 'APPROVED' | 'REJECTED' | 'CANCELLED') => {
+  const handleStatusChange = async (quoteId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
       const response = await fetch(`/api/quotes/${quoteId}/status`, {
         method: 'PATCH',
@@ -160,8 +160,6 @@ export default function QuotesPage() {
         return 'green';
       case 'REJECTED':
         return 'red';
-      case 'CANCELLED':
-        return 'gray';
       default:
         return 'yellow';
     }
@@ -173,8 +171,6 @@ export default function QuotesPage() {
         return 'Aprovada';
       case 'REJECTED':
         return 'Rejeitada';
-      case 'CANCELLED':
-        return 'Cancelada';
       default:
         return 'Pendente';
     }
