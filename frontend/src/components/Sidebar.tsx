@@ -52,7 +52,19 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   console.log('Sidebar - isAuthenticated:', isAuthenticated)
   console.log('Sidebar - User role:', user?.role)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Chamar API para limpar cookies HTTP-only
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+    }
+    
     // Limpar todos os itens do localStorage que começam com @ti-assistant:
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('@ti-assistant:')) {
@@ -70,6 +82,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
     localStorage.removeItem('selectedCategory')
     localStorage.removeItem('chakra-ui-color-mode')
     
+    // Redirecionar para a página de login
     router.push('/')
   }
 
