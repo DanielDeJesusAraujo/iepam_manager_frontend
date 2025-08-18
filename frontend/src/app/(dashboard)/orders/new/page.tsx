@@ -29,8 +29,6 @@ import {
   useColorModeValue,
   Card,
   CardBody,
-  Container,
-  Icon,
   useBreakpointValue,
 } from '@chakra-ui/react'
 import {
@@ -42,7 +40,6 @@ import {
   Wrench,
   Package,
   DollarSign,
-  AlertTriangle,
   CheckCircle,
   Plus
 } from 'lucide-react'

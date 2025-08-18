@@ -17,11 +17,23 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
         if (error.response?.status === 401) {
+            try {
+                // Limpar cookies HTTP-only
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+            } catch (logoutError) {
+                console.error('Erro ao limpar cookies no logout:', logoutError)
+            }
+            
             localStorage.removeItem('@ti-assistant:token')
             localStorage.removeItem('@ti-assistant:user')
-            window.location.href = '/login'
+            window.location.href = '/'
         }
         return Promise.reject(error)
     }

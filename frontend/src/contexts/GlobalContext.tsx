@@ -397,8 +397,20 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
     }
   }, [state.inventoryLastFetched]);
 
-  // Limpar localStorage no logout
-  const handleLogout = () => {
+  // Limpar localStorage e cookies no logout
+  const handleLogout = async () => {
+    try {
+      // Chamar API para limpar cookies HTTP-only
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+    }
+    
     localStorage.removeItem('@ti-assistant:user');
     localStorage.removeItem('@ti-assistant:token');
     localStorage.removeItem('@ti-assistant:cart');
