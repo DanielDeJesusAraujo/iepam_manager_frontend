@@ -54,6 +54,8 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
 
   const handleLogout = async () => {
     try {
+      // deleta o cookie do token @ti-assistant:token do navegador imediatamente
+      document.cookie = '@ti-assistant:token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
       // Chamar API para limpar cookies HTTP-only
       await fetch('/api/auth/logout', {
         method: 'POST',
