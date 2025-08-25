@@ -317,7 +317,7 @@ export function MobileNewQuote({ onSubmit, onCancel }: MobileNewQuoteProps) {
           />
           <FormHelperText>
             Observações gerais sobre a cotação ou itens
-          </FormLabel>
+          </FormHelperText>
         </FormControl>
 
         <Box
