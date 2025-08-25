@@ -32,6 +32,7 @@ export default function NewQuotePage() {
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [formData, setFormData] = useState({
     supplier_id: '',
+    notes: '',
     items: [{
       product_name: '',
       manufacturer: '',
@@ -141,7 +142,8 @@ export default function NewQuotePage() {
         body: JSON.stringify({
           supplier_id: selectedSupplierData.id,
           items,
-          total_value
+          total_value,
+          notes: formData.notes || undefined
         })
       });
 
@@ -358,6 +360,18 @@ export default function NewQuotePage() {
             >
               Adicionar Item
             </Button>
+
+            <FormControl>
+              <FormLabel>Observações Gerais</FormLabel>
+              <Input
+                placeholder="Observações sobre a cotação (opcional)"
+                value={formData.notes || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              />
+              <FormHelperText>
+                Observações gerais sobre a cotação ou itens
+              </FormHelperText>
+            </FormControl>
 
             <Box
               p={4}

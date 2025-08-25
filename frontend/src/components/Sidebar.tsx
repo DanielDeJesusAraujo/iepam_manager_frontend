@@ -142,7 +142,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
       p={4}
     >
       <HStack justify="space-between" mb={4}>
-        <Text fontSize="xl" fontWeight="bold">IEPAM Manager</Text>
+        <Text fontSize="xl" fontWeight="bold">IEPAM suprimentos</Text>
         {isMobile && (
           <IconButton
             aria-label="Fechar menu"

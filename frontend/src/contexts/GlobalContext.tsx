@@ -418,6 +418,19 @@ export function GlobalProvider({ children }: GlobalProviderProps) {
     localStorage.removeItem('@ti-assistant:suppliesLastFetched');
     localStorage.removeItem('@ti-assistant:inventoryItems');
     localStorage.removeItem('@ti-assistant:inventoryLastFetched');
+
+    // Expirar cookies não-HttpOnly relacionados ao app
+    try {
+      const parts = document.cookie.split(';')
+      for (const part of parts) {
+        const name = part.split('=')[0]?.trim()
+        if (!name) continue
+        if (name.startsWith('@ti-assistant:')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`
+        }
+      }
+    } catch {}
+
     dispatch({ type: 'LOGOUT' });
   };
 

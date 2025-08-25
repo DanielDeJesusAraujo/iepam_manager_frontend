@@ -4,8 +4,13 @@ import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: "IEPAM Manager",
+  title: "IEPAM suprimentos",
   description: "Sistema de gerenciamento de IEPAM",
+  icons: {
+    icon: "/iepam-favicon.ico",
+    shortcut: "/iepam-favicon.ico",
+    apple: "/iepam-favicon.ico"
+  },
 };
 
 export default function RootLayout({
