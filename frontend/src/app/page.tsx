@@ -146,7 +146,7 @@ export default function LoginPage() {
         >
 
           <Text fontSize={isMobile ? "xl" : "2xl"} fontWeight="bold" color={textColor} textAlign="center">
-            IEPAM Manager
+            IEPAM suprimentos
           </Text>
 
           <Text color={secondaryTextColor} fontSize={isMobile ? "sm" : "md"} textAlign="center">
