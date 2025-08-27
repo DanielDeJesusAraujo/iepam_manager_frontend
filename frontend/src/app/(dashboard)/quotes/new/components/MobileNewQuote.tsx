@@ -119,7 +119,7 @@ export function MobileNewQuote({ onSubmit, onCancel }: MobileNewQuoteProps) {
     }
   };
 
-  const handleItemChange = (index: number, field: string, value: string) => {
+  const handleItemChange = (index: number, field: string, value: string | number) => {
     const newItems = [...formData.items];
     newItems[index] = {
       ...newItems[index],
@@ -260,18 +260,23 @@ export function MobileNewQuote({ onSubmit, onCancel }: MobileNewQuoteProps) {
 
               <FormControl isRequired>
                 <FormLabel>Preço Unitário</FormLabel>
-                <NumberInput
-                  min={0}
-                  precision={2}
-                  value={item.unit_price}
-                  onChange={(_, value) => handleItemChange(index, 'unit_price', value.toString())}
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
+                <HStack>
+                  <Text>R$</Text>
+                  <NumberInput
+                    min={0}
+                    precision={2}
+                    step={0.01}
+                    value={item.unit_price}
+                    onChange={(_, value) => handleItemChange(index, 'unit_price', value)}
+                    w="full"
+                  >
+                    <NumberInputField inputMode="decimal" onBlur={() => handleItemChange(index, 'unit_price', Number(item.unit_price || 0).toFixed(2))} />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </HStack>
               </FormControl>
 
               <FormControl>
