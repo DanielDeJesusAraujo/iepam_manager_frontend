@@ -126,6 +126,7 @@ export async function POST(request: Request) {
         link: item.link || null,
         notes: item.notes || null
       })),
+      notes: body.notes || null,
       total_value: Number(body.total_value)
     };
     console.log('[API][quotes][POST] Payload ok');
