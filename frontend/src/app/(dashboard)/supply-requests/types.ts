@@ -67,7 +67,7 @@ export interface SupplyRequest {
         role: string;
     };
     quantity: number;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'CANCELLED';
     notes: string;
     created_at: string;
     requester_confirmation: boolean;

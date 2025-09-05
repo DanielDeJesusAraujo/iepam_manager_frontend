@@ -23,16 +23,17 @@ import {
   Td,
   Image,
 } from '@chakra-ui/react';
-import { SearchIcon, CheckCircle } from 'lucide-react';
+import { SearchIcon, CheckCircle, X } from 'lucide-react';
 import { SupplyRequest } from '../../types';
 import { useFilters } from '@/contexts/GlobalContext';
 
 interface MyRequestsTabProps {
   requests: SupplyRequest[];
   onRequesterConfirmation: (requestId: string, confirmation: boolean, token: string, isCustom: boolean) => void;
+  onCancelRequest: (requestId: string, token: string, isCustom: boolean) => void;
 }
 
-export function MyRequestsTab({ requests, onRequesterConfirmation }: MyRequestsTabProps) {
+export function MyRequestsTab({ requests, onRequesterConfirmation, onCancelRequest }: MyRequestsTabProps) {
   const { colorMode } = useColorMode();
   const [isMobile] = useMediaQuery('(max-width: 768px)');
   const { searchQuery, setSearchQuery, statusFilter, setStatusFilter } = useFilters();
@@ -42,6 +43,7 @@ export function MyRequestsTab({ requests, onRequesterConfirmation }: MyRequestsT
       case 'APPROVED': return 'green';
       case 'REJECTED': return 'red';
       case 'DELIVERED': return 'purple';
+      case 'CANCELLED': return 'gray';
       default: return 'yellow';
     }
   };
@@ -52,6 +54,7 @@ export function MyRequestsTab({ requests, onRequesterConfirmation }: MyRequestsT
       case 'APPROVED': return 'Aprovado';
       case 'REJECTED': return 'Rejeitado';
       case 'DELIVERED': return 'Entregue';
+      case 'CANCELLED': return 'Cancelado';
       default: return status;
     }
   };
@@ -86,6 +89,7 @@ export function MyRequestsTab({ requests, onRequesterConfirmation }: MyRequestsT
               <option value="APPROVED">Aprovado</option>
               <option value="REJECTED">Rejeitado</option>
               <option value="DELIVERED">Entregue</option>
+              <option value="CANCELLED">Cancelado</option>
             </Select>
           </HStack>
         )}
@@ -134,21 +138,38 @@ export function MyRequestsTab({ requests, onRequesterConfirmation }: MyRequestsT
                         </Badge>
                       </HStack>
                     </VStack>
-                    {request.status === 'APPROVED' && (
-                      <Button
-                        size="sm"
-                        colorScheme="blue"
-                        leftIcon={<CheckCircle size={16} />}
-                        onClick={() => onRequesterConfirmation(request.id, true, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
-                        isDisabled={request.requester_confirmation}
-                        bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                        _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }}
-                        transition="all 0.3s ease"
-                        w="full"
-                      >
-                        Confirmar Recebimento
-                      </Button>
-                    )}
+                    <VStack spacing={2} w="full">
+                      {request.status === 'APPROVED' && (
+                        <Button
+                          size="sm"
+                          colorScheme="blue"
+                          leftIcon={<CheckCircle size={16} />}
+                          onClick={() => onRequesterConfirmation(request.id, true, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
+                          isDisabled={request.requester_confirmation}
+                          bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
+                          _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }}
+                          transition="all 0.3s ease"
+                          w="full"
+                        >
+                          Confirmar Recebimento
+                        </Button>
+                      )}
+                      {(request.status === 'PENDING' || request.status === 'APPROVED') && (
+                        <Button
+                          size="sm"
+                          colorScheme="red"
+                          variant="outline"
+                          leftIcon={<X size={16} />}
+                          onClick={() => onCancelRequest(request.id, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
+                          bg={colorMode === 'dark' ? 'rgba(220, 38, 38, 0.1)' : undefined}
+                          _hover={{ bg: colorMode === 'dark' ? 'rgba(220, 38, 38, 0.2)' : undefined, transform: 'translateY(-1px)' }}
+                          transition="all 0.3s ease"
+                          w="full"
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                    </VStack>
                   </VStack>
                 </CardBody>
               </Card>
@@ -203,20 +224,36 @@ export function MyRequestsTab({ requests, onRequesterConfirmation }: MyRequestsT
                       </VStack>
                     </Td>
                     <Td>
-                      {request.status === 'APPROVED' && (
-                        <Button
-                          size={{ base: 'xs', md: 'sm' }}
-                          colorScheme="blue"
-                          leftIcon={<CheckCircle size={isMobile ? 14 : 16} />}
-                          onClick={() => onRequesterConfirmation(request.id, true, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
-                          isDisabled={request.requester_confirmation}
-                          bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
-                          _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }}
-                          transition="all 0.3s ease"
-                        >
-                          {isMobile ? 'Confirmar' : 'Confirmar Recebimento'}
-                        </Button>
-                      )}
+                      <HStack spacing={2}>
+                        {request.status === 'APPROVED' && (
+                          <Button
+                            size={{ base: 'xs', md: 'sm' }}
+                            colorScheme="blue"
+                            leftIcon={<CheckCircle size={isMobile ? 14 : 16} />}
+                            onClick={() => onRequesterConfirmation(request.id, true, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
+                            isDisabled={request.requester_confirmation}
+                            bg={colorMode === 'dark' ? 'rgba(66, 153, 225, 0.8)' : undefined}
+                            _hover={{ bg: colorMode === 'dark' ? 'rgba(66, 153, 225, 0.9)' : undefined, transform: 'translateY(-1px)' }}
+                            transition="all 0.3s ease"
+                          >
+                            {isMobile ? 'Confirmar' : 'Confirmar Recebimento'}
+                          </Button>
+                        )}
+                        {(request.status === 'PENDING' || request.status === 'APPROVED') && (
+                          <Button
+                            size={{ base: 'xs', md: 'sm' }}
+                            colorScheme="red"
+                            variant="outline"
+                            leftIcon={<X size={isMobile ? 14 : 16} />}
+                            onClick={() => onCancelRequest(request.id, localStorage.getItem('@ti-assistant:token') || '', request.is_custom || false)}
+                            bg={colorMode === 'dark' ? 'rgba(220, 38, 38, 0.1)' : undefined}
+                            _hover={{ bg: colorMode === 'dark' ? 'rgba(220, 38, 38, 0.2)' : undefined, transform: 'translateY(-1px)' }}
+                            transition="all 0.3s ease"
+                          >
+                            Cancelar
+                          </Button>
+                        )}
+                      </HStack>
                     </Td>
                   </Tr>
                 ))}
