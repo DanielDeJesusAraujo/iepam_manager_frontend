@@ -79,6 +79,34 @@ export const handleRequesterConfirmation = async (requestId: string, confirmatio
     }
 };
 
+export const cancelRequest = async (requestId: string, token: string, isCustom: boolean) => {
+    try {
+        const endpoint = isCustom
+            ? `/api/custom-supply-requests/${requestId}/cancel`
+            : `/api/supply-requests/${requestId}/cancel`;
+
+        const response = await fetch(endpoint, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Erro ao cancelar requisição');
+        }
+
+        const data = await response.json();
+        console.log(`Requisição ${data.id} cancelada com sucesso`);
+        return data;
+    } catch (error) {
+        console.error(`Erro ao cancelar requisição ${requestId}:`, error);
+        throw error;
+    }
+};
+
 export const submitRequest = async (cart: { supply: Supply; quantity: number }[], deliveryDeadline: string, destination: string, token: string, localeId?: string) => {
     const payload = {
         items: cart.map(item => ({

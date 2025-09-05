@@ -66,6 +66,7 @@ import {
   fetchSupplies,
   fetchRequests,
   handleRequesterConfirmation as handleRequesterConfirmationOrig,
+  cancelRequest as cancelRequestOrig,
   submitRequest,
   filterSupplies,
   filterRequests,
@@ -663,6 +664,28 @@ export default function SupplyRequestsPage() {
     }
   };
 
+  const handleCancelRequest = async (requestId: string, token: string, isCustom: boolean) => {
+    try {
+      await cancelRequestOrig(requestId, token, isCustom);
+      toast({
+        title: 'Sucesso',
+        description: 'Requisição cancelada com sucesso',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      await loadInitialData(); // Atualiza o contexto após cancelamento
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao cancelar requisição',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <>
       <PersistentTabsLayout
@@ -713,6 +736,7 @@ export default function SupplyRequestsPage() {
             <MyRequestsTab
               requests={filteredRequests}
               onRequesterConfirmation={handleRequesterConfirmation}
+              onCancelRequest={handleCancelRequest}
             />
           ),
           loadingTabs[3] ? (
