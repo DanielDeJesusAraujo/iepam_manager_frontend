@@ -31,7 +31,7 @@ export default function MyRequestsPage() {
     try {
       const token = localStorage.getItem("@ti-assistant:token");
       if (!token) {
-        router.push("/login");
+        router.push("/");
         return;
       }
       const data = await loadMyRequests(token);
@@ -60,7 +60,7 @@ export default function MyRequestsPage() {
     try {
       const token = localStorage.getItem("@ti-assistant:token");
       if (!token) {
-        router.push("/login");
+        router.push("/");
         return;
       }
 
@@ -103,7 +103,7 @@ export default function MyRequestsPage() {
         <Text>Nenhuma requisição encontrada.</Text>
       ) : (
         <VStack spacing={4} align="stretch">
-          {requests.map((req) => (
+          {requests.map((req: SupplyRequest) => (
             <Card
               key={req.id}
               variant="outline"
@@ -119,21 +119,39 @@ export default function MyRequestsPage() {
                       {req.is_custom ? req.item_name : req.supply?.name}
                     </Text>
                     <Badge colorScheme={
-                      req.status === "DELIVERED"
-                        ? "green"
-                        : req.status === "APPROVED"
-                          ? "blue"
-                          : req.status === "REJECTED"
-                            ? "red"
-                            : "yellow"
+                      (() => {
+                        switch (req.status) {
+                          case "PENDING":
+                            return "yellow";
+                          case "APPROVED":
+                            return "blue";
+                          case "REJECTED":
+                            return "red";
+                          case "CANCELLED":
+                            return "red";
+                          case "DELIVERED":
+                            return "green";
+                          default:
+                            return "yellow";
+                        }
+                      })()
                     }>
-                      {req.status === "PENDING"
-                        ? "Pendente"
-                        : req.status === "APPROVED"
-                          ? "Aprovado"
-                          : req.status === "REJECTED"
-                            ? "Rejeitado"
-                            : "Entregue"}
+                      {(() => {
+                        switch (req.status) {
+                          case "PENDING":
+                            return "Pendente";
+                          case "APPROVED":
+                            return "Aprovado";
+                          case "REJECTED":
+                            return "Rejeitado";
+                          case "CANCELLED":
+                            return "Cancelado";
+                          case "DELIVERED":
+                            return "Entregue";
+                          default:
+                            return req.status;
+                        }
+                      })()}
                     </Badge>
                   </HStack>
 
