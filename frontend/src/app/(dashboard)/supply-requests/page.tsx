@@ -111,6 +111,23 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
   const prevTab = useRef(0);
   const [hasFetched, setHasFetched] = useState(() => tabLabels.map(() => false));
   const [isMobile] = useMediaQuery('(max-width: 768px)');
+  // Cart count and bump animation
+  const { cart } = useCart();
+  const cartCount = React.useMemo(() => {
+    try {
+      return (cart || []).reduce((sum: number, item: any) => sum + (item?.quantity || 0), 0);
+    } catch {
+      return 0;
+    }
+  }, [cart]);
+  const [cartBump, setCartBump] = useState(false);
+  useEffect(() => {
+    if (cartCount > 0) {
+      setCartBump(true);
+      const t = setTimeout(() => setCartBump(false), 400);
+      return () => clearTimeout(t);
+    }
+  }, [cartCount]);
 
   // Declarar todas as cores no topo
   const bgColor = useColorModeValue('white', 'gray.700');
@@ -201,7 +218,10 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
               p={1}
               gap={1}
             >
-              {tabLabels.map(label => (
+              {tabLabels.map(label => {
+                const isCartTab = label === 'Carrinho';
+                const bumpStyle = isCartTab && cartBump ? { transform: 'scale(1.06)', boxShadow: 'md' } : {} as any;
+                return (
                 <Tab
                   key={label}
                   whiteSpace="nowrap"
@@ -217,13 +237,26 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                     boxShadow: 'sm',
                     borderColor: tabSelectedBorder
                   }}
-                  _hover={{
-                    bg: tabHoverBg
-                  }}
+                  _hover={{ bg: tabHoverBg }}
+                  transition="all 0.2s ease"
+                  style={bumpStyle}
                 >
-                  {label}
+                  {isCartTab ? (
+                    <HStack spacing={2} position="relative">
+                      <ShoppingCart size={14} />
+                      <Text>{label}</Text>
+                      {cartCount > 0 && (
+                        <Badge colorScheme="red" borderRadius="full" px={2} fontSize="0.65rem">
+                          {cartCount}
+                        </Badge>
+                      )}
+                    </HStack>
+                  ) : (
+                    label
+                  )}
                 </Tab>
-              ))}
+                );
+              })}
             </TabList>
           </Tabs>
         </Box>
@@ -516,6 +549,7 @@ export default function SupplyRequestsPage() {
         duration: 3000,
         isClosable: true,
       });
+      throw error; // Re-throw para que o modal possa capturar o erro
     }
   };
 

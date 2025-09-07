@@ -19,7 +19,8 @@ import {
     Divider,
     Skeleton,
     SkeletonText,
-    Button
+    Button,
+    Text
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -31,7 +32,8 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { exportToPDF as exportToPDFUtil } from '@/utils/exportToPDF';
-import { ShoppingCart, TimerIcon, FileText, RotateCcw } from 'lucide-react';
+import { ShoppingCart, TimerIcon, FileText, RotateCcw, Package, ClipboardList, BarChart3, TrendingUp } from 'lucide-react';
+
 
 interface SupplyRequest {
     id: string;
@@ -60,7 +62,7 @@ interface SupplyRequest {
         role: string;
     };
     quantity: number;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'CANCELLED';
     notes: string;
     created_at: string;
     requester_confirmation: boolean;
@@ -225,32 +227,165 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
     return (
         <Box w="full" h="full" py={{ base: '6vh', md: 0 }}>
             <VStack
-                spacing={4}
+                spacing={6}
                 align="stretch"
-                bg={useColorModeValue('rgba(255, 255, 255, 0.5)', 'rgba(45, 55, 72, 0.5)')}
-                backdropFilter="blur(12px)"
-                p={{ base: 3, md: 6 }}
-                borderRadius="lg"
-                boxShadow="sm"
+                bg={useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(45, 55, 72, 0.8)')}
+                backdropFilter="blur(20px)"
+                p={{ base: 4, md: 8 }}
+                borderRadius="2xl"
+                boxShadow="xl"
                 borderWidth="1px"
-                borderColor={useColorModeValue('rgba(0, 0, 0, 0.1)', 'rgba(255, 255, 255, 0.1)')}
+                borderColor={useColorModeValue('rgba(0, 0, 0, 0.05)', 'rgba(255, 255, 255, 0.1)')}
                 h="full"
+                position="relative"
+                overflow="hidden"
             >
-                <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={3}>
-                    <Heading size="lg" color={useColorModeValue('gray.800', 'white')}>Requisições</Heading>
+                {/* Background Pattern */}
+                <Box
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    opacity={0.03}
+                    backgroundImage="radial-gradient(circle at 25% 25%, #3182ce 0%, transparent 50%), radial-gradient(circle at 75% 75%, #805ad5 0%, transparent 50%)"
+                    pointerEvents="none"
+                />
+                <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={4}>
+                    <VStack align="start" spacing={2}>
+                        <Heading 
+                            size="xl" 
+                            color={useColorModeValue('gray.800', 'white')}
+                            fontWeight="bold"
+                            position="relative"
+                        >
+                            Requisições
+                            <Box
+                                position="absolute"
+                                bottom="-2px"
+                                left={0}
+                                right={0}
+                                h="3px"
+                                bgGradient="linear(to-r, blue.400, purple.400)"
+                                borderRadius="full"
+                                opacity={0.8}
+                            />
+                        </Heading>
+                        <Text 
+                            color={useColorModeValue('gray.600', 'gray.300')}
+                            fontSize="sm"
+                            fontWeight="medium"
+                        >
+                            Gerencie requisições, alocações e transações
+                        </Text>
+                    </VStack>
                     <HStack spacing={2} w="100%" justify={{ base: 'space-between', md: 'flex-end' }} wrap="wrap">
                         {/* Botões de exportação e outros podem ser adicionados aqui se necessário */}
                     </HStack>
                 </Flex>
-                <Divider />
-                <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab}>
-                    <TabList>
-                        {tabLabels.map(label => <Tab key={label}>{label}</Tab>)}
+                <Box
+                    h="1px"
+                    bgGradient="linear(to-r, transparent, gray.300, transparent)"
+                    opacity={0.5}
+                    _dark={{
+                        bgGradient: "linear(to-r, transparent, gray.600, transparent)"
+                    }}
+                />
+                <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size="lg">
+                    <TabList
+                        bg={useColorModeValue('gray.50', 'gray.700')}
+                        borderRadius="2xl"
+                        p={2}
+                        boxShadow="lg"
+                        border="1px solid"
+                        borderColor={useColorModeValue('gray.200', 'gray.600')}
+                        gap={2}
+                        mb={6}
+                    >
+                        {tabLabels.map((label, index) => {
+                            const icons = [Package, ClipboardList, BarChart3, TrendingUp];
+                            const IconComponent = icons[index];
+                            const colors = [
+                                { from: 'blue.400', to: 'purple.400' },
+                                { from: 'green.400', to: 'teal.400' },
+                                { from: 'orange.400', to: 'red.400' },
+                                { from: 'purple.400', to: 'pink.400' }
+                            ];
+                            const colorScheme = colors[index];
+                            
+                            return (
+                                <Tab
+                                    key={label}
+                                    _selected={{
+                                        bg: `linear(to-r, ${colorScheme.from}, ${colorScheme.to})`,
+                                        color: 'white',
+                                        boxShadow: 'xl',
+                                        transform: 'translateY(-3px)',
+                                        border: 'none',
+                                        borderRadius: 'xl'
+                                    }}
+                                    _hover={{
+                                        bg: activeTab === index 
+                                            ? `linear(to-r, ${colorScheme.from}, ${colorScheme.to})`
+                                            : useColorModeValue('gray.100', 'gray.600'),
+                                        transform: activeTab === index ? 'translateY(-3px)' : 'translateY(-2px)',
+                                        borderRadius: 'xl',
+                                        boxShadow: activeTab === index ? 'xl' : 'md'
+                                    }}
+                                    transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                                    borderRadius="xl"
+                                    fontWeight="semibold"
+                                    fontSize="md"
+                                    px={8}
+                                    py={4}
+                                    mx={0}
+                                    position="relative"
+                                    overflow="hidden"
+                                    minH="60px"
+                                    flex="1"
+                                >
+                                    <HStack spacing={3} align="center">
+                                        <IconComponent size={20} />
+                                        <Text fontSize="md" fontWeight="semibold">{label}</Text>
+                                    </HStack>
+                                    {activeTab === index && (
+                                        <Box
+                                            position="absolute"
+                                            top={0}
+                                            left={0}
+                                            right={0}
+                                            h="4px"
+                                            bg="white"
+                                            opacity={0.9}
+                                            borderRadius="full"
+                                            boxShadow="0 2px 4px rgba(0,0,0,0.1)"
+                                        />
+                                    )}
+                                </Tab>
+                            );
+                        })}
                     </TabList>
                 </Tabs>
-                <Box mt={4}>
+                <Box 
+                    mt={0} 
+                    p={6}
+                    bg={useColorModeValue('white', 'gray.800')}
+                    borderRadius="2xl"
+                    boxShadow="lg"
+                    border="1px solid"
+                    borderColor={useColorModeValue('gray.200', 'gray.600')}
+                    minH="600px"
+                >
                     {children.map((child, idx) => (
-                        <Box key={idx} display={activeTab === idx ? 'block' : 'none'} w="full" h="full">
+                        <Box 
+                            key={idx} 
+                            display={activeTab === idx ? 'block' : 'none'} 
+                            w="full" 
+                            h="full"
+                            opacity={activeTab === idx ? 1 : 0}
+                            transform={activeTab === idx ? 'translateY(0)' : 'translateY(10px)'}
+                            transition="all 0.4s ease-out"
+                        >
                             {child}
                         </Box>
                     ))}
@@ -270,7 +405,7 @@ export default function AdminSupplyRequestsPage() {
     const [filteredInventoryTransactions, setFilteredInventoryTransactions] = useState<InventoryTransaction[]>([]);
     const [filteredSupplyTransactions, setFilteredSupplyTransactions] = useState<SupplyTransaction[]>([]);
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('PENDING');
     const [returnDateFilter, setReturnDateFilter] = useState('');
     const [sectorFilter, setSectorFilter] = useState('');
     const [locationFilter, setLocationFilter] = useState('');
@@ -807,7 +942,7 @@ export default function AdminSupplyRequestsPage() {
             request.is_custom ? request.item_name || '-' : request.supply?.name || '-',
             request.user.name || '-',
             `${request.quantity} ${request.supply?.unit?.symbol || request.unit?.symbol || ''}`,
-            request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : 'Entregue',
+            request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : request.status === 'CANCELLED' ? 'Cancelado' : 'Entregue',
             request.created_at ? new Date(request.created_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-',
             request.delivery_deadline ? new Date(request.delivery_deadline).toLocaleDateString('pt-BR') : '-',
             request.status === 'DELIVERED' && request.updated_at ? new Date(request.updated_at).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '-',
@@ -845,7 +980,7 @@ export default function AdminSupplyRequestsPage() {
 
     const clearFilters = () => {
         setSearch('');
-        setStatusFilter('');
+        setStatusFilter('PENDING');
         setReturnDateFilter('');
         setSectorFilter('');
         setLocationFilter('');
@@ -894,87 +1029,262 @@ export default function AdminSupplyRequestsPage() {
                     right={0}
                     zIndex={10}
                     bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
-                    backdropFilter="blur(12px)"
+                    backdropFilter="blur(20px)"
                     borderTop="1px solid"
                     borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     p={0}
+                    boxShadow="0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -10px 10px -5px rgba(0, 0, 0, 0.04)"
                 >
-                    <HStack spacing={0} justify="space-around">
+                    <HStack spacing={3} justify="space-around" p={4}>
                         <Button
                             flex={1}
                             variant="ghost"
-                            bg={activeTab === 0 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
-                            color={activeTab === 0 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            bg={activeTab === 0 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, blue.500, purple.500)' 
+                                    : 'linear(to-r, blue.400, purple.400)')
+                                : 'transparent'
+                            }
+                            bgGradient={activeTab === 0 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, blue.500, purple.500)' 
+                                    : 'linear(to-r, blue.400, purple.400)')
+                                : undefined
+                            }
+                            color={activeTab === 0 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.600'}
                             onClick={() => setActiveTab(0)}
-                            borderRadius="md"
+                            borderRadius="xl"
                             size="md"
-                            boxShadow="none"
-                            _hover={{ bg: activeTab === 0 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            _active={{ bg: activeTab === 0 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            p={0}
+                            boxShadow={activeTab === 0 ? 'lg' : 'none'}
+                            _hover={{ 
+                                bg: activeTab === 0 
+                                    ? (colorMode === 'dark' 
+                                        ? 'linear(to-r, blue.600, purple.600)' 
+                                        : 'linear(to-r, blue.500, purple.500)')
+                                    : colorMode === 'dark' ? 'gray.700' : 'gray.100',
+                                transform: 'translateY(-2px)',
+                                boxShadow: activeTab === 0 ? 'xl' : 'md'
+                            }}
+                            _active={{ 
+                                transform: 'translateY(0px)',
+                                boxShadow: activeTab === 0 ? 'lg' : 'sm'
+                            }}
+                            p={2}
                             minW={0}
-                            h="56px"
+                            h="70px"
                             justifyContent="center"
+                            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            overflow="hidden"
                         >
-                            <ShoppingCart size={24} />
+                            <VStack spacing={2} align="center">
+                                <Package size={22} />
+                                <Text fontSize="xs" fontWeight="semibold" textAlign="center">Suprimentos</Text>
+                            </VStack>
+                            {activeTab === 0 && (
+                                <Box
+                                    position="absolute"
+                                    top={0}
+                                    left={0}
+                                    right={0}
+                                    h="4px"
+                                    bg="white"
+                                    opacity={0.9}
+                                    borderRadius="full"
+                                    boxShadow="0 2px 4px rgba(0,0,0,0.1)"
+                                />
+                            )}
                         </Button>
                         <Button
                             flex={1}
                             variant="ghost"
-                            bg={activeTab === 1 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
-                            color={activeTab === 1 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            bg={activeTab === 1 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, green.500, teal.500)' 
+                                    : 'linear(to-r, green.400, teal.400)')
+                                : 'transparent'
+                            }
+                            bgGradient={activeTab === 1 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, green.500, teal.500)' 
+                                    : 'linear(to-r, green.400, teal.400)')
+                                : undefined
+                            }
+                            color={activeTab === 1 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.600'}
                             onClick={() => setActiveTab(1)}
-                            borderRadius="md"
+                            borderRadius="xl"
                             size="md"
-                            boxShadow="none"
-                            _hover={{ bg: activeTab === 1 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            _active={{ bg: activeTab === 1 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            p={0}
+                            boxShadow={activeTab === 1 ? 'lg' : 'none'}
+                            _hover={{ 
+                                bg: activeTab === 1 
+                                    ? (colorMode === 'dark' 
+                                        ? 'linear(to-r, green.600, teal.600)' 
+                                        : 'linear(to-r, green.500, teal.500)')
+                                    : colorMode === 'dark' ? 'gray.700' : 'gray.100',
+                                transform: 'translateY(-2px)',
+                                boxShadow: activeTab === 1 ? 'xl' : 'md'
+                            }}
+                            _active={{ 
+                                transform: 'translateY(0px)',
+                                boxShadow: activeTab === 1 ? 'lg' : 'sm'
+                            }}
+                            p={2}
                             minW={0}
-                            h="56px"
+                            h="70px"
                             justifyContent="center"
+                            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            overflow="hidden"
                         >
-                            <TimerIcon size={24} />
+                            <VStack spacing={2} align="center">
+                                <ClipboardList size={22} />
+                                <Text fontSize="xs" fontWeight="semibold" textAlign="center">Alocações</Text>
+                            </VStack>
+                            {activeTab === 1 && (
+                                <Box
+                                    position="absolute"
+                                    top={0}
+                                    left={0}
+                                    right={0}
+                                    h="4px"
+                                    bg="white"
+                                    opacity={0.9}
+                                    borderRadius="full"
+                                    boxShadow="0 2px 4px rgba(0,0,0,0.1)"
+                                />
+                            )}
                         </Button>
                         <Button
                             flex={1}
                             variant="ghost"
-                            bg={activeTab === 2 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
-                            color={activeTab === 2 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            bg={activeTab === 2 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, orange.500, red.500)' 
+                                    : 'linear(to-r, orange.400, red.400)')
+                                : 'transparent'
+                            }
+                            bgGradient={activeTab === 2 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, orange.500, red.500)' 
+                                    : 'linear(to-r, orange.400, red.400)')
+                                : undefined
+                            }
+                            color={activeTab === 2 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.600'}
                             onClick={() => setActiveTab(2)}
-                            borderRadius="md"
+                            borderRadius="xl"
                             size="md"
-                            boxShadow="none"
-                            _hover={{ bg: activeTab === 2 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            _active={{ bg: activeTab === 2 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            p={0}
+                            boxShadow={activeTab === 2 ? 'lg' : 'none'}
+                            _hover={{ 
+                                bg: activeTab === 2 
+                                    ? (colorMode === 'dark' 
+                                        ? 'linear(to-r, orange.600, red.600)' 
+                                        : 'linear(to-r, orange.500, red.500)')
+                                    : colorMode === 'dark' ? 'gray.700' : 'gray.100',
+                                transform: 'translateY(-2px)',
+                                boxShadow: activeTab === 2 ? 'xl' : 'md'
+                            }}
+                            _active={{ 
+                                transform: 'translateY(0px)',
+                                boxShadow: activeTab === 2 ? 'lg' : 'sm'
+                            }}
+                            p={2}
                             minW={0}
-                            h="56px"
+                            h="70px"
                             justifyContent="center"
+                            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            overflow="hidden"
                         >
-                            <FileText size={24} />
+                            <VStack spacing={2} align="center">
+                                <BarChart3 size={22} />
+                                <Text fontSize="xs" fontWeight="semibold" textAlign="center">Inventário</Text>
+                            </VStack>
+                            {activeTab === 2 && (
+                                <Box
+                                    position="absolute"
+                                    top={0}
+                                    left={0}
+                                    right={0}
+                                    h="4px"
+                                    bg="white"
+                                    opacity={0.9}
+                                    borderRadius="full"
+                                    boxShadow="0 2px 4px rgba(0,0,0,0.1)"
+                                />
+                            )}
                         </Button>
                         <Button
                             flex={1}
                             variant="ghost"
-                            bg={activeTab === 3 ? (colorMode === 'dark' ? 'blue.600' : 'blue.500') : 'transparent'}
-                            color={activeTab === 3 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.500'}
+                            bg={activeTab === 3 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, purple.500, pink.500)' 
+                                    : 'linear(to-r, purple.400, pink.400)')
+                                : 'transparent'
+                            }
+                            bgGradient={activeTab === 3 
+                                ? (colorMode === 'dark' 
+                                    ? 'linear(to-r, purple.500, pink.500)' 
+                                    : 'linear(to-r, purple.400, pink.400)')
+                                : undefined
+                            }
+                            color={activeTab === 3 ? 'white' : colorMode === 'dark' ? 'gray.300' : 'gray.600'}
                             onClick={() => setActiveTab(3)}
-                            borderRadius="md"
+                            borderRadius="xl"
                             size="md"
-                            boxShadow="none"
-                            _hover={{ bg: activeTab === 3 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            _active={{ bg: activeTab === 3 ? (colorMode === 'dark' ? 'blue.700' : 'blue.600') : 'gray.100' }}
-                            p={0}
+                            boxShadow={activeTab === 3 ? 'lg' : 'none'}
+                            _hover={{ 
+                                bg: activeTab === 3 
+                                    ? (colorMode === 'dark' 
+                                        ? 'linear(to-r, purple.600, pink.600)' 
+                                        : 'linear(to-r, purple.500, pink.500)')
+                                    : colorMode === 'dark' ? 'gray.700' : 'gray.100',
+                                transform: 'translateY(-2px)',
+                                boxShadow: activeTab === 3 ? 'xl' : 'md'
+                            }}
+                            _active={{ 
+                                transform: 'translateY(0px)',
+                                boxShadow: activeTab === 3 ? 'lg' : 'sm'
+                            }}
+                            p={2}
                             minW={0}
-                            h="56px"
+                            h="70px"
                             justifyContent="center"
+                            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            overflow="hidden"
                         >
-                            <RotateCcw size={24} />
+                            <VStack spacing={2} align="center">
+                                <TrendingUp size={22} />
+                                <Text fontSize="xs" fontWeight="semibold" textAlign="center">Suprimentos</Text>
+                            </VStack>
+                            {activeTab === 3 && (
+                                <Box
+                                    position="absolute"
+                                    top={0}
+                                    left={0}
+                                    right={0}
+                                    h="4px"
+                                    bg="white"
+                                    opacity={0.9}
+                                    borderRadius="full"
+                                    boxShadow="0 2px 4px rgba(0,0,0,0.1)"
+                                />
+                            )}
                         </Button>
                     </HStack>
                 </Box>
-                <Box pt={0} pb="80px" h="100vh" overflowY="auto" px={0}>
+                <Box pt={4} pb="90px" h="100vh" overflowY="auto" px={4}>
+                    <Box
+                        bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.8)' : 'rgba(255, 255, 255, 0.8)'}
+                        backdropFilter="blur(20px)"
+                        borderRadius="2xl"
+                        p={4}
+                        boxShadow="lg"
+                        border="1px solid"
+                        borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+                        minH="calc(100vh - 120px)"
+                    >
                     {[
                         loadingTabs[0] ? (
                             <Skeleton key="skeleton-req" height="400px"><SkeletonText mt="4" noOfLines={8} spacing="4" /></Skeleton>
@@ -992,6 +1302,7 @@ export default function AdminSupplyRequestsPage() {
                                 onConfirmDelivery={handleManagerDeliveryConfirmation}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
+                                onRefresh={fetchRequests}
                                 isMobile={true}
                             />
                         ),
@@ -1022,6 +1333,7 @@ export default function AdminSupplyRequestsPage() {
                                 onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
+                                onRefresh={fetchAllocationRequests}
                                 isMobile={true}
                             />
                         ),
@@ -1042,6 +1354,7 @@ export default function AdminSupplyRequestsPage() {
                                 onTransactionLocaleFilterChange={setTransactionLocaleFilter}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
+                                onRefresh={fetchInventoryTransactions}
                                 isMobile={true}
                             />
                         ),
@@ -1058,10 +1371,12 @@ export default function AdminSupplyRequestsPage() {
                                 onStatusFilterChange={setStatusFilter}
                                 onExportPDF={exportToPDF}
                                 onClearFilters={clearFilters}
+                                onRefresh={fetchSupplyTransactions}
                                 isMobile={true}
                             />
                         )
                     ][activeTab]}
+                    </Box>
                 </Box>
             </Box>
         );
@@ -1089,6 +1404,7 @@ export default function AdminSupplyRequestsPage() {
                         onConfirmDelivery={handleManagerDeliveryConfirmation}
                         onExportPDF={exportToPDF}
                         onClearFilters={clearFilters}
+                        onRefresh={fetchRequests}
                     />
                 ),
                 loadingTabs[1] ? (
@@ -1118,6 +1434,7 @@ export default function AdminSupplyRequestsPage() {
                         onAllocationManagerReturnConfirmation={handleAllocationManagerReturnConfirmation}
                         onExportPDF={exportToPDF}
                         onClearFilters={clearFilters}
+                        onRefresh={fetchAllocationRequests}
                     />
                 ),
                 loadingTabs[2] ? (
@@ -1137,6 +1454,7 @@ export default function AdminSupplyRequestsPage() {
                         onTransactionLocaleFilterChange={setTransactionLocaleFilter}
                         onExportPDF={exportToPDF}
                         onClearFilters={clearFilters}
+                        onRefresh={fetchInventoryTransactions}
                     />
                 ),
                 loadingTabs[3] ? (
@@ -1152,6 +1470,7 @@ export default function AdminSupplyRequestsPage() {
                         onStatusFilterChange={setStatusFilter}
                         onExportPDF={exportToPDF}
                         onClearFilters={clearFilters}
+                        onRefresh={fetchSupplyTransactions}
                     />
                 )
             ]}

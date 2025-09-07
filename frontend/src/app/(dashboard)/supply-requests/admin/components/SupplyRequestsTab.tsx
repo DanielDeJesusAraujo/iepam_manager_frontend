@@ -31,7 +31,7 @@ import {
     useDisclosure,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 
 interface SupplyRequest {
@@ -61,7 +61,7 @@ interface SupplyRequest {
         role: string;
     };
     quantity: number;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELIVERED' | 'CANCELLED';
     notes: string;
     created_at: string;
     requester_confirmation: boolean;
@@ -93,6 +93,7 @@ interface SupplyRequestsTabProps {
     onConfirmDelivery: (request: any, confirmation: boolean) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
+    onRefresh: () => void;
     isMobile?: boolean;
 }
 
@@ -108,6 +109,7 @@ export function SupplyRequestsTab({
     onConfirmDelivery,
     onExportPDF,
     onClearFilters,
+    onRefresh,
     isMobile = false,
 }: SupplyRequestsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
@@ -148,7 +150,12 @@ export function SupplyRequestsTab({
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     />
                 </InputGroup>
-                <Button w="full" size="sm" colorScheme="gray" mb={3} onClick={onOpen}>Filtros</Button>
+                <HStack spacing={2} mb={3}>
+                    <Button flex={1} size="sm" colorScheme="gray" onClick={onOpen}>Filtros</Button>
+                    <Button size="sm" colorScheme="blue" leftIcon={<RotateCcw size={16} />} onClick={onRefresh}>
+                        Atualizar
+                    </Button>
+                </HStack>
                 <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="full">
                     <DrawerOverlay />
                     <DrawerContent bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'} backdropFilter="blur(12px)" p={2}>
@@ -163,6 +170,7 @@ export function SupplyRequestsTab({
                                         <option value="APPROVED">Aprovado</option>
                                         <option value="REJECTED">Rejeitado</option>
                                         <option value="DELIVERED">Entregue</option>
+                                        <option value="CANCELLED">Cancelado</option>
                                     </Select>
                                 </FormControl>
                                 <FormControl>
@@ -228,8 +236,8 @@ export function SupplyRequestsTab({
                                 <Text fontWeight="bold">{request.is_custom ? request.item_name : request.supply?.name}</Text>
                                 <Text fontSize="sm" color="gray.500">{request.user.name} - {request.user.email}</Text>
                                 <Text fontSize="sm">Qtd: {request.quantity} {request.supply?.unit?.symbol || request.unit?.symbol}</Text>
-                                <Badge colorScheme={request.status === 'APPROVED' ? 'green' : request.status === 'REJECTED' ? 'red' : request.status === 'DELIVERED' ? 'purple' : 'yellow'} mt={1} mb={1}>
-                                    {request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : 'Entregue'}
+                                <Badge colorScheme={request.status === 'APPROVED' ? 'green' : request.status === 'REJECTED' ? 'red' : request.status === 'DELIVERED' ? 'purple' : request.status === 'CANCELLED' ? 'gray' : 'yellow'} mt={1} mb={1}>
+                                    {request.status === 'PENDING' ? 'Pendente' : request.status === 'APPROVED' ? 'Aprovado' : request.status === 'REJECTED' ? 'Rejeitado' : request.status === 'CANCELLED' ? 'Cancelado' : 'Entregue'}
                                 </Badge>
                                 <Text fontSize="xs" color="gray.400">Data: {new Date(request.created_at).toLocaleDateString('pt-BR')}</Text>
                                 <VStack spacing={2} mt={2} align="stretch">
@@ -332,6 +340,7 @@ export function SupplyRequestsTab({
                         <option value="APPROVED">Aprovado</option>
                         <option value="REJECTED">Rejeitado</option>
                         <option value="DELIVERED">Entregue</option>
+                        <option value="CANCELLED">Cancelado</option>
                     </Select>
                 </FormControl>
                 <FormControl maxW="200px">
@@ -402,6 +411,23 @@ export function SupplyRequestsTab({
                     transition="all 0.2s ease"
                 >
                     Exportar PDF
+                </Button>
+                <Button
+                    size="sm"
+                    onClick={onRefresh}
+                    colorScheme="blue"
+                    leftIcon={<RotateCcw size={16} />}
+                    minW="140px"
+                    h="36px"
+                    fontSize="sm"
+                    fontWeight="medium"
+                    _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s ease"
+                >
+                    Atualizar
                 </Button>
                 <Button
                     size="sm"
@@ -482,7 +508,9 @@ export function SupplyRequestsTab({
                                                         ? 'red'
                                                         : request.status === 'DELIVERED'
                                                             ? 'purple'
-                                                            : 'yellow'
+                                                            : request.status === 'CANCELLED'
+                                                                ? 'gray'
+                                                                : 'yellow'
                                             }
                                         >
                                             {request.status === 'PENDING'
@@ -491,7 +519,9 @@ export function SupplyRequestsTab({
                                                     ? 'Aprovado'
                                                     : request.status === 'REJECTED'
                                                         ? 'Rejeitado'
-                                                        : 'Entregue'}
+                                                        : request.status === 'CANCELLED'
+                                                            ? 'Cancelado'
+                                                            : 'Entregue'}
                                         </Badge>
                                     </Td>
                                     <Td color={colorMode === 'dark' ? 'white' : 'gray.800'} bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}>

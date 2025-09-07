@@ -86,6 +86,7 @@ interface AllocationsTabProps {
     onAllocationManagerReturnConfirmation: (request: AllocationRequest) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
+    onRefresh: () => void;
     isMobile?: boolean;
 }
 
@@ -112,6 +113,7 @@ export function AllocationsTab({
     onAllocationManagerReturnConfirmation,
     onExportPDF,
     onClearFilters,
+    onRefresh,
     isMobile = false,
 }: AllocationsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
@@ -162,7 +164,12 @@ export function AllocationsTab({
                         borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
                     />
                 </InputGroup>
-                <Button w="full" size="sm" colorScheme="gray" mb={3} onClick={onOpen}>Filtros</Button>
+                <HStack spacing={2} mb={3}>
+                    <Button flex={1} size="sm" colorScheme="gray" onClick={onOpen}>Filtros</Button>
+                    <Button size="sm" colorScheme="blue" leftIcon={<RotateCcw size={16} />} onClick={onRefresh}>
+                        Atualizar
+                    </Button>
+                </HStack>
                 <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="full">
                     <DrawerOverlay />
                     <DrawerContent bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)'} backdropFilter="blur(12px)" p={2}>
@@ -434,45 +441,62 @@ export function AllocationsTab({
                         ))}
                     </Select>
                 </FormControl>
+                <HStack spacing={3} ml="auto" alignSelf="end">
+                    <Button
+                        size="sm"
+                        onClick={onExportPDF}
+                        colorScheme="blue"
+                        leftIcon={<FileText size={16} />}
+                        isDisabled={filteredAllocationRequests.length === 0}
+                        minW="140px"
+                        h="36px"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        _hover={{
+                            transform: 'translateY(-1px)',
+                            boxShadow: 'lg',
+                        }}
+                        transition="all 0.2s ease"
+                    >
+                        Exportar PDF
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={onRefresh}
+                        colorScheme="blue"
+                        leftIcon={<RotateCcw size={16} />}
+                        minW="140px"
+                        h="36px"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        _hover={{
+                            transform: 'translateY(-1px)',
+                            boxShadow: 'lg',
+                        }}
+                        transition="all 0.2s ease"
+                    >
+                        Atualizar
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={onClearFilters}
+                        colorScheme="gray"
+                        variant="outline"
+                        leftIcon={<RotateCcw size={16} />}
+                        minW="140px"
+                        h="36px"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        _hover={{
+                            transform: 'translateY(-1px)',
+                            boxShadow: 'lg',
+                        }}
+                        transition="all 0.2s ease"
+                    >
+                        Limpar Filtros
+                    </Button>
+                </HStack>
             </Flex>
-
-                <Button
-                    size="sm"
-                    onClick={onExportPDF}
-                    colorScheme="blue"
-                    leftIcon={<FileText size={16} />}
-                    isDisabled={filteredAllocationRequests.length === 0}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Exportar PDF
-                </Button>
-
-                <Button
-                    size="sm"
-                    onClick={onClearFilters}
-                    colorScheme="gray"
-                    variant="outline"
-                    leftIcon={<RotateCcw size={16} />}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Limpar Filtros
-                </Button>
 
             {filteredAllocationRequests.length === 0 ? (
                 <Flex direction="column" align="center" justify="center" py={8}>

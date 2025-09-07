@@ -72,6 +72,7 @@ interface SupplyTransactionsTabProps {
     onStatusFilterChange: (value: string) => void;
     onExportPDF: () => void;
     onClearFilters: () => void;
+    onRefresh: () => void;
     isMobile?: boolean;
 }
 
@@ -84,6 +85,7 @@ export function SupplyTransactionsTab({
     onStatusFilterChange,
     onExportPDF,
     onClearFilters,
+    onRefresh,
     isMobile = false,
 }: SupplyTransactionsTabProps) {
     const colorMode = useColorModeValue('light', 'dark');
@@ -111,6 +113,7 @@ export function SupplyTransactionsTab({
                     <option value="ADJUSTMENT">Ajuste</option>
                 </Select>
                 <Button w="full" size="sm" colorScheme="blue" mb={2} onClick={onExportPDF} isDisabled={filteredSupplyTransactions.length === 0}>Exportar PDF</Button>
+                <Button w="full" size="sm" colorScheme="blue" mb={2} leftIcon={<RotateCcw size={16} />} onClick={onRefresh}>Atualizar</Button>
                 <Button w="full" size="sm" colorScheme="gray" variant="outline" mb={4} onClick={onClearFilters}>Limpar Filtros</Button>
                 {filteredSupplyTransactions.length === 0 ? (
                     <Flex direction="column" align="center" justify="center" py={8}>
@@ -209,7 +212,23 @@ export function SupplyTransactionsTab({
                 >
                     Exportar PDF
                 </Button>
-
+                <Button
+                    size="sm"
+                    onClick={onRefresh}
+                    colorScheme="blue"
+                    leftIcon={<RotateCcw size={16} />}
+                    minW="140px"
+                    h="36px"
+                    fontSize="sm"
+                    fontWeight="medium"
+                    _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s ease"
+                >
+                    Atualizar
+                </Button>
                 <Button
                     size="sm"
                     onClick={onClearFilters}
