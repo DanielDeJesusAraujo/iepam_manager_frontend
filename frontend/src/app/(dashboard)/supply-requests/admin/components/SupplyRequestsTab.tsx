@@ -260,15 +260,7 @@ export function SupplyRequestsTab({
     }
 
     return (
-        <Box
-            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-            p={6}
-            borderRadius="lg"
-            boxShadow="sm"
-            borderWidth="1px"
-            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-            backdropFilter="blur(12px)"
-        >
+        <>
             <Flex gap={4} mb={4} flexWrap="wrap" align="end">
                 <FormControl maxW="320px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Buscar por suprimento ou usuário</FormLabel>
@@ -394,59 +386,46 @@ export function SupplyRequestsTab({
                         ))}
                     </Select>
                 </FormControl>
-                <Button
-                    size="sm"
-                    onClick={onExportPDF}
-                    colorScheme="blue"
-                    leftIcon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></svg>}
-                    isDisabled={filtered.length === 0}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Exportar PDF
-                </Button>
-                <Button
-                    size="sm"
-                    onClick={onRefresh}
-                    colorScheme="blue"
-                    leftIcon={<RotateCcw size={16} />}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Atualizar
-                </Button>
-                <Button
-                    size="sm"
-                    onClick={onClearFilters}
-                    colorScheme="gray"
-                    variant="outline"
-                    leftIcon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-ccw" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>}
-                    minW="140px"
-                    h="36px"
-                    fontSize="sm"
-                    fontWeight="medium"
-                    _hover={{
-                        transform: 'translateY(-1px)',
-                        boxShadow: 'lg',
-                    }}
-                    transition="all 0.2s ease"
-                >
-                    Limpar Filtros
-                </Button>
+                <HStack spacing={2}>
+                    <Button
+                        size="sm"
+                        onClick={onExportPDF}
+                        colorScheme="blue"
+                        isDisabled={filtered.length === 0}
+                        minW="120px"
+                        h="32px"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        transition="all 0.2s ease"
+                    >
+                        Exportar PDF
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={onRefresh}
+                        colorScheme="blue"
+                        minW="120px"
+                        h="32px"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        transition="all 0.2s ease"
+                    >
+                        Atualizar
+                    </Button>
+                    <Button
+                        size="sm"
+                        onClick={onClearFilters}
+                        colorScheme="gray"
+                        variant="outline"
+                        minW="120px"
+                        h="32px"
+                        fontSize="sm"
+                        fontWeight="medium"
+                        transition="all 0.2s ease"
+                    >
+                        Limpar Filtros
+                    </Button>
+                </HStack>
             </Flex>
 
             {filtered.length === 0 ? (
@@ -616,6 +595,6 @@ export function SupplyRequestsTab({
                     </Table>
                 </Box>
             )}
-        </Box>
+        </>
     );
 } 
