@@ -251,116 +251,41 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                     backgroundImage="radial-gradient(circle at 25% 25%, #3182ce 0%, transparent 50%), radial-gradient(circle at 75% 75%, #805ad5 0%, transparent 50%)"
                     pointerEvents="none"
                 />
-                <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} gap={4}>
-                    <VStack align="start" spacing={2}>
-                        <Heading 
-                            size="xl" 
-                            color={useColorModeValue('gray.800', 'white')}
-                            fontWeight="bold"
-                            position="relative"
-                        >
-                            Requisições
-                            <Box
-                                position="absolute"
-                                bottom="-2px"
-                                left={0}
-                                right={0}
-                                h="3px"
-                                bgGradient="linear(to-r, blue.400, purple.400)"
-                                borderRadius="full"
-                                opacity={0.8}
-                            />
-                        </Heading>
-                        <Text 
-                            color={useColorModeValue('gray.600', 'gray.300')}
-                            fontSize="sm"
-                            fontWeight="medium"
-                        >
-                            Gerencie requisições, alocações e transações
-                        </Text>
-                    </VStack>
-                    <HStack spacing={2} w="100%" justify={{ base: 'space-between', md: 'flex-end' }} wrap="wrap">
-                        {/* Botões de exportação e outros podem ser adicionados aqui se necessário */}
-                    </HStack>
-                </Flex>
-                <Box
-                    h="1px"
-                    bgGradient="linear(to-r, transparent, gray.300, transparent)"
-                    opacity={0.5}
-                    _dark={{
-                        bgGradient: "linear(to-r, transparent, gray.600, transparent)"
-                    }}
-                />
-                <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size="lg">
+                {/* Título removido para economizar espaço */}
+                <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size="sm">
                     <TabList
                         bg={useColorModeValue('gray.50', 'gray.700')}
-                        borderRadius="2xl"
-                        p={2}
-                        boxShadow="lg"
+                        borderRadius="md"
+                        p={1}
+                        boxShadow="sm"
                         border="1px solid"
                         borderColor={useColorModeValue('gray.200', 'gray.600')}
-                        gap={2}
-                        mb={6}
+                        gap={1}
+                        mb={2}
                     >
                         {tabLabels.map((label, index) => {
                             const icons = [Package, ClipboardList, BarChart3, TrendingUp];
                             const IconComponent = icons[index];
-                            const colors = [
-                                { from: 'blue.400', to: 'purple.400' },
-                                { from: 'green.400', to: 'teal.400' },
-                                { from: 'orange.400', to: 'red.400' },
-                                { from: 'purple.400', to: 'pink.400' }
-                            ];
-                            const colorScheme = colors[index];
                             
                             return (
                                 <Tab
                                     key={label}
-                                    _selected={{
-                                        bg: `linear(to-r, ${colorScheme.from}, ${colorScheme.to})`,
-                                        color: 'white',
-                                        boxShadow: 'xl',
-                                        transform: 'translateY(-3px)',
-                                        border: 'none',
-                                        borderRadius: 'xl'
-                                    }}
-                                    _hover={{
-                                        bg: activeTab === index 
-                                            ? `linear(to-r, ${colorScheme.from}, ${colorScheme.to})`
-                                            : 'gray.100',
-                                        transform: activeTab === index ? 'translateY(-3px)' : 'translateY(-2px)',
-                                        borderRadius: 'xl',
-                                        boxShadow: activeTab === index ? 'xl' : 'md'
-                                    }}
-                                    transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-                                    borderRadius="xl"
-                                    fontWeight="semibold"
-                                    fontSize="md"
-                                    px={8}
-                                    py={4}
+                                    _selected={{ bg: useColorModeValue('white', 'gray.800'), color: useColorModeValue('blue.600', 'blue.200'), boxShadow: 'sm', border: '1px solid', borderColor: useColorModeValue('blue.200', 'blue.600') }}
+                                    _hover={{ bg: useColorModeValue('gray.100', 'gray.600') }}
+                                    transition="all 0.2s ease"
+                                    borderRadius="md"
+                                    fontWeight="medium"
+                                    fontSize="sm"
+                                    px={3}
+                                    py={2}
                                     mx={0}
                                     position="relative"
                                     overflow="hidden"
-                                    minH="60px"
-                                    flex="1"
                                 >
-                                    <HStack spacing={3} align="center">
-                                        <IconComponent size={20} />
-                                        <Text fontSize="md" fontWeight="semibold">{label}</Text>
+                                    <HStack spacing={2} align="center">
+                                        <IconComponent size={16} />
+                                        <Text fontSize="sm" fontWeight="medium">{label}</Text>
                                     </HStack>
-                                    {activeTab === index && (
-                                        <Box
-                                            position="absolute"
-                                            top={0}
-                                            left={0}
-                                            right={0}
-                                            h="4px"
-                                            bg="white"
-                                            opacity={0.9}
-                                            borderRadius="full"
-                                            boxShadow="0 2px 4px rgba(0,0,0,0.1)"
-                                        />
-                                    )}
                                 </Tab>
                             );
                         })}

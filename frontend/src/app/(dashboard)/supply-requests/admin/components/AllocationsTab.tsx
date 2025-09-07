@@ -304,15 +304,7 @@ export function AllocationsTab({
     }
 
     return (
-        <Box
-            bg={colorMode === 'dark' ? 'rgba(45, 55, 72, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
-            p={6}
-            borderRadius="lg"
-            boxShadow="sm"
-            borderWidth="1px"
-            borderColor={colorMode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
-            backdropFilter="blur(12px)"
-        >
+        <>
             <Flex gap={4} mb={4} flexWrap="wrap" align="end">
                 <FormControl maxW="320px">
                     <FormLabel fontSize="sm" color={colorMode === 'dark' ? 'white' : 'gray.800'}>Buscar por item ou usuário</FormLabel>
@@ -676,6 +668,6 @@ export function AllocationsTab({
                     </Table>
                 </Box>
             )}
-        </Box>
+        </>
     );
 } 
