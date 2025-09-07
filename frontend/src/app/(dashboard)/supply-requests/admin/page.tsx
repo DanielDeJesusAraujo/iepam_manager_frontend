@@ -203,6 +203,17 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
     const [activeTab, setActiveTab] = useState(0);
     const prevTab = useRef(0);
     const [hasFetched, setHasFetched] = useState(() => tabLabels.map(() => false));
+    // Precompute themed colors (hooks at top-level)
+    const containerBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(45, 55, 72, 0.8)');
+    const containerBorder = useColorModeValue('rgba(0, 0, 0, 0.05)', 'rgba(255, 255, 255, 0.1)');
+    const tabListBg = useColorModeValue('gray.50', 'gray.700');
+    const tabListBorder = useColorModeValue('gray.200', 'gray.600');
+    const tabSelectedBg = useColorModeValue('white', 'gray.800');
+    const tabSelectedColor = useColorModeValue('blue.600', 'blue.200');
+    const tabSelectedBorder = useColorModeValue('blue.200', 'blue.600');
+    const tabHoverBg = useColorModeValue('gray.100', 'gray.600');
+    const contentBg = useColorModeValue('white', 'gray.800');
+    const contentBorder = useColorModeValue('gray.200', 'gray.600');
 
     useEffect(() => {
         const saved = localStorage.getItem(storageKey);
@@ -229,13 +240,13 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
             <VStack
                 spacing={6}
                 align="stretch"
-                bg={useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(45, 55, 72, 0.8)')}
+                bg={containerBg}
                 backdropFilter="blur(20px)"
                 p={{ base: 4, md: 8 }}
                 borderRadius="2xl"
                 boxShadow="xl"
                 borderWidth="1px"
-                borderColor={useColorModeValue('rgba(0, 0, 0, 0.05)', 'rgba(255, 255, 255, 0.1)')}
+                borderColor={containerBorder}
                 h="full"
                 position="relative"
                 overflow="hidden"
@@ -254,12 +265,12 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                 {/* Título removido para economizar espaço */}
                 <Tabs variant="enclosed" index={activeTab} onChange={setActiveTab} size="sm">
                     <TabList
-                        bg={useColorModeValue('gray.50', 'gray.700')}
+                        bg={tabListBg}
                         borderRadius="md"
                         p={1}
                         boxShadow="sm"
                         border="1px solid"
-                        borderColor={useColorModeValue('gray.200', 'gray.600')}
+                        borderColor={tabListBorder}
                         gap={1}
                         mb={2}
                     >
@@ -270,8 +281,8 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                             return (
                                 <Tab
                                     key={label}
-                                    _selected={{ bg: useColorModeValue('white', 'gray.800'), color: useColorModeValue('blue.600', 'blue.200'), boxShadow: 'sm', border: '1px solid', borderColor: useColorModeValue('blue.200', 'blue.600') }}
-                                    _hover={{ bg: useColorModeValue('gray.100', 'gray.600') }}
+                                    _selected={{ bg: tabSelectedBg, color: tabSelectedColor, boxShadow: 'sm', border: '1px solid', borderColor: tabSelectedBorder }}
+                                    _hover={{ bg: tabHoverBg }}
                                     transition="all 0.2s ease"
                                     borderRadius="md"
                                     fontWeight="medium"
@@ -294,11 +305,11 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                 <Box 
                     mt={0} 
                     p={6}
-                    bg={useColorModeValue('white', 'gray.800')}
+                    bg={contentBg}
                     borderRadius="2xl"
                     boxShadow="lg"
                     border="1px solid"
-                    borderColor={useColorModeValue('gray.200', 'gray.600')}
+                    borderColor={contentBorder}
                     minH="600px"
                 >
                     {children.map((child, idx) => (
