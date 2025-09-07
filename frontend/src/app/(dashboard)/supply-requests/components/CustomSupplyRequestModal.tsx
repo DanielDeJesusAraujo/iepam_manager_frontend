@@ -25,7 +25,7 @@ import { useState, useEffect } from 'react';
 interface CustomSupplyRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: CustomSupplyRequestData) => void;
+    onSubmit: (data: CustomSupplyRequestData) => Promise<void>;
     userLocales: { id: string; name: string }[];
     localeId: string;
     setLocaleId: (value: string) => void;
@@ -93,40 +93,20 @@ export function CustomSupplyRequestModal({ isOpen, onClose, onSubmit, userLocale
         const selectedLocale = userLocales.find(l => l.id === localeId);
         setLoading(true);
         try {
-            const token = localStorage.getItem('@ti-assistant:token');
-            const response = await fetch('/api/supply-requests/custom', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    item_name: itemName,
-                    description,
-                    quantity,
-                    unit_id: unitId,
-                    delivery_deadline: deliveryDeadline,
-                    destination: selectedLocale ? selectedLocale.name : '',
-                    locale_id: localeId,
-                    notes
-                })
-            });
+            // Preparar os dados para envio
+            const requestData = {
+                item_name: itemName,
+                description,
+                quantity,
+                unit_id: unitId,
+                delivery_deadline: deliveryDeadline,
+                destination: selectedLocale ? selectedLocale.name : '',
+                locale_id: localeId,
+                notes
+            };
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Erro ao criar requisição customizada');
-            }
-
-            const result = await response.json();
-            onSubmit(result);
-
-            toast({
-                title: 'Sucesso',
-                description: 'Requisição customizada criada com sucesso!',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
+            // Passar os dados para a função onSubmit (que fará a requisição)
+            await onSubmit(requestData);
 
             // Limpar o formulário
             setItemName('');
