@@ -327,7 +327,7 @@ function PersistentTabsLayout({ tabLabels, children, onTabChange, storageKey = '
                                     _hover={{
                                         bg: activeTab === index 
                                             ? `linear(to-r, ${colorScheme.from}, ${colorScheme.to})`
-                                            : useColorModeValue('gray.100', 'gray.600'),
+                                            : 'gray.100',
                                         transform: activeTab === index ? 'translateY(-3px)' : 'translateY(-2px)',
                                         borderRadius: 'xl',
                                         boxShadow: activeTab === index ? 'xl' : 'md'
@@ -417,6 +417,7 @@ export default function AdminSupplyRequestsPage() {
     const router = useRouter();
     const toast = useToast();
     const colorMode = useColorModeValue('light', 'dark');
+    const tabHoverBgDefault = useColorModeValue('gray.100', 'gray.600');
     const [isMobile] = useMediaQuery('(max-width: 768px)');
     // Estados de loading para cada aba
     const [loadingTabs, setLoadingTabs] = useState([true, true, true, true]);
