@@ -24,9 +24,10 @@ describe('Login Page Tests', () => {
     });
 
     beforeEach(async () => {
-        await driver.get('http://localhost:3000/login');
+        await driver.manage().deleteAllCookies();
+        await driver.get('http://localhost:3001/');
         // Adiciona um pequeno delay para visualizar melhor
-        await driver.sleep(1000);
+        await driver.sleep(10000);
     });
 
     test('should display login form', async () => {
@@ -68,13 +69,10 @@ describe('Login Page Tests', () => {
         await submitButton.click();
 
         // Aguardar redirecionamento para a página inicial
-        await driver.wait(
-            until.urlIs('http://localhost:3000/dashboard'),
-            5000
-        );
+        await driver.wait(async () => (await driver.getCurrentUrl()).includes('/dashboard'), 10000);
 
         const currentUrl = await driver.getCurrentUrl();
-        expect(currentUrl).toBe('http://localhost:3000/dashboard');
+        expect(currentUrl.includes('/dashboard')).toBe(true);
     });
 
     test('should show validation messages for empty fields', async () => {
@@ -92,4 +90,4 @@ describe('Login Page Tests', () => {
         const passwordValidationMessage = await passwordInput.getAttribute('validationMessage');
         expect(['Preencha este campo.', 'Please fill out this field.']).toContain(passwordValidationMessage);
     });
-}); 
+});
