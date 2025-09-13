@@ -1,5 +1,6 @@
 import baseUrl from '@/utils/enviroments'
 import axios from 'axios'
+import { performLogout } from '@/utils/logout'
 
 export const api = axios.create({
     baseURL: baseUrl,
@@ -19,21 +20,17 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
-            try {
-                // Limpar cookies HTTP-only
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-            } catch (logoutError) {
-                console.error('Erro ao limpar cookies no logout:', logoutError)
+            // Não fazer logout automático se estamos na página de login ou fazendo requisição de sessão
+            const isLoginPage = window.location.pathname === '/'
+            const isSessionRequest = error.config?.url?.includes('/api/auth/session')
+            
+            if (isLoginPage || isSessionRequest) {
+                console.log('[Axios Interceptor] 401 na página de login ou requisição de sessão, ignorando logout automático');
+                return Promise.reject(error)
             }
             
-            localStorage.removeItem('@ti-assistant:token')
-            localStorage.removeItem('@ti-assistant:user')
-            window.location.href = '/'
+            console.log('[Axios Interceptor] 401 detectado, fazendo logout automático');
+            await performLogout()
         }
         return Promise.reject(error)
     }

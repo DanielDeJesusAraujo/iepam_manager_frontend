@@ -32,9 +32,11 @@ export default function LoginPage() {
 
   // redireciona se já autenticado
   useEffect(() => {
-    // 1) tenta pelo localStorage
+    // 1) tenta pelo localStorage primeiro
     const userJson = localStorage.getItem('@ti-assistant:user')
-    if (userJson) {
+    const token = localStorage.getItem('@ti-assistant:token')
+    
+    if (userJson && token) {
       try {
         const user = JSON.parse(userJson)
         if (user?.role === 'EMPLOYEE' || user?.role === 'TECHNICIAN') {
@@ -47,11 +49,21 @@ export default function LoginPage() {
       } catch {}
     }
 
-    // 2) fallback: tenta via sessão da API (usa cookie httpOnly + middleware para Authorization)
+    // 2) fallback: tenta via sessão da API apenas se não há dados no localStorage
+    // Isso evita requisições desnecessárias quando não há token
+    if (!token) {
+      return
+    }
+
     let cancelled = false
     ;(async () => {
       try {
-        const res = await fetch('/api/auth/session', { cache: 'no-store' })
+        const res = await fetch('/api/auth/session', { 
+          cache: 'no-store',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         if (!res.ok) return
         const user = await res.json()
         if (cancelled) return

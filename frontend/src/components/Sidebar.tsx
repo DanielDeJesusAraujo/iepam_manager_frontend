@@ -29,6 +29,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { FiHome, FiMessageSquare, FiFileText, FiShoppingCart, FiPackage, FiUsers } from 'react-icons/fi'
 import { useUser, useFilters } from '@/contexts/GlobalContext'
+import { useLogout } from '@/hooks/useLogout'
 
 interface SidebarProps {
   onClose: () => void
@@ -52,41 +53,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
   console.log('Sidebar - isAuthenticated:', isAuthenticated)
   console.log('Sidebar - User role:', user?.role)
 
-  const handleLogout = async () => {
-    try {
-      // deleta o cookie do token @ti-assistant:token do navegador imediatamente
-      document.cookie = '@ti-assistant:token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-      // Chamar API para limpar cookies HTTP-only
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error)
-    }
-    
-    // Limpar todos os itens do localStorage que começam com @ti-assistant:
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('@ti-assistant:')) {
-        localStorage.removeItem(key)
-      }
-    })
-    
-    // Limpar outros itens específicos
-    localStorage.removeItem('filters')
-    localStorage.removeItem('searchQuery')
-    localStorage.removeItem('selectedUnit')
-    localStorage.removeItem('selectedSector')
-    localStorage.removeItem('selectedEnvironment')
-    localStorage.removeItem('selectedBranch')
-    localStorage.removeItem('selectedCategory')
-    localStorage.removeItem('chakra-ui-color-mode')
-    
-    // Redirecionar para a página de login
-    router.push('/')
-  }
+  const { logout: handleLogout } = useLogout()
 
   const handleNavigation = (href: string) => {
     router.push(href)

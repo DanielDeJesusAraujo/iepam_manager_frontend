@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { GlobalProvider } from '@/contexts/GlobalContext'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { performLogout } from '@/utils/logout'
 
 const theme = extendTheme({
   config: {
@@ -75,33 +76,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
       try {
         const response = await originalFetch(input, init)
         if (response.status === 401) {
-          try {
-            // Best-effort server-side logout to clear cookies
-            originalFetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-          } catch {}
-
-          // Clear client-side session
-          try {
-            const keys = Object.keys(localStorage)
-            for (const key of keys) {
-              if (key.startsWith('@ti-assistant:')) localStorage.removeItem(key)
-            }
-          } catch {}
-
-          // Expire non-HttpOnly app cookies in the browser
-          try {
-            const parts = document.cookie.split(';')
-            for (const part of parts) {
-              const name = part.split('=')[0]?.trim()
-              if (!name) continue
-              if (name.startsWith('@ti-assistant:')) {
-                document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`
-              }
-            }
-          } catch {}
-
-          // Redirect to login
-          router.replace('/')
+          // Não fazer logout automático se estamos na página de login ou fazendo requisição de sessão
+          const isLoginPage = window.location.pathname === '/'
+          const url = typeof input === 'string' ? input : input.toString()
+          const isSessionRequest = url.includes('/api/auth/session')
+          
+          if (isLoginPage || isSessionRequest) {
+            console.log('[Fetch Interceptor] 401 na página de login ou requisição de sessão, ignorando logout automático');
+            return response
+          }
+          
+          console.log('[Fetch Interceptor] 401 detectado, fazendo logout automático');
+          await performLogout()
         }
         return response
       } catch (err) {
