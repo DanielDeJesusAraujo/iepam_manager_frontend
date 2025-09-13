@@ -13,33 +13,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
     }
 
-    // Verificar permissão do usuário
-    const userResponse = await fetch(`${API_URL}/users/me`, {
-      headers: {
-        'Authorization': authHeader
-      }
-    });
-
-    if (userResponse.status === 429) {
-      const message = await userResponse.text();
-      console.log('[API][orders][upload][POST] Rate limit exceeded', message);
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', details: message },
-        { status: 429 }
-      );
-    }
- 
-    if (!userResponse.ok) {
-      console.error('[API][orders][upload][POST] Erro ao verificar permissões');
-      return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
-    }
-
-    const user = await userResponse.json();
-    if (!['ADMIN', 'MANAGER'].includes(user.role)) {
-      console.error('[API][orders][upload][POST] Acesso negado');
-      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-    }
-
     const formData = await req.formData()
     const files = formData.getAll('files')
 
@@ -75,8 +48,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (!backendRes.ok) {
-      console.error('[API][orders][upload][POST] Erro ao fazer upload dos arquivos');
-      throw new Error('Erro ao fazer upload dos arquivos')
+      const error = await backendRes.json();
+      console.error('[API][orders][upload][POST] Erro ao fazer upload dos arquivos:', error);
+      return NextResponse.json(error, { status: backendRes.status });
     }
 
     const data = await backendRes.json()

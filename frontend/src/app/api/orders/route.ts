@@ -10,33 +10,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
     }
 
-    // Verificar permissão do usuário
-    const userResponse = await fetch(`${baseUrl}/users/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (userResponse.status === 429) {
-      const message = await userResponse.text();
-      console.log('[API][orders][GET] Rate limit exceeded', message);
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', details: message },
-        { status: 429 }
-      );
-    }
-
-    if (!userResponse.ok) {
-      console.error('[API][orders][GET] Erro ao verificar permissões');
-      return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
-    }
-
-    const user = await userResponse.json();
-    if (!['ADMIN', 'MANAGER'].includes(user.role)) {
-      console.error('[API][orders][GET] Acesso negado');
-      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-    }
-
     const backendRes = await fetch(`${baseUrl}/service-orders`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -53,9 +26,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (!backendRes.ok) {
-      const errorText = await backendRes.text()
-      console.error(`[API][orders][GET] Erro ao buscar ordens de serviço: ${errorText}`);
-      throw new Error('Erro ao buscar ordens de serviço')
+      const error = await backendRes.json();
+      console.error(`[API][orders][GET] Erro ao buscar ordens de serviço:`, error);
+      return NextResponse.json(error, { status: backendRes.status });
     }
 
     const data = await backendRes.json()
@@ -88,33 +61,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Token não fornecido' }, { status: 401 })
     }
 
-    // Verificar permissão do usuário
-    const userResponse = await fetch(`${baseUrl}/users/me`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (userResponse.status === 429) {
-      const message = await userResponse.text();
-      console.log('[API][orders][POST] Rate limit exceeded', message);
-      return NextResponse.json(
-        { error: 'Rate limit exceeded', details: message },
-        { status: 429 }
-      );
-    }
-
-    if (!userResponse.ok) {
-      console.error('[API][orders][POST] Erro ao verificar permissões');
-      return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
-    }
-
-    const user = await userResponse.json();
-    if (!['ADMIN', 'MANAGER'].includes(user.role)) {
-      console.error('[API][orders][POST] Acesso negado');
-      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-    }
-
     const body = await req.json()
 
     const backendRes = await fetch(`${baseUrl}/service-orders`, {
@@ -136,9 +82,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (!backendRes.ok) {
-      console.error('[API][orders][POST] Erro ao criar ordem de serviço');
-      const errorData = await backendRes.json()
-      throw new Error(errorData.message || 'Erro ao criar ordem de serviço')
+      const error = await backendRes.json();
+      console.error('[API][orders][POST] Erro ao criar ordem de serviço:', error);
+      return NextResponse.json(error, { status: backendRes.status });
     }
 
     const data = await backendRes.json()

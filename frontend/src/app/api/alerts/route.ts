@@ -8,16 +8,14 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
         }
 
-        // Verificar permissão do usuário
-        const userResponse = await fetch(`${baseUrl}/users/me`, {
+        const response = await fetch(`${baseUrl}/alerts`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
 
-        if (userResponse.status === 429) {
-            // Rate limit atingido
-            const message = await userResponse.text();
+        if (response.status === 429) {
+            const message = await response.text();
             console.log('[API][alerts][GET] Rate limit exceeded', message);
             return NextResponse.json(
                 { error: 'Rate limit exceeded', details: message },
@@ -25,23 +23,9 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        if (!userResponse.ok) {
-            return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
-        }
-
-        const user = await userResponse.json();
-        if (!['ADMIN', 'MANAGER', 'SUPPORT'].includes(user.role)) {
-            return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-        }
-
-        const response = await fetch(`${baseUrl}/alerts`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
         if (!response.ok) {
-            throw new Error('Erro ao buscar alertas');
+            const error = await response.json();
+            return NextResponse.json(error, { status: response.status });
         }
 
         const data = await response.json();
@@ -56,32 +40,6 @@ export async function DELETE(request: NextRequest) {
         const token = request.headers.get('Authorization')?.replace('Bearer ', '');
         if (!token) {
             return NextResponse.json({ error: 'Token não fornecido' }, { status: 401 });
-        }
-
-        // Verificar permissão do usuário
-        const userResponse = await fetch(`${baseUrl}/users/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (userResponse.status === 429) {
-            // Rate limit atingido
-            const message = await userResponse.text();
-            console.log('[API][alerts][DELETE] Rate limit exceeded', message);
-            return NextResponse.json(
-                { error: 'Rate limit exceeded', details: message },
-                { status: 429 }
-            );
-        }
-
-        if (!userResponse.ok) {
-            return NextResponse.json({ error: 'Erro ao verificar permissões' }, { status: 401 });
-        }
-
-        const user = await userResponse.json();
-        if (!['ADMIN', 'MANAGER', 'SUPPORT'].includes(user.role)) {
-            return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
         }
 
         const { searchParams } = new URL(request.url);
@@ -99,7 +57,6 @@ export async function DELETE(request: NextRequest) {
         });
 
         if (response.status === 429) {
-            // Rate limit atingido
             const message = await response.text();
             console.log('[API][alerts][DELETE] Rate limit exceeded', message);
             return NextResponse.json(
@@ -109,7 +66,8 @@ export async function DELETE(request: NextRequest) {
         }
 
         if (!response.ok) {
-            throw new Error('Erro ao excluir alerta');
+            const error = await response.json();
+            return NextResponse.json(error, { status: response.status });
         }
 
         return new NextResponse(null, { status: 204 });

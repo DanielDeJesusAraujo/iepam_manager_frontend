@@ -15,12 +15,6 @@ export async function PATCH(
         return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const user = session.user as any;
-    if (!['ADMIN', 'MANAGER', 'ORGANIZER'].includes(user.role)) {
-        console.error('[API][supply-requests][status][PATCH] Acesso negado');
-        return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
-    }
-
     try {
         const body = await request.json();
         const { status } = body;
@@ -54,8 +48,8 @@ export async function PATCH(
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('[API][supply-requests][status][PATCH] Erro ao atualizar status');
-            throw new Error(data.message || 'Erro ao atualizar status');
+            console.error('[API][supply-requests][status][PATCH] Erro ao atualizar status:', data);
+            return NextResponse.json(data, { status: response.status });
         }
 
         return NextResponse.json(data);
