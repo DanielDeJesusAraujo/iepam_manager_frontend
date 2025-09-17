@@ -9,7 +9,6 @@ import {
   Th,
   Td,
   Badge,
-  IconButton,
   useToast,
   Box,
   Text,
@@ -35,7 +34,7 @@ import {
   FormLabel,
   useMediaQuery,
 } from '@chakra-ui/react';
-import { SearchIcon, Eye, Filter } from 'lucide-react';
+import { SearchIcon, Filter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -55,6 +54,7 @@ interface Quote {
     quantity: number;
     unit_price: number;
   }>;
+  notes?: string | null;
 }
 
 interface QuoteListProps {
@@ -108,11 +108,18 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
     return texts[status as keyof typeof texts] || status;
   };
 
+  const extractNameFromNotes = (notes?: string | null) => {
+    if (!notes) return '';
+    const match = notes.match(/\[(.*?)\]/);
+    return match?.[1]?.trim() || '';
+  };
+
   const filteredQuotes = quotes.filter(quote => {
     const matchesStatus = !statusFilter || quote.status === statusFilter;
     const matchesCreator = !creatorFilter || quote.user.id === creatorFilter;
+    const nome = extractNameFromNotes(quote.notes).toLowerCase();
     const matchesSearch = !searchTerm || 
-      quote.supplier.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      nome.includes(searchTerm.toLowerCase()) ||
       quote.items.some(item => 
         item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -170,7 +177,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
               <SearchIcon size={16} />
             </InputLeftElement>
             <Input
-              placeholder="Buscar por fornecedor ou produto"
+              placeholder="Buscar por nome ou produto"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -184,7 +191,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
               <SearchIcon size={16} />
             </InputLeftElement>
             <Input
-              placeholder="Buscar por fornecedor ou produto"
+              placeholder="Buscar por nome ou produto"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -205,7 +212,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
         <Table variant="simple" size="sm">
           <Thead>
             <Tr>
-              <Th>Fornecedor</Th>
+              <Th>Nome</Th>
               <Th>Solicitante</Th>
               <Th>Status</Th>
               <Th isNumeric>Valor Total</Th>
@@ -216,7 +223,7 @@ export function QuoteList({ quotes, onStatusChange }: QuoteListProps) {
           <Tbody>
             {filteredQuotes.map((quote) => (
               <Tr key={quote.id}>
-                <Td>{quote.supplier}</Td>
+                <Td>{extractNameFromNotes(quote.notes) || 'Sem nome'}</Td>
                 <Td>{quote.user.name}</Td>
                 <Td>
                   <Badge colorScheme={getStatusColor(quote.status)}>
