@@ -34,6 +34,7 @@ import {
   Input,
   Textarea,
   useDisclosure,
+  useMediaQuery,
 } from '@chakra-ui/react';
 import { PageHeader } from '@/components/PageHeader';
 import { generateQuotePDF } from '../components/QuotePDF';
@@ -75,6 +76,7 @@ export default function QuoteDetailsPage() {
   const [editNotes, setEditNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [editItems, setEditItems] = useState<QuoteItem[]>([]);
+  const [isSmallScreen] = useMediaQuery('(max-width: 640px)')
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -108,7 +110,7 @@ export default function QuoteDetailsPage() {
         unit_price: it.unit_price,
         total_price: it.total_price,
         final_price: it.final_price,
-        link: it.link,
+        link: it.link || '',
         notes: it.notes ?? null,
       })));
     } catch (error) {
@@ -148,7 +150,7 @@ export default function QuoteDetailsPage() {
       unit_price: it.unit_price,
       total_price: it.total_price,
       final_price: it.final_price,
-      link: it.link,
+      link: it.link || '',
       notes: it.notes ?? null,
     })));
     onOpen();
@@ -179,7 +181,7 @@ export default function QuoteDetailsPage() {
             unit_price: Number(it.unit_price),
             final_price: Number(it.quantity) * Number(it.unit_price),
             notes: it.notes ?? null,
-            // link is not in backend UpdateQuoteData, ignore here
+            link: it.link || undefined,
           })),
         })
       });
@@ -200,7 +202,7 @@ export default function QuoteDetailsPage() {
         unit_price: it.unit_price,
         total_price: it.total_price,
         final_price: it.final_price,
-        link: it.link,
+        link: it.link || '',
         notes: it.notes ?? null,
       })));
       toast({
@@ -464,9 +466,9 @@ export default function QuoteDetailsPage() {
           </VStack>
         </Box>
       </VStack>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered size={isSmallScreen ? 'full' : '6xl'}>
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent maxW={isSmallScreen ? '100vw' : '90vw'}>
           <ModalHeader>Editar Cotação</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -488,48 +490,93 @@ export default function QuoteDetailsPage() {
                   <Heading size="sm">Itens</Heading>
                   <Button size="sm" onClick={handleAddItem} colorScheme="blue">Adicionar Item</Button>
                 </HStack>
-                <Box overflowX="auto">
-                  <Table size="sm">
-                    <Thead>
-                      <Tr>
-                        <Th>Produto</Th>
-                        <Th>Fabricante</Th>
-                        <Th isNumeric>Qtd</Th>
-                        <Th isNumeric>Preço Unit.</Th>
-                        <Th isNumeric>Total</Th>
-                        <Th>Notas</Th>
-                        <Th>Ações</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {editItems.map((it, idx) => (
-                        <Tr key={it.id || idx}>
-                          <Td>
+                {isSmallScreen ? (
+                  <VStack spacing={4} align="stretch">
+                    {editItems.map((it, idx) => (
+                      <Box key={it.id || idx} borderWidth="1px" borderRadius="md" p={3}>
+                        <VStack spacing={3} align="stretch">
+                          <FormControl>
+                            <FormLabel>Produto</FormLabel>
                             <Input size="sm" value={it.product_name} onChange={(e) => handleUpdateItem(idx, 'product_name', e.target.value)} />
-                          </Td>
-                          <Td>
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Fabricante</FormLabel>
                             <Input size="sm" value={it.manufacturer} onChange={(e) => handleUpdateItem(idx, 'manufacturer', e.target.value)} />
-                          </Td>
-                          <Td isNumeric>
-                            <Input type="number" size="sm" value={it.quantity} onChange={(e) => handleUpdateItem(idx, 'quantity', Number(e.target.value))} />
-                          </Td>
-                          <Td isNumeric>
-                            <Input type="number" size="sm" value={it.unit_price} onChange={(e) => handleUpdateItem(idx, 'unit_price', Number(e.target.value))} />
-                          </Td>
-                          <Td isNumeric>
-                            R$ {Number(it.total_price || 0).toFixed(2)}
-                          </Td>
-                          <Td>
-                            <Input size="sm" value={it.notes || ''} onChange={(e) => handleUpdateItem(idx, 'notes', e.target.value)} />
-                          </Td>
-                          <Td>
+                          </FormControl>
+                          <HStack>
+                            <FormControl>
+                              <FormLabel>Qtd</FormLabel>
+                              <Input type="number" size="sm" value={it.quantity} onChange={(e) => handleUpdateItem(idx, 'quantity', Number(e.target.value))} />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>Preço Unit.</FormLabel>
+                              <Input type="number" size="sm" value={it.unit_price} onChange={(e) => handleUpdateItem(idx, 'unit_price', Number(e.target.value))} />
+                            </FormControl>
+                          </HStack>
+                          <FormControl>
+                            <FormLabel>Link</FormLabel>
+                            <Input size="sm" value={it.link || ''} onChange={(e) => handleUpdateItem(idx, 'link', e.target.value)} />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Notas</FormLabel>
+                            <Textarea size="sm" value={it.notes || ''} onChange={(e) => handleUpdateItem(idx, 'notes', e.target.value)} />
+                          </FormControl>
+                          <HStack justify="space-between">
+                            <Text fontSize="sm" color="gray.500">Total: R$ {Number(it.total_price || 0).toFixed(2)}</Text>
                             <Button size="sm" colorScheme="red" variant="ghost" onClick={() => handleRemoveItem(idx)}>Remover</Button>
-                          </Td>
+                          </HStack>
+                        </VStack>
+                      </Box>
+                    ))}
+                  </VStack>
+                ) : (
+                  <Box overflowX="auto">
+                    <Table size="sm">
+                      <Thead>
+                        <Tr>
+                          <Th>Produto</Th>
+                          <Th>Fabricante</Th>
+                          <Th isNumeric>Qtd</Th>
+                          <Th isNumeric>Preço Unit.</Th>
+                          <Th isNumeric>Total</Th>
+                          <Th>Link</Th>
+                          <Th>Notas</Th>
+                          <Th>Ações</Th>
                         </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </Box>
+                      </Thead>
+                      <Tbody>
+                        {editItems.map((it, idx) => (
+                          <Tr key={it.id || idx}>
+                            <Td>
+                              <Input size="sm" value={it.product_name} onChange={(e) => handleUpdateItem(idx, 'product_name', e.target.value)} />
+                            </Td>
+                            <Td>
+                              <Input size="sm" value={it.manufacturer} onChange={(e) => handleUpdateItem(idx, 'manufacturer', e.target.value)} />
+                            </Td>
+                            <Td isNumeric>
+                              <Input type="number" size="sm" value={it.quantity} onChange={(e) => handleUpdateItem(idx, 'quantity', Number(e.target.value))} />
+                            </Td>
+                            <Td isNumeric>
+                              <Input type="number" size="sm" value={it.unit_price} onChange={(e) => handleUpdateItem(idx, 'unit_price', Number(e.target.value))} />
+                            </Td>
+                            <Td isNumeric>
+                              R$ {Number(it.total_price || 0).toFixed(2)}
+                            </Td>
+                            <Td>
+                              <Input size="sm" value={it.link || ''} onChange={(e) => handleUpdateItem(idx, 'link', e.target.value)} />
+                            </Td>
+                            <Td>
+                              <Input size="sm" value={it.notes || ''} onChange={(e) => handleUpdateItem(idx, 'notes', e.target.value)} />
+                            </Td>
+                            <Td>
+                              <Button size="sm" colorScheme="red" variant="ghost" onClick={() => handleRemoveItem(idx)}>Remover</Button>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
+                )}
               </Box>
             </VStack>
           </ModalBody>
