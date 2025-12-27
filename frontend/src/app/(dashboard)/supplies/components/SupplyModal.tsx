@@ -31,7 +31,7 @@ import {
 import { Supply as BaseSupply, Category, Supplier, Unit } from '../utils/types';
 import { initializeFormData } from '../utils/suppliesUtils';
 import { uploadImage } from '@/utils/imageUtils';
-import { fetchSuppliers, fetchUnits } from '@/utils/apiUtils';
+import { fetchSuppliers, fetchUnits, fetchChartOfAccounts, ChartOfAccount } from '@/utils/apiUtils';
 import { handleImageChange } from '@/utils/imageUtils';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 import { ImageSourceDialog } from './ImageSourceDialog';
@@ -56,6 +56,7 @@ function initializeFormDataWithFreight(initialData?: Supply) {
         ...initializeFormData(initialData),
         freight: initialData?.freight ?? '',
         subcategory_id: initialData?.subcategory_id ?? '',
+        chart_of_account_id: (initialData as any)?.chartOfAccount?.id || '',
     };
 }
 
@@ -74,6 +75,7 @@ function parseCurrencyBR(value: string): number {
 export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData }: SupplyModalProps) {
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
+    const [chartOfAccounts, setChartOfAccounts] = useState<ChartOfAccount[]>([]);
     const [formData, setFormData] = useState<{ [key: string]: any }>(initializeFormDataWithFreight(initialData));
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -133,13 +135,16 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [suppliersData, unitsData] = await Promise.all([
+                const [suppliersData, unitsData, chartOfAccountsData] = await Promise.all([
                     fetchSuppliers(),
-                    fetchUnits()
+                    fetchUnits(),
+                    fetchChartOfAccounts('ATIVO') // Para suprimentos, usar ATIVO (ESTOQUES)
                 ]);
                 setSuppliers(suppliersData);
                 setUnits(unitsData);
+                setChartOfAccounts(chartOfAccountsData);
             } catch (error) {
+                console.error('Erro ao carregar dados:', error);
                 toast({
                     title: 'Erro ao carregar dados',
                     description: 'Não foi possível carregar os dados necessários.',
@@ -149,11 +154,25 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                 });
             }
         };
-        loadData();
-    }, [toast]);
+        if (isOpen) {
+            loadData();
+        }
+    }, [toast, isOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validação do plano de conta
+        if (!formData.chart_of_account_id) {
+            toast({
+                title: 'Campo obrigatório',
+                description: 'Plano de conta é obrigatório',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
 
         try {
             let imageUrl = formData.image_url;
@@ -174,6 +193,7 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                 unit_price: parseCurrencyBR(String(formData.unit_price)),
                 freight: formData.freight ? parseCurrencyBR(String(formData.freight)) : 0,
                 subcategory_id: formData.subcategory_id || undefined,
+                chart_of_account_id: formData.chart_of_account_id,
             });
             // limpa o modal e reseta o estado
             setFormData(initializeFormDataWithFreight());
@@ -321,8 +341,22 @@ export function SupplyModal({ isOpen, onClose, onSubmit, categories, initialData
                                 </Select>
                             </FormControl>
 
-
                             <FormControl isRequired gridColumn={{ base: 'auto', md: '2' }}>
+                                <FormLabel>Plano de Conta</FormLabel>
+                                <Select
+                                    value={formData.chart_of_account_id || ''}
+                                    onChange={(e) => setFormData({ ...formData, chart_of_account_id: e.target.value })}
+                                    placeholder="Selecione o plano de conta"
+                                >
+                                    {chartOfAccounts.map((account) => (
+                                        <option key={account.id} value={account.id}>
+                                            {account.codigo} - {account.nome}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <FormControl isRequired gridColumn={{ base: 'auto', md: '1' }}>
                                 <FormLabel>Preço Unitário</FormLabel>
                                 <Box fontSize="sm" color="gray.500" mb={1}>
                                     Ex: 1.234,56
