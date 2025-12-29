@@ -94,6 +94,7 @@ const SidebarContent = ({ onClose }: { onClose: () => void }) => {
     ...(!isEmployee ? [{ label: 'Ambientes', href: '/settings/enviroments' }] : []),
     ...(!isEmployee ? [{ label: 'Setores', href: '/settings/sectors' }] : []),
     ...(!isEmployee ? [{ label: 'Fornecedores', href: '/settings/suppliers' }] : []),
+    ...(!isEmployee ? [{ label: 'Planos de Conta', href: '/chart-of-accounts' }] : []),
     ...(isAdmin ? [{ label: 'Usuários', href: '/settings/users' }] : []),
   ]
 

@@ -58,3 +58,50 @@ export async function GET(request: NextRequest) {
     }
 }
 
+export async function POST(request: Request) {
+  try {
+    console.log('[API][chart-of-accounts][POST] Iniciando request');
+    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      console.error('[API][chart-of-accounts][POST] Token não fornecido');
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    const response = await fetch(`${baseUrl}/chart-of-accounts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (response.status === 429) {
+      const message = await response.text();
+      console.log('[API][chart-of-accounts][POST] Rate limit exceeded', message);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded', details: message },
+        { status: 429 }
+      );
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('[API][chart-of-accounts][POST] Erro ao criar plano de conta');
+      throw new Error(errorData.message || 'Erro ao criar plano de conta');
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('[API][chart-of-accounts][POST] Erro na rota /api/chart-of-accounts:', error);
+    return NextResponse.json(
+      { error: error.message || 'Erro ao criar plano de conta' },
+      { status: 500 }
+    );
+  }
+}
+
