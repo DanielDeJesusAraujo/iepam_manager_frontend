@@ -271,18 +271,13 @@ export function InventoryModal({ isOpen, onClose, onSubmit, initialData, isEdit 
                 imageUrl = await uploadImage(selectedImage);
             }
 
-            const token = localStorage.getItem('@ti-assistant:token')
             const dataToSend: any = {
                 ...formData,
                 image_url: imageUrl,
                 acquisition_price: parseFloat(formData.acquisition_price),
                 freight: formData.freight ? parseFloat(formData.freight) : 0,
                 acquisition_date: new Date(formData.acquisition_date).toISOString(),
-                chart_of_account_id: formData.chart_of_account_id,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                chart_of_account_id: formData.chart_of_account_id || null,
             };
             if (isDepreciable) {
                 dataToSend.residual_value = formData.residual_value ? parseFloat(formData.residual_value) : 0;
